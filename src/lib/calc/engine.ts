@@ -3,6 +3,7 @@ import {
   roundTo,
   toCanonical,
   unitLabel,
+  type Measure,
   type UnitSystem,
 } from "@/lib/units";
 import type {
@@ -49,31 +50,81 @@ export function defaultValues(
   return values;
 }
 
-/** Re-express display values when the user flips between US and metric. */
+/** Values that are the same number in both systems. */
+function isSystemAgnostic(measure: Measure): boolean {
+  return measure === "currency" || measure === "percent" || measure === "count";
+}
+
+/**
+ * The exact canonical value behind each field.
+ *
+ * Display values are rounded so the input box stays readable, which makes a
+ * naive round-trip lossy: 20 ft → 4.877 m → 15.999 ft. Anchoring conversions to
+ * the value the user actually entered keeps flipping units exact.
+ */
+export type CanonicalAnchors = Record<string, number>;
+
+export function anchorsFor(
+  def: ProjectDefinition,
+  values: InputValues,
+  system: UnitSystem,
+): CanonicalAnchors {
+  const anchors: CanonicalAnchors = {};
+  for (const input of def.inputs) {
+    if (input.type !== "number") continue;
+    const raw = values[input.id];
+    if (raw === "" || raw === undefined || raw === null) continue;
+    const numeric = typeof raw === "number" ? raw : Number(raw);
+    if (!Number.isFinite(numeric)) continue;
+    anchors[input.id] = toCanonical(numeric, input.measure, system);
+  }
+  return anchors;
+}
+
+/**
+ * Re-express display values when the user flips between US and metric.
+ *
+ * Pass `anchors` (the canonical value recorded when each field was last typed
+ * into) to make repeated switching exact rather than drifting a little each
+ * time.
+ */
 export function convertValues(
   def: ProjectDefinition,
   values: InputValues,
   from: UnitSystem,
   to: UnitSystem,
+  anchors?: CanonicalAnchors,
 ): InputValues {
   if (from === to) return { ...values };
   const next: InputValues = { ...values };
+
   for (const input of def.inputs) {
     if (input.type !== "number") continue;
+    if (isSystemAgnostic(input.measure)) continue;
+
     const raw = values[input.id];
     if (raw === "" || raw === undefined || raw === null) continue;
     const current = typeof raw === "number" ? raw : Number(raw);
     if (!Number.isFinite(current)) continue;
-    // Currency and percentages are system-agnostic; leave them untouched.
-    if (input.measure === "currency" || input.measure === "percent" || input.measure === "count") {
-      continue;
-    }
-    const canonical = toCanonical(current, input.measure, from);
+
+    // Prefer the anchor, but only while it still agrees with what is on screen —
+    // otherwise a field edited since the last switch would snap back.
+    const anchored = anchors?.[input.id];
+    const displayedNow =
+      anchored === undefined
+        ? undefined
+        : roundTo(fromCanonical(anchored, input.measure, from), input.precision ?? 3);
+    const canonical =
+      anchored !== undefined && displayedNow === current
+        ? anchored
+        : toCanonical(current, input.measure, from);
+
     next[input.id] = roundTo(
       fromCanonical(canonical, input.measure, to),
       input.precision ?? 3,
     );
   }
+
   return next;
 }
 

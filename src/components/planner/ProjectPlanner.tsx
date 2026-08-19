@@ -20,6 +20,7 @@ import { ProjectSequence } from "@/components/results/ProjectSequence";
 import { DiyOrHire } from "@/components/results/DiyOrHire";
 import { AdSlot } from "@/components/monetization/AdSlot";
 import {
+  anchorsFor,
   applyPrefill,
   convertValues,
   defaultValues,
@@ -27,10 +28,11 @@ import {
   toQueryParams,
   validate,
   visibleInputs,
+  type CanonicalAnchors,
 } from "@/lib/calc/engine";
 import { getProject } from "@/data/projects";
 import { track } from "@/lib/analytics";
-import { formatCurrency, type UnitSystem } from "@/lib/units";
+import { formatCurrency, toCanonical, type UnitSystem } from "@/lib/units";
 import { legal } from "@/config/site";
 import {
   getSavedProject,
@@ -67,21 +69,40 @@ export function ProjectPlanner({ slug }: { slug: string }) {
 
   const resultsRef = useRef<HTMLDivElement>(null);
 
+  // Remembers the exact value behind each field so flipping units repeatedly
+  // returns to the number the user typed, not a drifting approximation.
+  const anchors = useRef<CanonicalAnchors>(
+    project ? anchorsFor(project, initial.values, initial.system) : {},
+  );
+
   useEffect(() => {
     if (initial.prefilled.length > 0) {
       track("project_started", { slug, prefilled: initial.prefilled.length });
     }
   }, [initial.prefilled.length, slug]);
 
-  const handleChange = useCallback((id: string, value: InputValue) => {
-    setValues((current) => ({ ...current, [id]: value }));
-    setStatus({ kind: "idle" });
-  }, []);
+  const handleChange = useCallback(
+    (id: string, value: InputValue) => {
+      // Anchors are stored canonically, so they stay valid across unit switches.
+      const input = project?.inputs.find((item) => item.id === id);
+      if (input?.type === "number") {
+        const numeric = typeof value === "number" ? value : Number(value);
+        if (value !== "" && Number.isFinite(numeric)) {
+          anchors.current[id] = toCanonical(numeric, input.measure, system);
+        } else {
+          delete anchors.current[id];
+        }
+      }
+      setValues((current) => ({ ...current, [id]: value }));
+      setStatus({ kind: "idle" });
+    },
+    [project, system],
+  );
 
   const handleSystemChange = useCallback(
     (next: UnitSystem) => {
       if (!project || next === system) return;
-      setValues((current) => convertValues(project, current, system, next));
+      setValues((current) => convertValues(project, current, system, next, anchors.current));
       setSystem(next);
       track("units_changed", { slug: project.slug, system: next });
     },

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { getProjectOrThrow } from "@/data/projects";
+import type { UnitSystem } from "@/lib/units";
 import {
+  anchorsFor,
   applyPrefill,
   convertValues,
   defaultValues,
@@ -143,6 +145,55 @@ describe("unit switching", () => {
     const values = { ...defaultValues(concrete, "us"), length: "" };
     const metric = convertValues(concrete, values, "us", "metric");
     expect(metric.length).toBe("");
+  });
+
+  it("drifts without an anchor, because display values are rounded", () => {
+    const us = { ...defaultValues(concrete, "us"), length: 20 };
+    const metric = convertValues(concrete, us, "us", "metric");
+    expect(metric.length).toBe(6.096);
+
+    const back = convertValues(concrete, metric, "metric", "us");
+    // 4.877 m is not exactly 16 ft — this is the drift anchors exist to remove.
+    expect(Number(back.width)).not.toBe(16);
+  });
+
+  it("returns the exact entered value when anchored", () => {
+    const us = { ...defaultValues(concrete, "us"), length: 20, width: 16 };
+    const anchors = anchorsFor(concrete, us, "us");
+
+    const metric = convertValues(concrete, us, "us", "metric", anchors);
+    const back = convertValues(concrete, metric, "metric", "us", anchors);
+
+    expect(back.length).toBe(20);
+    expect(back.width).toBe(16);
+  });
+
+  it("stays exact over repeated switching", () => {
+    const anchors = anchorsFor(concrete, { ...defaultValues(concrete, "us") }, "us");
+    let values = { ...defaultValues(concrete, "us") };
+    let system: UnitSystem = "us";
+
+    for (let i = 0; i < 10; i += 1) {
+      const next: UnitSystem = system === "us" ? "metric" : "us";
+      values = convertValues(concrete, values, system, next, anchors);
+      system = next;
+    }
+
+    expect(system).toBe("us");
+    expect(values.length).toBe(20);
+    expect(values.width).toBe(16);
+    expect(values.thickness).toBe(4);
+  });
+
+  it("ignores a stale anchor when the field has since been edited", () => {
+    const us = { ...defaultValues(concrete, "us"), length: 20 };
+    const anchors = anchorsFor(concrete, us, "us");
+
+    // The user typed a new length after the anchor was taken.
+    const edited = { ...us, length: 30 };
+    const metric = convertValues(concrete, edited, "us", "metric", anchors);
+
+    expect(Number(metric.length)).toBeCloseTo(9.144, 3);
   });
 });
 
