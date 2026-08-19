@@ -183,6 +183,15 @@ export const planningDefaults = {
   thinsetSmallTileMaxIn: 8,
   thinsetLargeFormatMinIn: 16,
 
+  /*
+   * Exterior and deck screws are sold by weight, not by the piece. A 5 lb box
+   * of #8 × 2-1/2 in coated deck screws runs about 350 pieces across the major
+   * retailers, so a screw count only becomes a shopping list once it is divided
+   * by this. Drywall screws are lighter and boxed at 1 lb — see
+   * drywallScrewsPerSheet and the note beside it.
+   */
+  exteriorScrewsPerBox: 350,
+
   /** Grout is not a flat rate — see the published formula in calculations/tile.ts. */
   groutCoverageSqFtPer25lb: 90,
 

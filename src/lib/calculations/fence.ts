@@ -76,6 +76,8 @@ export function calculateFence({
   const concreteYards = cubicFeetToYards(concreteCuFt);
 
   const screws = Math.ceil(pickets * Math.max(railsPerSection, 1) * 2 * 1.1);
+  // Screws are sold by weight, so the shopping list needs boxes, not pieces.
+  const screwBoxes = Math.max(1, packagesNeeded(screws, planningDefaults.exteriorScrewsPerBox));
 
   const materials: MaterialLine[] = [
     {
@@ -145,12 +147,12 @@ export function calculateFence({
     {
       id: "screws",
       name: "Exterior screws / fasteners",
-      quantity: screws,
+      quantity: screwBoxes,
       measure: "count",
-      unitOverride: "screws",
+      unitOverride: "boxes (5 lb)",
       isEstimate: true,
       searchTerm: "exterior deck screws",
-      note: "Two per picket per rail plus 10%.",
+      note: `About ${screws.toLocaleString("en-US")} screws — two per picket per rail plus 10%.`,
     },
   ];
 

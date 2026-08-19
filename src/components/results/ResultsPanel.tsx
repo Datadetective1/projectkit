@@ -232,7 +232,8 @@ function MaterialsCard({
         <p className="text-xs text-ink-subtle">
           Costs use the prices in the estimate options above. Items marked{" "}
           <span className="font-semibold">Estimate</span> are planning allowances rather than exact
-          quantities.
+          quantities. Sales tax, delivery, and equipment rental are not included — on bulk materials
+          delivery alone can add a meaningful amount.
         </p>
         <ShopMaterials
           className="mt-4"

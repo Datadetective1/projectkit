@@ -292,6 +292,21 @@ describe("safety guarantees across all projects", () => {
     expect(bagsFor(12)).toBeGreaterThanOrEqual(bagsFor(6));
   });
 
+  it("fasteners are listed in a unit you can actually buy", () => {
+    // "5,538 screws" is a number, not a shopping list — screws are sold by
+    // weight. Every fastener line must be boxed.
+    for (const slug of ["fence-calculator", "deck-calculator", "drywall-calculator"]) {
+      const result = run(getProjectOrThrow(slug));
+      const line = result.materials.find((item) => item.id === "screws");
+      expect(line, `${slug} should list fasteners`).toBeDefined();
+      expect(line!.unitOverride, slug).toMatch(/box/);
+      expect(line!.quantity, slug).toBeLessThan(200);
+      expect(Number.isInteger(line!.quantity), slug).toBe(true);
+      // The piece count is still useful, just not as the headline quantity.
+      expect(line!.note, slug).toMatch(/screws/);
+    }
+  });
+
   it("drywall tape matches the seam length a room actually has", () => {
     const drywall = getProjectOrThrow("drywall-calculator");
     const result = run(drywall, { length: 14, width: 12, height: 8, includeCeiling: true });

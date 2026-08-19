@@ -94,4 +94,27 @@ describe("formatting", () => {
     expect(formatQuantity(12, "count", { system: "us", unitOverride: "bags" })).toBe("12 bags");
     expect(formatQuantity(10, "percent", { system: "us" })).toBe("10%");
   });
+
+  it("singularises counted units at exactly one", () => {
+    const one = (unitOverride: string) =>
+      formatQuantity(1, "count", { system: "us", unitOverride });
+
+    expect(one("bags")).toBe("1 bag");
+    expect(one("boxes")).toBe("1 box");
+    expect(one("bunches")).toBe("1 bunch");
+    // Only the leading word changes, so parentheticals survive intact.
+    expect(one("boxes (5 lb)")).toBe("1 box (5 lb)");
+    expect(one("boxes of tile")).toBe("1 box of tile");
+    // Already singular, or not a plural at all.
+    expect(one("bag")).toBe("1 bag");
+    expect(one("truss")).toBe("1 truss");
+  });
+
+  it("leaves measured units alone — '1 sq ft' is already correct", () => {
+    expect(formatQuantity(1, "area", { system: "us", precision: 0 })).toBe("1 sq ft");
+    expect(formatQuantity(1, "count", { system: "us", unitOverride: "linear ft" })).toBe(
+      "1 linear ft",
+    );
+    expect(formatQuantity(2, "count", { system: "us", unitOverride: "bags" })).toBe("2 bags");
+  });
 });

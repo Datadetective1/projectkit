@@ -159,7 +159,7 @@ export function buildPack(saved: SavedProject): ProjectPack | undefined {
     warnings: [...result.warnings, ...(project.disclaimers ?? [])],
     notes: saved.notes,
     disclaimer:
-      "ProjectKit provides planning estimates only. Actual requirements, costs, installation methods, structural requirements, permits, safety requirements, and building codes vary. Verify critical specifications before purchasing materials or beginning work.",
+      "ProjectKit provides planning estimates only. Costs cover materials at the prices shown — sales tax, delivery, and equipment rental are excluded. Actual requirements, costs, installation methods, structural requirements, permits, safety requirements, and building codes vary. Verify critical specifications before purchasing materials or beginning work.",
     effort: {
       difficulty: result.effort.difficulty,
       timeCategory: result.effort.timeCategory,

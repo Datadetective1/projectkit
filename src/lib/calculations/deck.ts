@@ -4,6 +4,7 @@ import {
   costOf,
   inchesToFeet,
   num,
+  packagesNeeded,
   shoppingItem,
   sumCost,
   wasteMultiplier,
@@ -73,6 +74,8 @@ export function calculateDeck({
   const stringers = includeStairs ? 3 : 0;
 
   const screws = Math.ceil(areaSqFt * 3.5);
+  // Screws are sold by weight, so the shopping list needs boxes, not pieces.
+  const screwBoxes = Math.max(1, packagesNeeded(screws, planningDefaults.exteriorScrewsPerBox));
   const joistHangers = joistCount * 2;
 
   const materials: MaterialLine[] = [
@@ -162,13 +165,13 @@ export function calculateDeck({
     },
     {
       id: "screws",
-      name: "Deck screws / hidden fasteners",
-      quantity: screws,
+      name: "Deck screws",
+      quantity: screwBoxes,
       measure: "count",
-      unitOverride: "fasteners",
+      unitOverride: "boxes (5 lb)",
       isEstimate: true,
       searchTerm: "deck screws",
-      note: "Roughly 3.5 per square foot.",
+      note: `About ${screws.toLocaleString("en-US")} screws at roughly 3.5 per square foot. A hidden fastener system is sold by deck area instead.`,
     },
   ];
 

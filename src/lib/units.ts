@@ -170,6 +170,21 @@ export interface FormatQuantityOptions {
 }
 
 /** Format a canonical value for display, converting units as needed. */
+/**
+ * "1 bags" and "1 rolls" read as sloppiness on a page whose whole job is to be
+ * trusted with numbers. Counted things get singularised at exactly one.
+ *
+ * Only the leading word changes, so "2 boxes (1 lb)" becomes "1 box (1 lb)"
+ * rather than mangling the parenthetical. Applied to `count` alone — "1 sq ft"
+ * and "1 linear ft" are already correct and must not be touched.
+ */
+function singularise(label: string): string {
+  const [head, ...rest] = label.split(" ");
+  if (!head || !head.endsWith("s") || head.endsWith("ss")) return label;
+  const singular = /(?:ch|sh|s|x|z)es$/.test(head) ? head.slice(0, -2) : head.slice(0, -1);
+  return [singular, ...rest].join(" ");
+}
+
 export function formatQuantity(
   canonicalValue: number,
   measure: Measure,
@@ -180,7 +195,9 @@ export function formatQuantity(
 
   const displayValue = fromCanonical(canonicalValue, measure, system);
   const decimals = precision ?? defaultPrecision(measure);
-  const label = unitOverride ?? unitLabel(measure, system);
+  const rawLabel = unitOverride ?? unitLabel(measure, system);
+  const label =
+    measure === "count" && displayValue === 1 ? singularise(rawLabel) : rawLabel;
   const formatted = formatNumber(displayValue, decimals);
   if (!label) return formatted;
   if (label === "%") return `${formatted}%`;
