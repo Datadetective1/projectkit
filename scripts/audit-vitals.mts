@@ -1,4 +1,4 @@
-import { chromium, devices } from "@playwright/test";
+import { chromium } from "@playwright/test";
 
 /**
  * Core Web Vitals against the production build.
