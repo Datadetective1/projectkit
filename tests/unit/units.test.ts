@@ -5,6 +5,8 @@ import {
   fromCanonical,
   roundTo,
   roundUpTo,
+  rateLabel,
+  rateScale,
   toCanonical,
   unitLabel,
 } from "@/lib/units";
@@ -148,5 +150,60 @@ describe("formatting", () => {
       "1 linear ft",
     );
     expect(formatQuantity(2, "count", { system: "us", unitOverride: "bags" })).toBe("2 bags");
+  });
+});
+
+describe("rates", () => {
+  /**
+   * A rate is a quantity per another quantity: "$ / yd³", "sq ft / gal". Both
+   * halves convert, and the denominator moves the value the *other* way.
+   * Getting that backwards is a 31% error on concrete pricing and a 4× error on
+   * paint coverage, both displayed as confident numbers.
+   */
+
+  it("scales a price up when the denominator gets bigger", () => {
+    // A cubic metre is more concrete than a cubic yard, so it costs more.
+    // display = canonical × scale, so the scale is above 1 here.
+    const scale = rateScale("currency", "volumeYd", "metric");
+    expect(165 * scale).toBeCloseTo(215.81, 1);
+    expect(rateScale("currency", "volumeYd", "us")).toBe(1);
+  });
+
+  it("inverts coverage rather than converting the numerator alone", () => {
+    // 350 sq ft per US gallon is 8.59 m² per litre. Converting only the area
+    // gives 32.5, which is four times too generous.
+    const metric = 350 * rateScale("area", "volumeLiquid", "metric");
+    expect(metric).toBeCloseTo(8.59, 2);
+    expect(metric).not.toBeCloseTo(32.5, 1);
+  });
+
+  it("is exactly reversible", () => {
+    for (const [measure, per] of [
+      ["currency", "volumeYd"],
+      ["currency", "area"],
+      ["currency", "length"],
+      ["currency", "weight"],
+      ["currency", "volumeLiquid"],
+      ["area", "volumeLiquid"],
+    ] as const) {
+      const there = rateScale(measure, per, "metric");
+      expect(100 * there * (1 / there), `${measure}/${per}`).toBeCloseTo(100, 9);
+    }
+  });
+
+  it("names both halves in the reader's system", () => {
+    expect(rateLabel("currency", "volumeYd", "us")).toBe("$ / yd³");
+    expect(rateLabel("currency", "volumeYd", "metric")).toBe("$ / m³");
+    expect(rateLabel("area", "volumeLiquid", "us")).toBe("sq ft / gal");
+    expect(rateLabel("area", "volumeLiquid", "metric")).toBe("m² / L");
+    expect(rateLabel("currency", "length", "metric")).toBe("$ / m");
+    // Singular denominator: it is a price per one of something.
+    expect(rateLabel("currency", "weight", "us")).toBe("$ / ton");
+  });
+
+  it("falls back to the plain unit when there is no denominator", () => {
+    expect(rateLabel("area", undefined, "us")).toBe("sq ft");
+    expect(rateLabel("currency", undefined, "us")).toBe("$");
+    expect(rateScale("area", undefined, "metric")).toBeCloseTo(0.0929, 4);
   });
 });

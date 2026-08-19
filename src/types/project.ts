@@ -19,6 +19,17 @@ interface InputBase {
 export interface NumberInput extends InputBase {
   type: "number";
   measure: Measure;
+  /**
+   * The denominator, when this field holds a *rate* rather than a quantity:
+   * a price per cubic yard, paint coverage per gallon.
+   *
+   * Both halves then convert together, and the denominator moves the value the
+   * other way — 350 sq ft per gallon is 8.59 m² per litre, not the 32.5 you get
+   * by converting the area and leaving the gallon alone. Omit it for a rate
+   * whose denominator is a package ("$ / bag", "$ / sheet"), since a bag means
+   * the same thing in both systems.
+   */
+  perMeasure?: Measure;
   /** Default expressed in canonical (US) units. */
   defaultValue: number;
   /** Inclusive bounds in canonical units. Used for validation messages. */

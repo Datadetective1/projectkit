@@ -66,6 +66,38 @@ export function unitLabel(measure: Measure, system: UnitSystem): string {
   return UNIT_LABELS[measure][system];
 }
 
+/**
+ * Rates — a quantity *per* another quantity: "$ / yd³", "sq ft / gal".
+ *
+ * Both halves have to move together, and the denominator moves the value the
+ * other way. A price per cubic yard becomes a *larger* number per cubic metre;
+ * paint coverage of 350 sq ft per gallon is 8.59 m² per litre, not the 32.5 you
+ * get by converting the area and leaving the gallon alone. Getting this wrong
+ * is a 31% error on concrete pricing and a 4× error on paint coverage, in both
+ * cases displayed as a confident number.
+ */
+export function rateScale(
+  measure: Measure,
+  perMeasure: Measure | undefined,
+  system: UnitSystem,
+): number {
+  const numerator = fromCanonical(1, measure, system);
+  const denominator = perMeasure ? fromCanonical(1, perMeasure, system) : 1;
+  return denominator === 0 ? numerator : numerator / denominator;
+}
+
+/** The label for a rate, both halves in the reader's system. */
+export function rateLabel(
+  measure: Measure,
+  perMeasure: Measure | undefined,
+  system: UnitSystem,
+): string {
+  const top = measure === "currency" ? "$" : unitLabel(measure, system);
+  if (!perMeasure) return top;
+  // "per ton", not "per tons" — the denominator is always one of something.
+  return `${top} / ${singularise(unitLabel(perMeasure, system))}`;
+}
+
 export function unitName(measure: Measure, system: UnitSystem): string {
   return UNIT_NAMES[measure][system];
 }

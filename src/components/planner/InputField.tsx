@@ -1,7 +1,7 @@
 "use client";
 
 import { useId } from "react";
-import { unitLabel, type UnitSystem } from "@/lib/units";
+import { rateLabel, unitLabel, type UnitSystem } from "@/lib/units";
 import type { InputValue, InputValues, ProjectInput } from "@/types/project";
 
 interface InputFieldProps {
@@ -74,7 +74,15 @@ export function InputField({ input, values, system, error, onChange }: InputFiel
     );
   }
 
-  const suffix = input.unitOverride ?? unitLabel(input.measure, system);
+  /*
+   * A rate names both its units, so it builds its own suffix — a hardcoded
+   * override would say "$ / yd³" beside a value the engine has converted to
+   * per-cubic-metre. Everything else falls back to the override, then to the
+   * measure's own label.
+   */
+  const suffix = input.perMeasure
+    ? rateLabel(input.measure, input.perMeasure, system)
+    : (input.unitOverride ?? unitLabel(input.measure, system));
 
   return (
     <div>

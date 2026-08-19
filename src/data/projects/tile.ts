@@ -127,7 +127,7 @@ export const tileProject: ProjectDefinition = {
       type: "number",
       label: "Tile price per square foot",
       measure: "currency",
-      unitOverride: "$ / sq ft",
+      perMeasure: "area",
       defaultValue: prices.tilePerSqFt,
       min: 0,
       max: 200,

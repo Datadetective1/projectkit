@@ -1,11 +1,4 @@
-import {
-  fromCanonical,
-  roundTo,
-  toCanonical,
-  unitLabel,
-  type Measure,
-  type UnitSystem,
-} from "@/lib/units";
+import { rateLabel, rateScale, roundTo, type UnitSystem } from "@/lib/units";
 import type {
   CalculationResult,
   InputValue,
@@ -40,7 +33,7 @@ export function defaultValues(
   for (const input of def.inputs) {
     if (input.type === "number") {
       values[input.id] = roundTo(
-        fromCanonical(input.defaultValue, input.measure, system),
+        inputFromCanonical(input.defaultValue, input, system),
         input.precision ?? 4,
       );
     } else {
@@ -50,9 +43,29 @@ export function defaultValues(
   return values;
 }
 
-/** Values that are the same number in both systems. */
-function isSystemAgnostic(measure: Measure): boolean {
-  return measure === "currency" || measure === "percent" || measure === "count";
+/**
+ * Values that are the same number in both systems.
+ *
+ * A currency field is normally one of them — a dollar is a dollar. It stops
+ * being one the moment it is a *rate*: "$165 per yd³" is "$215.81 per m³", and
+ * showing the metric reader 165 against a per-m³ label understates by 31%.
+ */
+function isSystemAgnostic(input: NumberInput): boolean {
+  if (input.perMeasure !== undefined) return false;
+  return (
+    input.measure === "currency" || input.measure === "percent" || input.measure === "count"
+  );
+}
+
+/** Display value → canonical, honouring a rate's denominator. */
+function inputToCanonical(value: number, input: NumberInput, system: UnitSystem): number {
+  const scale = rateScale(input.measure, input.perMeasure, system);
+  return scale === 0 ? value : value / scale;
+}
+
+/** Canonical → display value, honouring a rate's denominator. */
+function inputFromCanonical(value: number, input: NumberInput, system: UnitSystem): number {
+  return value * rateScale(input.measure, input.perMeasure, system);
 }
 
 /**
@@ -76,7 +89,7 @@ export function anchorsFor(
     if (raw === "" || raw === undefined || raw === null) continue;
     const numeric = typeof raw === "number" ? raw : Number(raw);
     if (!Number.isFinite(numeric)) continue;
-    anchors[input.id] = toCanonical(numeric, input.measure, system);
+    anchors[input.id] = inputToCanonical(numeric, input, system);
   }
   return anchors;
 }
@@ -100,7 +113,7 @@ export function convertValues(
 
   for (const input of def.inputs) {
     if (input.type !== "number") continue;
-    if (isSystemAgnostic(input.measure)) continue;
+    if (isSystemAgnostic(input)) continue;
 
     const raw = values[input.id];
     if (raw === "" || raw === undefined || raw === null) continue;
@@ -113,14 +126,14 @@ export function convertValues(
     const displayedNow =
       anchored === undefined
         ? undefined
-        : roundTo(fromCanonical(anchored, input.measure, from), input.precision ?? 3);
+        : roundTo(inputFromCanonical(anchored, input, from), input.precision ?? 3);
     const canonical =
       anchored !== undefined && displayedNow === current
         ? anchored
-        : toCanonical(current, input.measure, from);
+        : inputToCanonical(current, input, from);
 
     next[input.id] = roundTo(
-      fromCanonical(canonical, input.measure, to),
+      inputFromCanonical(canonical, input, to),
       input.precision ?? 3,
     );
   }
@@ -140,7 +153,7 @@ export function toCanonicalValues(
     if (input.type === "number") {
       const numeric = typeof value === "number" ? value : Number(value);
       canonical[input.id] = Number.isFinite(numeric)
-        ? toCanonical(numeric, input.measure, system)
+        ? inputToCanonical(numeric, input, system)
         : input.defaultValue;
     } else {
       canonical[input.id] = value ?? input.defaultValue;
@@ -191,17 +204,17 @@ export function validate(
       continue;
     }
 
-    const canonical = toCanonical(numeric, input.measure, system);
-    const label = unitLabel(input.measure, system);
-    const suffix = label ? ` ${label}` : "";
+    const canonical = inputToCanonical(numeric, input, system);
+    const label = rateLabel(input.measure, input.perMeasure, system);
+    const suffix = label && label !== "$" ? ` ${label}` : "";
 
     if (input.min !== undefined && canonical < input.min - 1e-9) {
-      const shown = roundTo(fromCanonical(input.min, input.measure, system), 2);
+      const shown = roundTo(inputFromCanonical(input.min, input, system), 2);
       errors[input.id] = `Must be at least ${shown}${suffix}.`;
       continue;
     }
     if (input.max !== undefined && canonical > input.max + 1e-9) {
-      const shown = roundTo(fromCanonical(input.max, input.measure, system), 2);
+      const shown = roundTo(inputFromCanonical(input.max, input, system), 2);
       errors[input.id] = `Must be ${shown}${suffix} or less.`;
       continue;
     }

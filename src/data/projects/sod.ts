@@ -142,7 +142,7 @@ export const sodProject: ProjectDefinition = {
       type: "number",
       label: "Price per square foot",
       measure: "currency",
-      unitOverride: "$ / sq ft",
+      perMeasure: "area",
       defaultValue: prices.sodPerSqFt,
       min: 0,
       max: 50,
