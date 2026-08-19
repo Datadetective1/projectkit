@@ -93,3 +93,83 @@ test("the results region announces changes", async ({ page }) => {
   const headline = page.locator("#result-headline").locator("xpath=following-sibling::p[1]");
   await expect(headline).toHaveAttribute("aria-live", "polite");
 });
+
+/**
+ * States the page-level sweep above never reaches. Each is a different DOM:
+ * an error message has to be associated with its field, an empty state is the
+ * only thing on the page, and metric mode re-renders every number.
+ */
+
+test("a planner in its error state is accessible", async ({ page }) => {
+  await page.goto("/concrete-calculator");
+  const length = page.getByLabel(/length/i).first();
+  await length.fill("0");
+  await length.blur();
+
+  // The error has to actually be showing, or this proves nothing.
+  await expect(page.getByText(/must be|enter a/i).first()).toBeVisible();
+
+  const results = await audit(page).analyze();
+  expect(results.violations.map((violation) => violation.id)).toEqual([]);
+});
+
+test("the empty saved-projects state is accessible", async ({ page }) => {
+  await page.goto("/my-projects");
+  await expect(page.getByText(/no saved projects yet/i)).toBeVisible();
+
+  const results = await audit(page).analyze();
+  expect(results.violations.map((violation) => violation.id)).toEqual([]);
+});
+
+test("metric mode is accessible", async ({ page }) => {
+  await page.goto("/concrete-calculator?units=metric");
+  await page.getByRole("button", { name: "Customize estimate" }).click();
+
+  const results = await audit(page).analyze();
+  expect(results.violations.map((violation) => violation.id)).toEqual([]);
+});
+
+test("the 404 page is accessible", async ({ page }) => {
+  await page.goto("/no-such-page");
+
+  const results = await audit(page).analyze();
+  expect(results.violations.map((violation) => violation.id)).toEqual([]);
+});
+
+test("every interactive control on a planner is reachable by keyboard", async ({ page }) => {
+  await page.goto("/concrete-calculator");
+  await page.getByRole("button", { name: "Customize estimate" }).click();
+
+  // A control that cannot be tabbed to cannot be used without a mouse, and axe
+  // does not check this — it checks markup, not reachability.
+  const unreachable = await page.evaluate(() => {
+    const selector = "a[href], button, input, select, textarea, [tabindex]";
+    return Array.from(document.querySelectorAll<HTMLElement>(selector))
+      .filter((element) => {
+        if (element.hasAttribute("disabled") || element.getAttribute("aria-hidden") === "true") {
+          return false;
+        }
+        if (element.offsetParent === null) return false; // Not rendered.
+        return element.tabIndex < 0;
+      })
+      .map((element) => element.outerHTML.slice(0, 120));
+  });
+
+  expect(unreachable).toEqual([]);
+});
+
+test("a visible focus indicator survives keyboard navigation", async ({ page }) => {
+  await page.goto("/concrete-calculator");
+
+  for (let step = 0; step < 12; step++) {
+    await page.keyboard.press("Tab");
+    const outline = await page.evaluate(() => {
+      const element = document.activeElement as HTMLElement | null;
+      if (!element || element === document.body) return "none";
+      const style = getComputedStyle(element);
+      return `${style.outlineStyle}|${style.outlineWidth}|${style.boxShadow}`;
+    });
+    // Either an outline or a ring; "none|0px|none" means the focus is invisible.
+    expect(outline, `after ${step + 1} tabs`).not.toBe("none|0px|none");
+  }
+});
