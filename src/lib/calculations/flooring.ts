@@ -27,12 +27,25 @@ export function calculateFlooring({
   const roomCount = Math.min(Math.max(num(values, "roomCount", 1), 1), 3);
   const material = str(values, "material", "lvp");
 
-  const areas = [
-    num(values, "length1") * num(values, "width1"),
-    roomCount >= 2 ? num(values, "length2") * num(values, "width2") : 0,
-    roomCount >= 3 ? num(values, "length3") * num(values, "width3") : 0,
-  ];
-  const rawArea = areas.reduce((total, area) => total + Math.max(area, 0), 0);
+  const rooms = [
+    { length: num(values, "length1"), width: num(values, "width1") },
+    roomCount >= 2
+      ? { length: num(values, "length2"), width: num(values, "width2") }
+      : { length: 0, width: 0 },
+    roomCount >= 3
+      ? { length: num(values, "length3"), width: num(values, "width3") }
+      : { length: 0, width: 0 },
+  ].filter((room) => room.length > 0 && room.width > 0);
+
+  const rawArea = rooms.reduce((total, room) => total + room.length * room.width, 0);
+
+  /**
+   * Real perimeter, summed per room. Deriving it from area alone assumes a
+   * square room and badly under-counts a long one — a 40 × 5 ft hallway is
+   * 90 ft around, but 4 × √200 suggests 57 ft, which is a trip back to the
+   * store for more trim.
+   */
+  const perimeter = rooms.reduce((total, room) => total + 2 * (room.length + room.width), 0);
 
   const wastePct = num(values, "waste", planningDefaults.wasteFlooring);
   const adjustedArea = rawArea * wasteMultiplier(wastePct);
@@ -51,7 +64,6 @@ export function calculateFlooring({
     pricePerBox > 0 ? costOf(boxes, pricePerBox) : costOf(coverage, pricePerSqFt);
   const effectivePerSqFt = coverage > 0 ? boxCost / coverage : 0;
 
-  const perimeter = 4 * Math.sqrt(Math.max(rawArea, 0)); // approximation for trim planning
   const transitionCount = Math.max(roomCount, 1);
 
   const materials: MaterialLine[] = [
@@ -101,7 +113,7 @@ export function calculateFlooring({
       unitOverride: "linear ft",
       isEstimate: true,
       searchTerm: "quarter round moulding",
-      note: "Approximate perimeter plus 10%.",
+      note: "Room perimeter plus 10% for cuts.",
     },
   ];
 

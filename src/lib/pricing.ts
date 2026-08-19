@@ -145,23 +145,45 @@ export const planningDefaults = {
   poundsPerTon: 2000,
 
   /*
-   * Drywall accessories per 4 × 8 sheet. 36 screws is field-and-perimeter
-   * fastening at 12 in on centre over 16 in framing; 5 lb of compound covers
-   * tape plus two finish coats; 40 ft of tape is the seam length a sheet
-   * contributes. All three are trade rules of thumb — technique changes
-   * compound usage more than anything else, which the result page notes.
+   * Drywall accessories per 4 × 8 sheet, all trade rules of thumb.
+   *
+   * 36 screws is field-and-perimeter fastening at 12 in on centre over 16 in
+   * framing (published figures run 28–36); 5 lb of compound covers tape plus
+   * two finish coats, which works out to about 395 sq ft per 4.5-gallon bucket
+   * against a published ~475, so it errs toward buying enough.
+   *
+   * 12 ft of tape per sheet is the seam length a sheet actually contributes —
+   * horizontal wall seams, vertical butt joints, inside corners, the ceiling
+   * angle, and ceiling seams. Verified two ways in
+   * scripts/audit-drywall-tape.mts: a geometric seam count across five room
+   * sizes gives 9–12 ft per sheet, and the trade figure of ~380 linear ft per
+   * 1,000 sq ft of board agrees within a few percent.
    */
   drywallScrewsPerSheet: 36,
   drywallCompoundLbPerSheet: 5,
-  drywallTapeFtPerSheet: 40,
+  drywallTapeFtPerSheet: 12,
 
   /*
-   * Thinset coverage for a standard notched trowel. Large-format tile with a
-   * deeper notch can halve this. Grout is not a flat rate — see the published
-   * formula in lib/calculations/tile.ts, which uses the actual tile size,
-   * joint width, and thickness.
+   * Thinset coverage per 50 lb bag, chosen by the notch size the tile calls
+   * for. Manufacturer coverage charts (Custom Building Products, Mapei,
+   * Laticrete) give roughly:
+   *
+   *   1/4 × 1/4 in square notch   80–100 sq ft   small tile, up to ~8 in
+   *   1/4 × 3/8 in square notch   60–80  sq ft   typical 8–16 in floor tile
+   *   1/2 × 1/2 in square notch   40–50  sq ft   large format, over ~16 in
+   *
+   * A single flat rate under-orders badly at the large-format end, and running
+   * short of thinset mid-floor is worse than a spare bag, so each band takes
+   * the middle-to-low end of its range.
    */
-  thinsetCoverageSqFtPer50lb: 95,
+  thinsetCoverageSmallTile: 90,
+  thinsetCoverageStandardTile: 70,
+  thinsetCoverageLargeFormat: 45,
+  /** Tile edge (in) at or below which the next-smaller notch applies. */
+  thinsetSmallTileMaxIn: 8,
+  thinsetLargeFormatMinIn: 16,
+
+  /** Grout is not a flat rate — see the published formula in calculations/tile.ts. */
   groutCoverageSqFtPer25lb: 90,
 
   /*

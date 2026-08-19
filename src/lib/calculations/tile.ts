@@ -18,6 +18,24 @@ import type { CalculationContext, CalculationResult, MaterialLine } from "@/type
  * where A and B are the tile dimensions in inches, C is the joint width and D
  * the tile thickness. It is an estimate — coverage varies by grout product.
  */
+
+/**
+ * Thinset coverage depends on the notch size, and notch size depends on tile
+ * size — a large-format tile can use twice the mortar per square foot that a
+ * small tile does. Returns coverage in sq ft per 50 lb bag, plus the trowel it
+ * assumes, so the result page can say which one.
+ */
+function thinsetCoverage(tileLength: number, tileWidth: number) {
+  const longestEdge = Math.max(tileLength, tileWidth);
+  if (longestEdge <= planningDefaults.thinsetSmallTileMaxIn) {
+    return { coverage: planningDefaults.thinsetCoverageSmallTile, trowel: "1/4 × 1/4 in notch" };
+  }
+  if (longestEdge >= planningDefaults.thinsetLargeFormatMinIn) {
+    return { coverage: planningDefaults.thinsetCoverageLargeFormat, trowel: "1/2 × 1/2 in notch" };
+  }
+  return { coverage: planningDefaults.thinsetCoverageStandardTile, trowel: "1/4 × 3/8 in notch" };
+}
+
 export function calculateTile({
   values,
   unitSystem,
@@ -46,10 +64,8 @@ export function calculateTile({
   const boxes = packagesNeeded(adjustedArea, sqFtPerBox);
   const coverage = boxes * sqFtPerBox;
 
-  const thinsetBags = Math.max(
-    1,
-    packagesNeeded(adjustedArea, planningDefaults.thinsetCoverageSqFtPer50lb),
-  );
+  const thinset = thinsetCoverage(tileLength, tileWidth);
+  const thinsetBags = Math.max(1, packagesNeeded(adjustedArea, thinset.coverage));
 
   const groutLbPerSqFt =
     ((tileLength + tileWidth) / (tileLength * tileWidth)) *
@@ -86,7 +102,7 @@ export function calculateTile({
       cost: costOf(thinsetBags, thinsetPrice),
       isEstimate: true,
       searchTerm: "thinset mortar",
-      note: `About ${planningDefaults.thinsetCoverageSqFtPer50lb} sq ft per bag with a standard notched trowel.`,
+      note: `About ${thinset.coverage} sq ft per bag with a ${thinset.trowel}, the size this tile calls for.`,
     },
     {
       id: "grout",
@@ -187,7 +203,7 @@ export function calculateTile({
       {
         kind: "assumption",
         label: "Thinset",
-        expression: `${planningDefaults.thinsetCoverageSqFtPer50lb} sq ft per 50 lb bag`,
+        expression: `${thinset.coverage} sq ft per 50 lb bag (${thinset.trowel})`,
       },
     ],
     assumptions: [

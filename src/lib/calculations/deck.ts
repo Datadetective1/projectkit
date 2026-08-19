@@ -53,10 +53,16 @@ export function calculateDeck({
   // Rim joists / ledger around the perimeter.
   const rimLinearFt = 2 * (length + width);
 
-  // Beams and posts: a planning allowance only.
-  const beamLinearFt = length * 2;
-  const postCount = Math.max(4, (Math.floor(length / 8) + 1) * 2);
-  const footings = postCount;
+  /*
+   * Beams, posts, and footings are deliberately NOT quantified.
+   *
+   * Their sizes and spacing come from joist span, lumber species and grade,
+   * deck height, soil, frost depth, and local code — none of which this
+   * planner knows. Printing "6 posts, 6 footings, 32 linear ft of beam" from a
+   * formula like `length * 2` would put a number that looks engineered next to
+   * a dollar figure, and a homeowner could reasonably build to it. They appear
+   * on the shopping list as items to size from a real structural design.
+   */
 
   const perimeter = 2 * (length + width);
   const railingLinearFt = includeRailing
@@ -109,40 +115,6 @@ export function calculateDeck({
       cost: costOf(Math.ceil(rimLinearFt), joistPrice),
       isEstimate: true,
       searchTerm: "pressure treated lumber",
-    },
-    {
-      id: "beams",
-      name: "Beam material",
-      quantity: Math.ceil(beamLinearFt),
-      measure: "length",
-      precision: 0,
-      unitOverride: "linear ft",
-      unitPrice: joistPrice,
-      unitPriceLabel: "per linear ft",
-      cost: costOf(Math.ceil(beamLinearFt), joistPrice),
-      isEstimate: true,
-      searchTerm: "pressure treated beam lumber",
-      note: "Rough allowance. Beam size and span require structural verification.",
-    },
-    {
-      id: "posts",
-      name: "Support posts",
-      quantity: postCount,
-      measure: "count",
-      unitOverride: "posts",
-      isEstimate: true,
-      searchTerm: "6x6 pressure treated post",
-      note: `Planning allowance for a deck ${roundTo(height, 1)} ft off the ground. Spacing and footing depth are code-driven.`,
-    },
-    {
-      id: "footings",
-      name: "Footings",
-      quantity: footings,
-      measure: "count",
-      unitOverride: "footings",
-      isEstimate: true,
-      searchTerm: "concrete deck footing form",
-      note: "Footing size and depth depend on frost line, soil, and load. Verify locally.",
     },
     ...(includeRailing
       ? [
@@ -280,7 +252,7 @@ export function calculateDeck({
     explanation: [
       `A ${roundTo(length, 1)} × ${roundTo(width, 1)} deck is ${fmt(areaSqFt, "area", 0)}. With ${roundTo(boardWidth, 2)} in boards and a ${roundTo(boardGap, 3)} in gap you get ${rows} rows, each ${roundTo(width, 1)} ft long.`,
       `Including ${roundTo(wastePct, 1)}% waste that is about ${fmt(Math.ceil(deckingLinearFt), "length", 0)} of decking to buy.`,
-      "Framing, post, beam, and footing figures here are rough allowances for budgeting. Actual sizes and spacing must come from a span table or a designer for your load, species, and local code.",
+      "Joist and rim quantities follow from the spacing you chose above — they are lumber counts, not a structural design. Beams, posts, and footings are not quantified at all: those sizes come from a span table, a designer, or your building department, so the budget below excludes them.",
     ],
     formulas: [
       { kind: "math", label: "Deck area", expression: "Length × Width" },
@@ -289,8 +261,8 @@ export function calculateDeck({
       { kind: "math", label: "Joists", expression: "⌊Length ÷ (Joist spacing ÷ 12)⌋ + 1" },
       {
         kind: "assumption",
-        label: "Posts and footings",
-        expression: "Planning allowance only — not a structural calculation",
+        label: "Beams, posts, footings",
+        expression: "Not calculated — structural design required",
       },
     ],
     assumptions: [
@@ -302,16 +274,22 @@ export function calculateDeck({
       { label: "Railing", value: includeRailing ? `${roundTo(railingLinearFt, 0)} linear ft` : "Not included" },
     ],
     shoppingExtras: [
+      // Deliberately unquantified: sizing these is structural design, not
+      // arithmetic, so the list names them without inventing a number.
+      shoppingItem("beams", "Beams — size and span from your structural design"),
+      shoppingItem("posts", "Support posts — size and spacing from your structural design"),
+      shoppingItem("footings", "Footings — size and depth per local code and frost line"),
+      shoppingItem("concrete", "Concrete for footings"),
+      shoppingItem("gravel", "Gravel for footing bases"),
       shoppingItem("flashing", "Ledger flashing"),
       shoppingItem("hardware", "Structural connectors and approved fasteners"),
       shoppingItem("string", "String line, level, and layout square"),
-      shoppingItem("concrete", "Concrete for footings"),
-      shoppingItem("gravel", "Gravel for footing bases"),
       shoppingItem("sealer", "Stain or sealer for wood decking", undefined, true),
       shoppingItem("permit", "Building permit — check before you start"),
     ],
     warnings: [
       "Material-planning estimate only. Structural requirements, footing sizes, spans, loads, permits, and code requirements vary by location and project. Verify structural design and local building requirements before construction.",
+      "Beams, posts, and footings are deliberately not quantified here. Their sizes and spacing depend on span, lumber species and grade, load, soil, and frost depth — get them from a span table, a designer, or your building department, and budget for them separately.",
       "Ledger attachment to a house is the single most common cause of deck failure. Have it detailed and inspected.",
       "Decks almost always require a permit and inspection.",
     ],
