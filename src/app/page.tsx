@@ -7,7 +7,9 @@ import { pageMetadata, webApplicationJsonLd } from "@/lib/seo";
 import { site } from "@/config/site";
 
 export const metadata = pageMetadata({
-  title: `${site.name} — ${site.tagline}`,
+  // Not the tagline: it runs to 80 characters with the site name, and a
+  // search result truncates near 60. The tagline still leads the page itself.
+  title: `${site.name} — Home Improvement Material Calculators`,
   description: site.description,
   path: "/",
 });

@@ -219,7 +219,7 @@ export const sodProject: ProjectDefinition = {
   related: ["mulch-calculator", "gravel-calculator", "fence-calculator"],
 
   seo: {
-    title: "Sod Calculator — Square Feet, Rolls, Pallets & Cost",
+    title: "Sod Calculator — Rolls, Pallets & Cost",
     description:
       "Calculate how much sod you need across multiple areas in square feet, rolls, and pallets, with waste allowance and estimated cost.",
     breadcrumb: "Sod",

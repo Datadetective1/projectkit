@@ -311,7 +311,7 @@ export const fenceProject: ProjectDefinition = {
   related: ["concrete-calculator", "sod-calculator", "deck-calculator", "mulch-calculator"],
 
   seo: {
-    title: "Fence Calculator & Project Planner — Posts, Pickets, Cost",
+    title: "Fence Calculator — Posts, Rails, Pickets & Cost",
     description:
       "Calculate fence posts, rails, pickets, gate hardware, post-hole concrete, and estimated cost — plus a shopping list and step-by-step project plan.",
     breadcrumb: "Fence",

@@ -236,7 +236,7 @@ export const deckProject: ProjectDefinition = {
   related: ["concrete-calculator", "fence-calculator", "gravel-calculator"],
 
   seo: {
-    title: "Deck Calculator — Decking, Joists, Railing & Cost",
+    title: "Deck Calculator — Decking, Joists & Railing",
     description:
       "Estimate decking boards, joists, railing, stairs, and fasteners for a deck, with a material cost estimate and full project shopping list.",
     breadcrumb: "Deck",

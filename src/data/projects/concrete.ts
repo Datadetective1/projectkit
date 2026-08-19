@@ -195,7 +195,7 @@ export const concreteProject: ProjectDefinition = {
   related: ["gravel-calculator", "fence-calculator", "deck-calculator", "sod-calculator"],
 
   seo: {
-    title: "Concrete Calculator & Project Planner — Yards, Bags, Cost",
+    title: "Concrete Calculator — Yards, Bags & Cost",
     description:
       "Calculate concrete volume, waste, bags, base material, and estimated cost for a patio or slab — plus a complete shopping list and project plan.",
     breadcrumb: "Concrete",

@@ -4,7 +4,8 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
   title: "My Projects",
-  description: "Your saved ProjectKit plans, stored in this browser.",
+  description:
+    "Every project you have saved in ProjectKit — quantities, budget, shopping list, and notes. Stored in this browser, no account needed.",
   path: "/my-projects",
   index: false,
 });

@@ -220,7 +220,7 @@ export const drywallProject: ProjectDefinition = {
   related: ["paint-calculator", "flooring-calculator", "tile-calculator"],
 
   seo: {
-    title: "Drywall Calculator — Sheets, Screws, Compound & Tape",
+    title: "Drywall Calculator — Sheets, Compound & Tape",
     description:
       "Calculate drywall sheets, screws, joint compound, tape, and corner bead for any room, with openings deducted and an estimated material cost.",
     breadcrumb: "Drywall",
