@@ -139,9 +139,13 @@ export default async function ProjectPage({
  */
 function PlannerSkeleton() {
   return (
+    // The min-height keeps whatever follows the planner — the disclaimer card,
+    // the FAQ — below the fold while the real planner loads. Without it that
+    // content sits just inside the viewport and is shoved down when the planner
+    // arrives, which measured as 0.12 CLS on a desktop viewport.
     <div
       aria-hidden
-      className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start"
+      className="grid min-h-[44rem] grid-cols-1 gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start"
     >
       <div className="pk-card animate-pulse p-5 sm:p-6">
         <div className="h-6 w-32 rounded bg-surface-sunken" />
