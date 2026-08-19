@@ -209,6 +209,7 @@ export function calculateDrywall({
     warnings: [
       "Ceilings go up before walls, and a lift rental is worth it even for one room.",
       "Compound quantity depends heavily on finishing level and technique — buy the first bucket and judge from there.",
+      "Sanding joint compound throws a lot of fine dust. Wear a fitted respirator rather than a paper mask, seal the doorway, and consider a wet sponge sander instead.",
     ],
     effort: {
       difficulty: "Challenging",

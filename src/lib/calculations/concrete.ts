@@ -256,6 +256,7 @@ export function calculateConcrete({
     warnings: [
       "Concrete sets on its own schedule. Have every tool, helper, and form check done before the truck arrives.",
       "Slab thickness, reinforcement, and base depth requirements vary by use and by local code. Verify before you pour.",
+      "Wet concrete is caustic and causes serious burns through skin it sits against — kneeling in it in wet jeans is the classic injury. Waterproof gloves, boots, and eye protection, and rinse any splash off straight away.",
     ],
     effort: {
       difficulty: adjustedYards > 3 ? "Challenging" : "Moderate",
