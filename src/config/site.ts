@@ -63,8 +63,18 @@ export const features = {
   naturalLanguageAi: process.env.NEXT_PUBLIC_AI_ENABLED === "true",
   ads: process.env.NEXT_PUBLIC_ADS_ENABLED === "true",
   affiliate: process.env.NEXT_PUBLIC_AFFILIATE_ENABLED !== "false",
-  /** Lets the Project Pack unlock without a real payment, for local dev + demos. */
-  projectPackDevUnlock: process.env.NEXT_PUBLIC_PROJECT_PACK_DEV_UNLOCK !== "false",
+  /*
+   * Lets the Project Pack unlock without a real payment, for local dev + demos.
+   *
+   * Opt in, never opt out. This previously defaulted to on (`!== "false"`),
+   * which meant any deployment that had not explicitly set the variable gave
+   * the paid product away — the failure was silent and looked exactly like a
+   * working site. A forgotten flag should cost a demo, not the revenue.
+   *
+   * The server routes additionally refuse it outright in production; see
+   * lib/stripe.ts → devUnlockAllowed.
+   */
+  projectPackDevUnlock: process.env.NEXT_PUBLIC_PROJECT_PACK_DEV_UNLOCK === "true",
   contractorLeads: process.env.NEXT_PUBLIC_CONTRACTOR_LEADS_ENABLED === "true",
 } as const;
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { features } from "@/config/site";
-import { getStripe } from "@/lib/stripe";
+import { devUnlockAllowed, getStripe } from "@/lib/stripe";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,7 +21,8 @@ export async function GET(request: Request) {
     return NextResponse.json({ paid: false, error: "Invalid session." }, { status: 400 });
   }
 
-  if (features.projectPackDevUnlock) {
+  // Production never honours the build-time dev flag; see lib/stripe.ts.
+  if (features.projectPackDevUnlock && devUnlockAllowed()) {
     return NextResponse.json({ paid: true, devUnlock: true });
   }
 

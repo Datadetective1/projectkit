@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { features, projectPack, site } from "@/config/site";
-import { getStripe, stripeUnavailableReason } from "@/lib/stripe";
+import { devUnlockAllowed, getStripe, stripeUnavailableReason } from "@/lib/stripe";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,8 +24,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid project reference." }, { status: 400 });
   }
 
-  // Local and preview builds unlock without touching Stripe at all.
-  if (features.projectPackDevUnlock) {
+  // Local and preview builds unlock without touching Stripe at all. Production
+  // never does, whatever the build-time flag was set to.
+  if (features.projectPackDevUnlock && devUnlockAllowed()) {
     return NextResponse.json({ devUnlock: true });
   }
 

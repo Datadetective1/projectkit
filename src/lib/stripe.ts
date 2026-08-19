@@ -19,6 +19,22 @@ export function isLiveKey(key: string): boolean {
   return key.startsWith("sk_live_");
 }
 
+/**
+ * Whether the free-unlock escape hatch may be honoured.
+ *
+ * `NEXT_PUBLIC_PROJECT_PACK_DEV_UNLOCK` is baked into the client bundle at
+ * build time and is therefore trivially visible; it is a convenience for local
+ * work and preview demos, not a security boundary. This is the boundary: the
+ * server refuses to grant a free unlock on a production deployment no matter
+ * what the build-time flag says.
+ *
+ * `VERCEL_ENV` is server-only and set by the platform to production, preview,
+ * or development. Outside Vercel it is absent, which is the local case.
+ */
+export function devUnlockAllowed(): boolean {
+  return process.env.VERCEL_ENV !== "production";
+}
+
 export function stripeEnabled(): boolean {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) return false;
