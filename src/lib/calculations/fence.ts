@@ -79,6 +79,9 @@ export function calculateFence({
   // Screws are sold by weight, so the shopping list needs boxes, not pieces.
   const screwBoxes = Math.max(1, packagesNeeded(screws, planningDefaults.exteriorScrewsPerBox));
 
+  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
+    formatQuantity(value, measure, { system: unitSystem, precision });
+
   const materials: MaterialLine[] = [
     {
       id: "posts",
@@ -102,7 +105,7 @@ export function calculateFence({
       unitPriceLabel: "each",
       cost: costOf(rails, railPrice),
       searchTerm: "fence rails",
-      note: `${roundTo(railsPerSection, 0)} per section, ${railLinearFt} linear ft total.`,
+      note: `${roundTo(railsPerSection, 0)} per section, ${fmt(railLinearFt, "length", 1)} total.`,
     },
     {
       id: "pickets",
@@ -127,7 +130,7 @@ export function calculateFence({
       cost: costOf(concreteBags, bagPrice),
       searchTerm: "fast setting concrete mix",
       isEstimate: true,
-      note: `${roundTo(concreteCuFt, 1)} cu ft total. Hole size and depth vary by frost depth and soil.`,
+      note: `${fmt(concreteCuFt, "volumeFt", 2)} total. Hole size and depth vary by frost depth and soil.`,
     },
     ...(gateCount > 0
       ? [
@@ -157,9 +160,6 @@ export function calculateFence({
   ];
 
   const costTotal = sumCost(materials);
-  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
-    formatQuantity(value, measure, { system: unitSystem, precision });
-
   return {
     headline: {
       label: "You need approximately",

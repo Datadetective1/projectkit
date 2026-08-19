@@ -78,6 +78,9 @@ export function calculateTile({
   const tileCost =
     pricePerBox > 0 ? costOf(boxes, pricePerBox) : costOf(coverage, pricePerSqFt);
 
+  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
+    formatQuantity(value, measure, { system: unitSystem, precision });
+
   const materials: MaterialLine[] = [
     {
       id: "tile",
@@ -86,10 +89,15 @@ export function calculateTile({
       measure: "count",
       unitOverride: boxes === 1 ? "box" : "boxes",
       unitPrice: pricePerBox > 0 ? pricePerBox : pricePerSqFt,
-      unitPriceLabel: pricePerBox > 0 ? "per box" : "per sq ft",
+      // Priced per box or per unit of area — and area needs converting, so it
+      // is declared as a measure rather than a fixed label. The quantity beside
+      // it is boxes either way, which is how the trade quotes this.
+      ...(pricePerBox > 0
+        ? { unitPriceLabel: "per box" }
+        : { unitPriceMeasure: "area" as const }),
       cost: tileCost,
       searchTerm: "floor tile",
-      note: `About ${tilesAdjusted} tiles, covering ${roundTo(coverage, 0)} sq ft.`,
+      note: `About ${tilesAdjusted} tiles, covering ${fmt(coverage, "area", 0)}.`,
     },
     {
       id: "thinset",
@@ -102,7 +110,7 @@ export function calculateTile({
       cost: costOf(thinsetBags, thinsetPrice),
       isEstimate: true,
       searchTerm: "thinset mortar",
-      note: `About ${thinset.coverage} sq ft per bag with a ${thinset.trowel}, the size this tile calls for.`,
+      note: `About ${fmt(thinset.coverage, "area", 0)} per bag with a ${thinset.trowel}, the size this tile calls for.`,
     },
     {
       id: "grout",
@@ -115,7 +123,7 @@ export function calculateTile({
       cost: costOf(groutBags, groutPrice),
       isEstimate: true,
       searchTerm: "tile grout",
-      note: `About ${roundTo(groutLb, 1)} lb for ${roundTo(jointWidth, 3)} in joints.`,
+      note: `About ${roundTo(groutLb, 1)} lb for ${roundTo(jointWidth, 4)} in joints.`,
     },
     {
       id: "spacers",
@@ -129,9 +137,6 @@ export function calculateTile({
   ];
 
   const costTotal = sumCost(materials);
-  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
-    formatQuantity(value, measure, { system: unitSystem, precision });
-
   return {
     headline: {
       label: "You need approximately",
@@ -208,7 +213,7 @@ export function calculateTile({
     ],
     assumptions: [
       { label: "Waste allowance", value: `${roundTo(wastePct, 1)}%` },
-      { label: "Grout joint", value: `${roundTo(jointWidth, 3)} in` },
+      { label: "Grout joint", value: `${roundTo(jointWidth, 4)} in` },
       { label: "Tile thickness", value: `${roundTo(tileThickness, 3)} in` },
       { label: "Box coverage", value: `${roundTo(sqFtPerBox, 2)} sq ft` },
     ],

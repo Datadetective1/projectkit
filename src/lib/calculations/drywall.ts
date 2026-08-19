@@ -62,6 +62,9 @@ export function calculateDrywall({
 
   const cornerBeadPieces = outsideCorners > 0 ? Math.ceil((outsideCorners * height) / 8) : 0;
 
+  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
+    formatQuantity(value, measure, { system: unitSystem, precision });
+
   const materials: MaterialLine[] = [
     {
       id: "sheets",
@@ -73,7 +76,7 @@ export function calculateDrywall({
       unitPriceLabel: "per sheet",
       cost: costOf(sheets, sheetPrice),
       searchTerm: "drywall sheets",
-      note: `Covers ${roundTo(sheets * sheetArea, 0)} sq ft.`,
+      note: `Covers ${fmt(sheets * sheetArea, "area", 0)}.`,
     },
     {
       id: "screws",
@@ -109,7 +112,7 @@ export function calculateDrywall({
       cost: costOf(tapeRolls, tapePrice),
       isEstimate: true,
       searchTerm: "drywall joint tape",
-      note: `About ${roundTo(tapeFt, 0)} linear ft of seams.`,
+      note: `About ${fmt(tapeFt, "length", 0)} of seams.`,
     },
     ...(cornerBeadPieces > 0
       ? [
@@ -130,9 +133,6 @@ export function calculateDrywall({
   ];
 
   const costTotal = sumCost(materials);
-  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
-    formatQuantity(value, measure, { system: unitSystem, precision });
-
   const sheetsAt = (area: number) => packagesNeeded(adjustedArea, area);
 
   return {

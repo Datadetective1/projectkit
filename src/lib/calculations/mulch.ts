@@ -48,6 +48,9 @@ export function calculateMulch({
   // Below roughly a cubic yard, bags win on convenience even when bulk is cheaper.
   const recommendBulk = adjustedYards >= 1 && bulkIsCheaper;
 
+  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
+    formatQuantity(value, measure, { system: unitSystem, precision });
+
   const materials: MaterialLine[] = recommendBulk
     ? [
         {
@@ -57,7 +60,7 @@ export function calculateMulch({
           measure: "volumeYd",
           precision: 2,
           unitPrice: bulkPrice,
-          unitPriceLabel: "per yd³",
+          unitPriceMeasure: "volumeYd" as const,
           cost: bulkCost,
           searchTerm: "bulk mulch delivery",
         },
@@ -84,7 +87,7 @@ export function calculateMulch({
       measure: "area",
       precision: 0,
       unitPrice: num(values, "fabricPrice", 0),
-      unitPriceLabel: "per sq ft",
+      unitPriceMeasure: "area" as const,
       cost: costOf(Math.ceil(areaSqFt), num(values, "fabricPrice", 0)),
       searchTerm: "landscape fabric",
     });
@@ -94,9 +97,6 @@ export function calculateMulch({
     materials.reduce((total, line) => total + (line.cost ?? 0), 0),
     2,
   );
-  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
-    formatQuantity(value, measure, { system: unitSystem, precision });
-
   return {
     headline: {
       label: "You need approximately",

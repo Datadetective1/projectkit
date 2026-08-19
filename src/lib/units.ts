@@ -171,6 +171,39 @@ export interface FormatQuantityOptions {
 
 /** Format a canonical value for display, converting units as needed. */
 /**
+ * Translate the unit inside a custom label into the reader's system.
+ *
+ * A `unitOverride` exists to add a word the plain unit label cannot carry —
+ * "linear ft", "linear ft of decking", "sq ft / box". The value beside it is
+ * always converted, so a hardcoded imperial label silently mislabels it: form
+ * boards showed "24 linear ft" in metric mode when the real figure was 79 ft
+ * and 24 was the metre count. A reader would have bought a third of the timber
+ * they needed.
+ *
+ * Only the measure's own unit token is swapped, so surrounding words survive
+ * and a label that names no unit ("bags", "posts") passes straight through.
+ */
+function localiseOverride(
+  unitOverride: string | undefined,
+  measure: Measure,
+  system: UnitSystem,
+): string {
+  if (unitOverride === undefined) return unitLabel(measure, system);
+  if (system === "us") return unitOverride;
+
+  const from = UNIT_LABELS[measure].us;
+  const to = UNIT_LABELS[measure].metric;
+  if (!from || from === to) return unitOverride;
+
+  // Word-bounded so "ft" does not match inside another word.
+  return unitOverride.replace(new RegExp(`(^|[\\s/])${escapeForRegExp(from)}(?=$|[\\s/])`, "g"), `$1${to}`);
+}
+
+function escapeForRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
  * "1 bags" and "1 rolls" read as sloppiness on a page whose whole job is to be
  * trusted with numbers. Counted things get singularised at exactly one.
  *
@@ -195,7 +228,7 @@ export function formatQuantity(
 
   const displayValue = fromCanonical(canonicalValue, measure, system);
   const decimals = precision ?? defaultPrecision(measure);
-  const rawLabel = unitOverride ?? unitLabel(measure, system);
+  const rawLabel = localiseOverride(unitOverride, measure, system);
   const label =
     measure === "count" && displayValue === 1 ? singularise(rawLabel) : rawLabel;
   const formatted = formatNumber(displayValue, decimals);

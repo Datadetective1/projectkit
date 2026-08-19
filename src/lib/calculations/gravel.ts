@@ -54,6 +54,9 @@ export function calculateGravel({
   const yardCost = costOf(purchaseYards, pricePerYard);
   const tonCost = costOf(purchaseTons, pricePerTon);
 
+  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
+    formatQuantity(value, measure, { system: unitSystem, precision });
+
   const materials: MaterialLine[] = [
     {
       id: "gravel",
@@ -62,10 +65,10 @@ export function calculateGravel({
       measure: "volumeYd",
       precision: 2,
       unitPrice: pricePerYard,
-      unitPriceLabel: "per yd³",
+      unitPriceMeasure: "volumeYd" as const,
       cost: yardCost,
       searchTerm: `${MATERIAL_NAMES[densityKey] ?? "gravel"} delivery`,
-      note: `Approximately ${roundTo(purchaseTons, 2)} tons at ${roundTo(density, 0)} lb per cubic foot.`,
+      note: `Approximately ${fmt(purchaseTons, "weight", 2)} at the density assumed below.`,
     },
     ...(num(values, "fabricPrice", 0) > 0
       ? [
@@ -76,7 +79,7 @@ export function calculateGravel({
             measure: "area" as const,
             precision: 0,
             unitPrice: num(values, "fabricPrice", 0),
-            unitPriceLabel: "per sq ft",
+            unitPriceMeasure: "area" as const,
             cost: costOf(Math.ceil(areaSqFt), num(values, "fabricPrice", 0)),
             searchTerm: "geotextile fabric driveway",
           },
@@ -88,9 +91,6 @@ export function calculateGravel({
     materials.reduce((total, line) => total + (line.cost ?? 0), 0),
     2,
   );
-  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
-    formatQuantity(value, measure, { system: unitSystem, precision });
-
   return {
     headline: {
       label: "You need approximately",

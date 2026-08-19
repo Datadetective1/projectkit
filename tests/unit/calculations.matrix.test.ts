@@ -8,7 +8,8 @@ import {
   validate,
   visibleInputs,
 } from "@/lib/calc/engine";
-import type { UnitSystem } from "@/lib/units";
+import { formatMaterialQuantity, formatRow, formatUnitPrice } from "@/lib/format";
+import { formatQuantity, type UnitSystem } from "@/lib/units";
 import type { InputValues, ProjectDefinition } from "@/types/project";
 
 /**
@@ -314,5 +315,137 @@ describe("safety guarantees across all projects", () => {
 
     // 548 sq ft of board is ~220 ft of seam, so one 250 ft roll.
     expect(tape.quantity).toBe(1);
+  });
+});
+
+/* -------------------------------------------------- unit price coherence -- */
+
+/**
+ * A unit price sits directly beside a quantity and a cost. If those three do
+ * not multiply out, the reader concludes the total is wrong — and in metric
+ * they did not: a canonical "$165.00 per yd³" was printed next to a "3.40 m³"
+ * quantity and a $734 cost, which invites 3.40 x 165 = 561 and a support email.
+ */
+describe("unit prices agree with the quantity printed beside them", () => {
+  /** Pull the leading dollar figure back out of the rendered string. */
+  function priceOf(text: string): number | undefined {
+    const match = text.match(/\$([\d,]+(?:\.\d+)?)/);
+    return match ? Number(match[1].replace(/,/g, "")) : undefined;
+  }
+
+  for (const system of ["us", "metric"] as const) {
+    it(`holds in ${system}`, () => {
+      let checked = 0;
+
+      for (const project of projects) {
+        for (const line of run(project, {}, system).materials) {
+          if (line.unitPrice === undefined || line.cost === undefined) continue;
+
+          /*
+           * Only lines whose price and quantity share a basis. Flooring and
+           * tile are quoted per square foot but sold by the box, which is how
+           * the trade actually prices them — "9 boxes · $3.20 per sq ft" is not
+           * meant to multiply out and a reader knows it. The bug this guards
+           * against is subtler: a price and a quantity in the *same* dimension
+           * but different units.
+           */
+          if (line.unitPriceMeasure !== line.measure) continue;
+
+          const quantity = Number(
+            formatMaterialQuantity(line, system).replace(/[^\d.]/g, ""),
+          );
+          const unitPrice = priceOf(formatUnitPrice(line, system));
+          const where = `${project.slug}.${line.id} (${system})`;
+
+          expect(unitPrice, where).toBeDefined();
+          if (quantity === 0 || unitPrice === undefined) continue;
+
+          /*
+           * Relative, not absolute. The displayed quantity is rounded for
+           * reading — 156 linear ft renders as "48 m", a 1% overstatement — so
+           * the product drifts by a percent or two on a large line and an
+           * absolute epsilon would be either useless or false. 5% is far below
+           * what a genuine unit mismatch costs: yd³ against m³ is 31% out,
+           * linear ft against m is 228%.
+           */
+          const drift = Math.abs(quantity * unitPrice - line.cost) / Math.max(line.cost, 1);
+          expect(drift, `${where}: ${quantity} x ${unitPrice} != ${line.cost}`).toBeLessThan(0.05);
+          checked++;
+        }
+      }
+
+      // Guard against the filter above quietly matching nothing.
+      expect(checked, "no per-measure priced lines were checked").toBeGreaterThan(5);
+    });
+  }
+
+  it("never prints an imperial unit in metric mode", () => {
+    /*
+     * Catches the whole class rather than the one instance found: any line,
+     * summary row, or headline that hardcodes a US unit while its value is
+     * converted. "24 linear ft" beside "3.40 m³" was a third of the timber the
+     * project actually needed.
+     */
+    const imperial = /\b(sq ft|cu ft|yd³|linear ft|tons?)\b/;
+
+    for (const project of projects) {
+      const result = run(project, {}, "metric");
+
+      const rendered = [
+        formatQuantity(result.headline.value, result.headline.measure, {
+          system: "metric",
+          precision: result.headline.precision,
+          unitOverride: result.headline.unitOverride,
+        }),
+        ...result.materials.map((line) => formatMaterialQuantity(line, "metric")),
+        ...result.materials
+          .filter((line) => line.unitPrice !== undefined)
+          .map((line) => formatUnitPrice(line, "metric")),
+        ...result.summary.map((row) => formatRow(row, "metric")),
+        /*
+         * Notes sit directly under the quantity, so a stale imperial figure
+         * there contradicts the number above it — drywall said "Covers 608 sq
+         * ft" beneath a headline of 51 m².
+         *
+         * Product specifications are exempt: a 4 × 8 ft sheet, a 5 lb-per-sheet
+         * compound allowance, a 250 ft tape roll, and a 60 lb bag are what is
+         * printed on the packaging. Translating those would make the shelf
+         * harder to find, not easier.
+         */
+        ...result.materials
+          .filter((line) => line.note)
+          .map((line) =>
+            line
+              .note!.replace(/\b\d+(\.\d+)?\s*(lb|gal|in)\b/g, "")
+              .replace(/\b\d+\s*×\s*\d+\s*ft\b/g, ""),
+          ),
+      ];
+
+      for (const text of rendered) {
+        expect(imperial.test(text), `${project.slug}: "${text}"`).toBe(false);
+      }
+    }
+  });
+
+  it("labels a per-measure price in the reader's own units", () => {
+    const concrete = getProjectOrThrow("concrete-calculator");
+    const readyMix = (system: "us" | "metric") =>
+      formatUnitPrice(
+        run(concrete, {}, system).materials.find((line) => line.id === "ready-mix")!,
+        system,
+      );
+
+    expect(readyMix("us")).toMatch(/per yd³/);
+    expect(readyMix("metric")).toMatch(/per m³/);
+    // Same price, different unit — so the metric figure must be the larger one.
+    expect(priceOf(readyMix("metric"))!).toBeGreaterThan(priceOf(readyMix("us"))!);
+  });
+
+  it("leaves package prices alone — a bag is a bag in both systems", () => {
+    const drywall = getProjectOrThrow("drywall-calculator");
+    for (const system of ["us", "metric"] as const) {
+      const compound = run(drywall, {}, system).materials.find((l) => l.id === "compound")!;
+      expect(formatUnitPrice(compound, system)).toBe("$18.00 per bucket");
+    }
   });
 });

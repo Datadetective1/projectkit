@@ -66,6 +66,9 @@ export function calculateFlooring({
 
   const transitionCount = Math.max(roomCount, 1);
 
+  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
+    formatQuantity(value, measure, { system: unitSystem, precision });
+
   const materials: MaterialLine[] = [
     {
       id: "flooring",
@@ -74,10 +77,15 @@ export function calculateFlooring({
       measure: "count",
       unitOverride: boxes === 1 ? "box" : "boxes",
       unitPrice: pricePerBox > 0 ? pricePerBox : pricePerSqFt,
-      unitPriceLabel: pricePerBox > 0 ? "per box" : "per sq ft",
+      // Priced per box or per unit of area — and area needs converting, so it
+      // is declared as a measure rather than a fixed label. The quantity beside
+      // it is boxes either way, which is how the trade quotes this.
+      ...(pricePerBox > 0
+        ? { unitPriceLabel: "per box" }
+        : { unitPriceMeasure: "area" as const }),
       cost: boxCost,
       searchTerm: `${MATERIAL_LABELS[material] ?? "flooring"} flooring`,
-      note: `Covers ${roundTo(coverage, 0)} sq ft.`,
+      note: `Covers ${fmt(coverage, "area", 0)}.`,
     },
     ...(includeUnderlayment
       ? [
@@ -88,7 +96,7 @@ export function calculateFlooring({
             measure: "area" as const,
             precision: 0,
             unitPrice: underlaymentPrice,
-            unitPriceLabel: "per sq ft",
+            unitPriceMeasure: "area" as const,
             cost: costOf(Math.ceil(adjustedArea), underlaymentPrice),
             searchTerm: "flooring underlayment",
           },
@@ -118,9 +126,6 @@ export function calculateFlooring({
   ];
 
   const costTotal = sumCost(materials);
-  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
-    formatQuantity(value, measure, { system: unitSystem, precision });
-
   const scenarioBoxes = (perSqFt: number) => costOf(coverage, perSqFt);
 
   return {

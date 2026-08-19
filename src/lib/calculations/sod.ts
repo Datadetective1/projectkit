@@ -65,7 +65,7 @@ export function calculateSod({
           measure: "area",
           precision: 0,
           unitPrice: pricePerSqFt,
-          unitPriceLabel: "per sq ft",
+          unitPriceMeasure: "area" as const,
           cost: byArea,
           searchTerm: "sod delivery",
           note: `About ${rolls} rolls or ${pallets} ${pallets === 1 ? "pallet" : "pallets"}.`,

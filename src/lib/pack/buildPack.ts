@@ -117,7 +117,7 @@ export function buildPack(saved: SavedProject): ProjectPack | undefined {
     materials: result.materials.map((line) => ({
       name: line.name,
       quantity: formatMaterialQuantity(line, system),
-      unitPrice: formatUnitPrice(line),
+      unitPrice: formatUnitPrice(line, system),
       cost: line.cost === undefined ? "—" : formatCurrency(line.cost),
       note: line.note,
       isEstimate: Boolean(line.isEstimate),
@@ -156,7 +156,10 @@ export function buildPack(saved: SavedProject): ProjectPack | undefined {
     })),
 
     steps: project.steps,
-    warnings: [...result.warnings, ...(project.disclaimers ?? [])],
+    // Deduped: a project's disclaimer and one of its calculation warnings can
+    // be the same sentence, and the deck pack was printing that sentence twice
+    // in the same list — which reads as a mistake, not as emphasis.
+    warnings: [...new Set([...result.warnings, ...(project.disclaimers ?? [])])],
     notes: saved.notes,
     disclaimer:
       "ProjectKit provides planning estimates only. Costs cover materials at the prices shown — sales tax, delivery, and equipment rental are excluded. Actual requirements, costs, installation methods, structural requirements, permits, safety requirements, and building codes vary. Verify critical specifications before purchasing materials or beginning work.",

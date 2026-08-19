@@ -110,6 +110,38 @@ describe("formatting", () => {
     expect(one("truss")).toBe("1 truss");
   });
 
+  it("translates the unit inside a custom label", () => {
+    // The value is always converted. A hardcoded imperial label therefore
+    // mislabels it: form boards read "24 linear ft" in metric when the real
+    // figure was 79 ft and 24 was the metre count.
+    expect(formatQuantity(79, "length", { system: "us", unitOverride: "linear ft" })).toBe(
+      "79 linear ft",
+    );
+    expect(
+      formatQuantity(79, "length", { system: "metric", unitOverride: "linear ft", precision: 0 }),
+    ).toBe("24 linear m");
+
+    // Surrounding words survive.
+    expect(
+      formatQuantity(449, "length", {
+        system: "metric",
+        unitOverride: "linear ft of decking",
+        precision: 0,
+      }),
+    ).toBe("137 linear m of decking");
+    expect(
+      formatQuantity(15, "area", { system: "metric", unitOverride: "sq ft / box", precision: 2 }),
+    ).toBe("1.39 m² / box");
+  });
+
+  it("leaves a label that names no unit untouched", () => {
+    for (const label of ["bags", "boxes (5 lb)", "posts", "sheets"]) {
+      expect(formatQuantity(12, "count", { system: "metric", unitOverride: label })).toBe(
+        `12 ${label}`,
+      );
+    }
+  });
+
   it("leaves measured units alone — '1 sq ft' is already correct", () => {
     expect(formatQuantity(1, "area", { system: "us", precision: 0 })).toBe("1 sq ft");
     expect(formatQuantity(1, "count", { system: "us", unitOverride: "linear ft" })).toBe(

@@ -33,7 +33,7 @@ import {
 } from "@/lib/calc/engine";
 import { getProject } from "@/data/projects";
 import { track } from "@/lib/analytics";
-import { formatCurrency, toCanonical, type UnitSystem } from "@/lib/units";
+import { formatCurrency, roundTo, toCanonical, type UnitSystem } from "@/lib/units";
 import { buildTextSummary } from "@/lib/summary";
 import { legal } from "@/config/site";
 import {
@@ -526,7 +526,12 @@ function buildTitle(
   const dimension = (id: string) => {
     const raw = values[id];
     const numeric = typeof raw === "number" ? raw : Number(raw);
-    return Number.isFinite(numeric) && numeric > 0 ? numeric : undefined;
+    if (!Number.isFinite(numeric) || numeric <= 0) return undefined;
+    // A 20 ft slab converts to 6.096 m, and "Concrete — 6.096 × 4.8768 m" is a
+    // conversion artefact, not a project name. Two decimals is as much as any
+    // of these dimensions means. roundTo drops trailing zeros, so a US 20 stays
+    // "20" rather than becoming "20.00".
+    return roundTo(numeric, 2);
   };
 
   const length = dimension("length") ?? dimension("length1") ?? dimension("runLength");

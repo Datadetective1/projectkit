@@ -79,9 +79,21 @@ export interface MaterialLine {
   precision?: number;
   /** e.g. "bags", "boxes", "sheets", "posts". */
   unitOverride?: string;
-  /** Price per displayed unit, in dollars. */
+  /** Price per *canonical* unit, in dollars. */
   unitPrice?: number;
+  /**
+   * Fixed label for a price whose unit does not change between systems —
+   * "per bag", "per pallet", "per set". Ignored when `unitPriceMeasure` is set.
+   */
   unitPriceLabel?: string;
+  /**
+   * Set this instead of `unitPriceLabel` when the price is per unit of
+   * *measure* rather than per package. The formatter then converts the price
+   * into the active system and labels it accordingly, so a metric reader sees
+   * "$215.82 per m³" beside a m³ quantity rather than a per-yd³ price that does
+   * not multiply out against the number next to it.
+   */
+  unitPriceMeasure?: Measure;
   cost?: number;
   note?: string;
   /** Rough planning allowance rather than a computed quantity. */

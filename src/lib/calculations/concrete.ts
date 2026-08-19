@@ -82,6 +82,9 @@ export function calculateConcrete({
   const formBoardFt = roundTo(perimeterFt * 1.1, 1);
   const stakes = Math.max(4, Math.ceil(perimeterFt / 3) + 4);
 
+  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
+    formatQuantity(value, measure, { system: unitSystem, precision });
+
   const materials = [
     readyMixRecommended
       ? {
@@ -91,7 +94,7 @@ export function calculateConcrete({
           measure: "volumeYd" as const,
           precision: 2,
           unitPrice: pricePerYard,
-          unitPriceLabel: "per yd³",
+          unitPriceMeasure: "volumeYd" as const,
           cost: readyMixCost,
           searchTerm: "ready mix concrete delivery",
           note: "Order quantity rounded up to the nearest supplier increment.",
@@ -116,7 +119,7 @@ export function calculateConcrete({
             measure: "volumeYd" as const,
             precision: 2,
             unitPrice: gravelPrice,
-            unitPriceLabel: "per yd³",
+            unitPriceMeasure: "volumeYd" as const,
             cost: baseCost,
             searchTerm: "crushed gravel paver base",
             note: "Includes 10% compaction allowance.",
@@ -151,9 +154,6 @@ export function calculateConcrete({
     concreteCost + baseCost,
     2,
   );
-
-  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
-    formatQuantity(value, measure, { system: unitSystem, precision });
 
   return {
     headline: {
