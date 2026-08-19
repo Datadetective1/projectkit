@@ -9,7 +9,7 @@ export const sodProject: ProjectDefinition = {
   category: "Yard & Garden",
   tagline: "Square footage, rolls, pallets, and delivery cost.",
   intro:
-    "Add up multiple lawn sections, including curved areas, and get the sod you need in square feet, rolls, and pallets — priced both ways so you can compare a garden centre against a sod farm.",
+    "Add up multiple lawn sections, including curved areas, and get the sod you need by area, by roll, and by pallet — priced both ways so you can compare a garden centre against a sod farm.",
   icon: "Sprout",
   accent: "indigo",
   keywords: ["sod", "turf", "lawn", "grass", "new lawn", "pallet"],

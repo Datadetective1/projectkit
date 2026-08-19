@@ -9,7 +9,7 @@ export const paintProject: ProjectDefinition = {
   category: "Interior",
   tagline: "Gallons, coats, primer, and what to actually buy.",
   intro:
-    "Enter a room and get the paintable wall area with doors and windows taken out, the number of gallons for your chosen number of coats, and a shopping list that includes the bits people forget.",
+    "Enter a room and get the paintable wall area with doors and windows taken out, how much paint your chosen number of coats needs, and a shopping list that includes the bits people forget.",
   icon: "PaintRoller",
   accent: "violet",
   keywords: ["paint", "painting", "repaint", "bedroom", "wall", "primer", "gallons"],
