@@ -21,9 +21,13 @@ export async function GET(request: Request) {
     return NextResponse.json({ paid: false, error: "Invalid session." }, { status: 400 });
   }
 
-  // Production never honours the build-time dev flag; see lib/stripe.ts.
+  // Free-during-beta applies in production; the dev flag never does. See
+  // config/site.ts and lib/stripe.ts for why those are separate.
+  if (features.projectPackFree) {
+    return NextResponse.json({ paid: true, devUnlock: true, reason: "free" });
+  }
   if (features.projectPackDevUnlock && devUnlockAllowed()) {
-    return NextResponse.json({ paid: true, devUnlock: true });
+    return NextResponse.json({ paid: true, devUnlock: true, reason: "dev" });
   }
 
   const stripe = getStripe();

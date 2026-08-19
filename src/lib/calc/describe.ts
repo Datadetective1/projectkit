@@ -75,6 +75,17 @@ export interface Describe {
    * measurements rather than one span.
    */
   inchRange: (from: number, to: number, precision?: number) => string;
+  /** The same, for lengths: "6–8 ft" / "1.8–2.4 m". */
+  lengthRange: (from: number, to: number, precision?: number) => string;
+  /**
+   * A small dimension in millimetres, from a value held in inches.
+   *
+   * Centimetres are the default for `inch`, but a few things are specified in
+   * millimetres in every metric market — a grout joint is "3 mm", never
+   * "0.3 cm". Falls back to inches in US, where the same dimension is named in
+   * sixteenths instead.
+   */
+  millimetres: (inches: number, precision?: number) => string;
   /** The spoken name of a unit, for sentences like "sold by the cubic yard". */
   unitName: (measure: Measure) => string;
   /**
@@ -137,6 +148,17 @@ export function describeFor(system: UnitSystem): Describe {
       const low = formatNumber(fromCanonical(from, "inch", system), decimals);
       return `${low}–${formatQuantity(to, "inch", { system, precision: decimals })}`;
     },
+
+    lengthRange: (from, to, precision) => {
+      const decimals = precision ?? (system === "us" ? 0 : 1);
+      const low = formatNumber(fromCanonical(from, "length", system), decimals);
+      return `${low}–${formatQuantity(to, "length", { system, precision: decimals })}`;
+    },
+
+    millimetres: (inches, precision) =>
+      system === "us"
+        ? formatQuantity(inches, "inch", { system, precision: precision ?? 2 })
+        : `${formatNumber(inches * 25.4, precision ?? 1)} mm`,
 
     unitName: (measure) => unitName(measure, system),
     productSpec: (text) => text,

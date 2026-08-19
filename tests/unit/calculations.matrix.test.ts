@@ -10,6 +10,7 @@ import {
 } from "@/lib/calc/engine";
 import { formatMaterialQuantity, formatRow, formatUnitPrice } from "@/lib/format";
 import { formatQuantity, type UnitSystem } from "@/lib/units";
+import { describeFor } from "@/lib/calc/describe";
 import {
   imperialLeaks,
   productSpecExemption,
@@ -467,5 +468,39 @@ describe("unit prices agree with the quantity printed beside them", () => {
       const compound = run(drywall, {}, system).materials.find((l) => l.id === "compound")!;
       expect(formatUnitPrice(compound, system)).toBe("$18.00 per bucket");
     }
+  });
+});
+
+/* ------------------------------------------------------- input help text -- */
+
+describe("field help text", () => {
+  /**
+   * Help sits directly under the input, so a fixed string quoting inches under
+   * a field showing centimetres is the most direct contradiction the form can
+   * produce. `help` takes a function of the unit system for exactly this.
+   */
+
+  it("never quotes an imperial unit under a metric field", () => {
+    const describe = describeFor("metric");
+
+    for (const project of projects) {
+      for (const input of project.inputs) {
+        if (!input.help) continue;
+        const text = typeof input.help === "function" ? input.help(describe) : input.help;
+        const leaked = IMPERIAL_UNIT.test(text) && !productSpecExemption(text);
+        expect(leaked, `${project.slug}.${input.id}: "${text}"`).toBe(false);
+      }
+    }
+  });
+
+  it("still reads naturally in US units", () => {
+    const describe = describeFor("us");
+    const tile = getProjectOrThrow("tile-calculator");
+    const joint = tile.inputs.find((input) => input.id === "jointWidth")!;
+    const text = typeof joint.help === "function" ? joint.help(describe) : joint.help;
+
+    // Sixteenths, not decimals: "0.19 in" is how neither trade talks.
+    expect(text).toContain("1/16 in");
+    expect(text).toContain("3/16 in");
   });
 });

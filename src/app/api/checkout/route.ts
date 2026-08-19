@@ -24,10 +24,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid project reference." }, { status: 400 });
   }
 
+  // The pack is free right now as a stated product decision, so this holds in
+  // production too.
+  if (features.projectPackFree) {
+    return NextResponse.json({ devUnlock: true, reason: "free" });
+  }
+
   // Local and preview builds unlock without touching Stripe at all. Production
   // never does, whatever the build-time flag was set to.
   if (features.projectPackDevUnlock && devUnlockAllowed()) {
-    return NextResponse.json({ devUnlock: true });
+    return NextResponse.json({ devUnlock: true, reason: "dev" });
   }
 
   const stripe = getStripe();

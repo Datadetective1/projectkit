@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Logo } from "./Logo";
 import { projects } from "@/data/projects";
-import { legal, site } from "@/config/site";
+import { build, legal, site } from "@/config/site";
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
@@ -63,6 +63,14 @@ export function SiteFooter() {
           <p className="pk-prose max-w-3xl text-xs">{legal.planningDisclaimer}</p>
           <p className="mt-4 text-xs text-ink-subtle">
             © {year} {site.name}. Planning estimates only.
+            {/*
+              The build identifier is here rather than anywhere prominent: it
+              exists so a report of "the fence numbers look wrong" can be tied
+              to a deployment, which is worth a few characters of footer.
+            */}
+            <span className="ml-2 font-mono text-[0.6875rem]" title="Build identifier">
+              build {build.id}
+            </span>
           </p>
         </div>
       </div>

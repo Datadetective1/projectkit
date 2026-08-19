@@ -40,9 +40,43 @@ export const site = {
   contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "hello@projectkit.example",
 } as const;
 
-/** Price of the paid Project Pack, in whole cents so Stripe never sees a float. */
+/**
+ * The build this page was rendered from.
+ *
+ * Exists so a beta report of "the fence numbers look wrong" can be tied to a
+ * deployment. Vercel exposes the commit SHA to the client automatically; a
+ * short prefix is enough to identify a build and is public information anyway,
+ * since the repository is public.
+ */
+function resolveBuildId(): string {
+  const sha =
+    process.env.NEXT_PUBLIC_BUILD_ID?.trim() ||
+    process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA?.trim();
+  if (sha) return sha.slice(0, 7);
+  return "dev";
+}
+
+export const build = {
+  id: resolveBuildId(),
+  /** Set by Vercel to production, preview, or development. */
+  environment: process.env.NEXT_PUBLIC_VERCEL_ENV?.trim() || "local",
+} as const;
+
+/**
+ * Price of the paid Project Pack, in whole cents so Stripe never sees a float.
+ *
+ * A malformed environment variable used to become NaN and travel all the way to
+ * Stripe's line item. It now falls back to the default and the value is forced
+ * to a whole, positive number of cents.
+ */
+function resolvePriceCents(): number {
+  const raw = Number(process.env.NEXT_PUBLIC_PROJECT_PACK_PRICE_CENTS);
+  if (!Number.isFinite(raw) || raw <= 0) return 699;
+  return Math.round(raw);
+}
+
 export const projectPack = {
-  priceCents: Number(process.env.NEXT_PUBLIC_PROJECT_PACK_PRICE_CENTS || 699),
+  priceCents: resolvePriceCents(),
   currency: (process.env.NEXT_PUBLIC_PROJECT_PACK_CURRENCY || "usd").toLowerCase(),
   name: "ProjectKit Project Pack",
 } as const;
@@ -75,7 +109,51 @@ export const features = {
    * lib/stripe.ts → devUnlockAllowed.
    */
   projectPackDevUnlock: process.env.NEXT_PUBLIC_PROJECT_PACK_DEV_UNLOCK === "true",
+  /*
+   * The Project Pack is free right now, as a deliberate product decision.
+   *
+   * Deliberately separate from the dev unlock above. That one is a convenience
+   * that the server refuses in production; this one is a *stated state of the
+   * product* and is honoured everywhere, including production. Keeping them
+   * apart means "free during beta" never has to be expressed by leaving a
+   * development flag switched on, which is exactly how the paid product got
+   * given away by accident before.
+   *
+   * Opt in. With neither this nor Stripe configured the pack is unavailable
+   * rather than free, and the unlock panel says so plainly.
+   */
+  projectPackFree: process.env.NEXT_PUBLIC_PROJECT_PACK_FREE === "true",
+  /*
+   * Beta labelling. Fails *open* — unlike every other flag here — because the
+   * risk runs the other way: telling people the estimates are still being
+   * validated when they are settled costs nothing, while staying silent about
+   * it during a beta is the thing that misleads.
+   */
+  beta: process.env.NEXT_PUBLIC_BETA !== "false",
   contractorLeads: process.env.NEXT_PUBLIC_CONTRACTOR_LEADS_ENABLED === "true",
+} as const;
+
+/**
+ * How someone gets the Project Pack right now. One answer, derived once, so
+ * the panel, the API routes, and the entitlement store cannot disagree.
+ */
+export type PackAccess = "free" | "paid" | "unavailable";
+
+export function packAccess(stripeConfigured: boolean): PackAccess {
+  if (features.projectPackFree) return "free";
+  return stripeConfigured ? "paid" : "unavailable";
+}
+
+/**
+ * Where a beta tester reports a bad estimate.
+ *
+ * A hosted form if one is configured, otherwise a mailto. Deliberately not a
+ * database: a link that reaches a human is worth more at this stage than a
+ * ticketing system nobody reads.
+ */
+export const feedback = {
+  url: process.env.NEXT_PUBLIC_FEEDBACK_URL?.trim() || "",
+  email: process.env.NEXT_PUBLIC_FEEDBACK_EMAIL?.trim() || site.contactEmail,
 } as const;
 
 export const analyticsConfig = {

@@ -98,7 +98,7 @@ export const deckProject: ProjectDefinition = {
       id: "boardWidth",
       type: "number",
       label: "Decking board width",
-      help: "A 5/4 × 6 board actually measures 5.5 in.",
+      help: (d) => `A 5/4 × 6 board actually measures ${d.inch(5.5, 1)}.`,
       measure: "inch",
       defaultValue: 5.5,
       min: 1,
@@ -125,7 +125,8 @@ export const deckProject: ProjectDefinition = {
       id: "joistSpacing",
       type: "number",
       label: "Joist spacing",
-      help: "16 in on centre is common; composite decking often requires 12 in.",
+      help: (d) =>
+        `${d.inch(16, 0)} on centre is common; composite decking often requires ${d.inch(12, 0)}.`,
       measure: "inch",
       defaultValue: 16,
       min: 8,

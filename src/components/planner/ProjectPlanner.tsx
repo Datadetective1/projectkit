@@ -20,6 +20,7 @@ import { ProjectSequence } from "@/components/results/ProjectSequence";
 import { DiyOrHire } from "@/components/results/DiyOrHire";
 import { WhatIf } from "@/components/results/WhatIf";
 import { AdSlot } from "@/components/monetization/AdSlot";
+import { ReportProblem } from "@/components/ReportProblem";
 import {
   anchorsFor,
   applyPrefill,
@@ -473,6 +474,17 @@ export function ProjectPlanner({ slug }: { slug: string }) {
             <ProjectPackTeaser
               onClick={handlePackClick}
               costTotal={evaluation.result.costTotal}
+            />
+
+            {/*
+              Under the result, because that is where someone realises a number
+              looks wrong. Sends the planner, the unit system, and the build —
+              never the dimensions or the notes.
+            */}
+            <ReportProblem
+              projectType={project.slug}
+              system={system}
+              className="justify-center pk-no-print"
             />
           </>
         ) : (

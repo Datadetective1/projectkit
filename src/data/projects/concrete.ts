@@ -43,7 +43,8 @@ export const concreteProject: ProjectDefinition = {
       id: "thickness",
       type: "number",
       label: "Slab thickness",
-      help: "4 in is typical for patios and walkways. 5–6 in for driveways or vehicle loads.",
+      help: (d) =>
+        `${d.inch(4, 0)} is typical for patios and walkways. ${d.inchRange(5, 6)} for driveways or vehicle loads.`,
       measure: "inch",
       defaultValue: 4,
       min: 1,

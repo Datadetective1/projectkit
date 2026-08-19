@@ -1,3 +1,4 @@
+import type { Describe } from "@/lib/calc/describe";
 import type { Measure, UnitSystem } from "@/lib/units";
 
 /* ---------------------------------------------------------------- inputs -- */
@@ -7,8 +8,15 @@ export type InputTier = "quick" | "advanced";
 interface InputBase {
   id: string;
   label: string;
-  /** Short helper shown under the field. Keep it plain-English. */
-  help?: string;
+  /**
+   * Short helper shown under the field. Keep it plain-English.
+   *
+   * Takes a function when it quotes a measurement, because a fixed string
+   * cannot: "4 in is typical for patios" sat under a field showing centimetres.
+   * The function is handed the unit-aware formatters so the help text is
+   * written the same way the results are.
+   */
+  help?: string | ((describe: Describe) => string);
   tier: InputTier;
   /** Optional grouping heading inside a tier. */
   group?: string;

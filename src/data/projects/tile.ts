@@ -82,7 +82,10 @@ export const tileProject: ProjectDefinition = {
       id: "jointWidth",
       type: "number",
       label: "Grout joint width",
-      help: "1/16 in for rectified tile, 3/16 in is the common default.",
+      help: (d) =>
+        d.system === "us"
+          ? "1/16 in for rectified tile, 3/16 in is the common default."
+          : `${d.millimetres(0.0625)} for rectified tile, ${d.millimetres(0.1875)} is the common default.`,
       measure: "inch",
       defaultValue: 0.1875,
       min: 0.03,
@@ -140,7 +143,8 @@ export const tileProject: ProjectDefinition = {
       id: "pricePerBox",
       type: "number",
       label: "Tile price per box",
-      help: "Optional. If set, this overrides the per-square-foot price.",
+      help: (d) =>
+        `Optional. If set, this overrides the ${d.system === "us" ? "per-square-foot" : "per-square-metre"} price.`,
       measure: "currency",
       unitOverride: "$ / box",
       defaultValue: 0,

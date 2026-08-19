@@ -83,7 +83,7 @@ export const mulchProject: ProjectDefinition = {
       id: "depth",
       type: "number",
       label: "Mulch depth",
-      help: "2–3 in suppresses weeds without smothering roots.",
+      help: (d) => `${d.inchRange(2, 3)} suppresses weeds without smothering roots.`,
       measure: "inch",
       defaultValue: 3,
       min: 0.5,

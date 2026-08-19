@@ -43,7 +43,8 @@ export const gravelProject: ProjectDefinition = {
       id: "depth",
       type: "number",
       label: "Depth",
-      help: "2–3 in for a path, 4–6 in for a driveway or paver base.",
+      help: (d) =>
+        `${d.inchRange(2, 3)} for a path, ${d.inchRange(4, 6)} for a driveway or paver base.`,
       measure: "inch",
       defaultValue: 4,
       min: 0.5,

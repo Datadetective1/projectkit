@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ProsePage } from "@/components/ui/Prose";
 import { pageMetadata } from "@/lib/seo";
-import { site } from "@/config/site";
+import { features, site } from "@/config/site";
 
 export const metadata = pageMetadata({
   title: "About ProjectKit",
@@ -65,6 +65,24 @@ export default function AboutPage() {
           <li>It is not a contractor marketplace, and it does not sell your details to one.</li>
         </ul>
       </section>
+
+      {features.beta ? (
+        <section>
+          <h2>ProjectKit is in beta</h2>
+          <p>
+            The site works and the estimates are tested, but the planning assumptions behind them —
+            coverage rates, waste allowances, package sizes — are still being checked against real
+            projects and real receipts. Where we found one wrong, we fixed it and wrote down where
+            the corrected figure came from.
+          </p>
+          <p>
+            So treat the numbers as a well-researched starting point rather than a final answer, and
+            do what you would do anyway: check the critical ones against the product you actually
+            buy. If something looks off, the &ldquo;Does this estimate look wrong?&rdquo; link under
+            every result is the fastest way to tell us, and it is read.
+          </p>
+        </section>
+      ) : null}
 
       <section>
         <h2>Privacy in one paragraph</h2>

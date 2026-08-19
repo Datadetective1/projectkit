@@ -116,7 +116,8 @@ export const flooringProject: ProjectDefinition = {
       id: "pricePerBox",
       type: "number",
       label: "Price per box",
-      help: "Optional. If set, this overrides the per-square-foot price.",
+      help: (d) =>
+        `Optional. If set, this overrides the ${d.system === "us" ? "per-square-foot" : "per-square-metre"} price.`,
       measure: "currency",
       unitOverride: "$ / box",
       defaultValue: 0,
