@@ -11,9 +11,15 @@
   --color-paper: #faf9f6;
   --color-surface: #ffffff;
   --color-surface-sunken: #f2f1ec;
+  /*
+   * Every text colour below clears WCAG AA (4.5:1) against every surface it is
+   * used on — paper, white, sunken, and the three soft tints. Verified by the
+   * axe checks in tests/e2e/accessibility.spec.ts; changing a value here
+   * without re-running them is how contrast regressions get in.
+   */
   --color-ink: #16181d;
   --color-ink-muted: #5b6270;
-  --color-ink-subtle: #838a97;
+  --color-ink-subtle: #626a78;
   --color-line: #e5e3dc;
   --color-line-strong: #d3d0c6;
 
@@ -22,7 +28,7 @@
   --color-brand-soft: #e3f0ec;
   --color-brand-ink: #073a32;
 
-  --color-accent: #c2620f;
+  --color-accent: #a8540c;
   --color-accent-soft: #fdf1e3;
 
   --color-danger: #b3261e;

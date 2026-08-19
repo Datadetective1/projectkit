@@ -130,11 +130,42 @@ export default async function ProjectPage({
   );
 }
 
+/**
+ * The planner reads the URL for prefill values, which means it renders on the
+ * client. This placeholder mirrors its real shape — a form column and a result
+ * column of roughly the right height — so the tool settles into place instead
+ * of jumping when it arrives.
+ */
 function PlannerSkeleton() {
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)]">
-      <div className="pk-card h-[28rem] animate-pulse bg-surface-sunken/50" />
-      <div className="pk-card h-[28rem] animate-pulse bg-surface-sunken/50" />
+    <div
+      aria-hidden
+      className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start"
+    >
+      <div className="pk-card animate-pulse p-5 sm:p-6">
+        <div className="h-6 w-32 rounded bg-surface-sunken" />
+        <div className="mt-5 space-y-5">
+          {[0, 1, 2].map((row) => (
+            <div key={row}>
+              <div className="h-3.5 w-24 rounded bg-surface-sunken" />
+              <div className="mt-2 h-11 rounded-lg bg-surface-sunken" />
+            </div>
+          ))}
+        </div>
+        <div className="mt-8 h-11 rounded-lg bg-surface-sunken" />
+      </div>
+
+      <div className="flex flex-col gap-6">
+        <div className="h-[9.5rem] animate-pulse rounded-[var(--radius-card)] bg-brand-soft/60" />
+        <div className="pk-card animate-pulse p-5 sm:p-6">
+          <div className="h-5 w-40 rounded bg-surface-sunken" />
+          <div className="mt-4 space-y-3">
+            {[0, 1, 2, 3, 4].map((row) => (
+              <div key={row} className="h-4 rounded bg-surface-sunken" />
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

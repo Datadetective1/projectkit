@@ -1,36 +1,195 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ProjectKit
 
-## Getting Started
+**Tell us what you're building. We'll figure out everything you need.**
 
-First, run the development server:
+ProjectKit turns a home improvement project into material quantities, an
+estimated budget, a shopping list, an order of operations, and a printable
+Project Pack. It is a project-completion utility, not a calculator directory.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+Project idea → details → deterministic calculation → quantities with waste
+→ purchase rounding → estimated cost → shopping list → project steps
+→ scenario comparison → printable Project Pack
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Quick start
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+npm run dev          # http://localhost:3000
+```
 
-## Learn More
+No environment file is needed. With an empty `.env`, all ten planners, saved
+projects, the shopping list, and the Project Pack (preview **and** PDF) work.
+Copy `.env.example` to `.env.local` to switch on the optional pieces.
 
-To learn more about Next.js, take a look at the following resources:
+### Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Development server |
+| `npm run build` | Production build (runs TypeScript) |
+| `npm start` | Serve the production build |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm test` | Vitest unit tests |
+| `npm run test:coverage` | Unit tests with coverage |
+| `npm run e2e` | Playwright journeys + accessibility, Chromium and WebKit |
+| `npm run check` | lint + typecheck + unit tests |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`npm run e2e` builds and serves the app itself on port 3100. First run needs
+`npx playwright install chromium webkit`.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## The rule that shapes everything
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**An LLM is never the source of truth for a number.**
+
+AI is used in exactly one place: reading a plain-English description and
+proposing which planner to open and which measurements were mentioned. Its
+output is validated against a schema, mapped onto known fields, and shown to
+the user for correction. Every quantity, cost, and rounding decision comes from
+plain, unit-tested arithmetic in `src/lib/calculations/`.
+
+The natural-language box also has a deterministic parser that runs first and
+handles the common phrasings on its own, so the feature works with no API key
+at all.
+
+---
+
+## Architecture
+
+```
+src/
+  app/                    Routes. /[slug] renders any planner from the registry.
+  components/
+    planner/              The interactive form (client)
+    results/              Result panel, shopping list, steps, DIY-vs-hire
+    pack/                 Project Pack preview + react-pdf document
+    monetization/         Ad slots and affiliate CTAs (both flag-gated)
+  config/site.ts          Brand, pricing, feature flags, legal copy
+  data/projects/          One definition per project + the registry
+  lib/
+    calc/engine.ts        Defaults, validation, unit conversion, evaluation
+    calculations/         One pure calculation per project — the real logic
+    units.ts              Canonical-US maths, metric display, formatting
+    pricing.ts            Planning price book and shared assumptions
+    ai/                   Deterministic parser, then optional Claude extraction
+    storage/              localStorage saved projects as a React external store
+  types/project.ts        ProjectDefinition, CalculationResult, and friends
+tests/
+  unit/                   Vitest: units, engine, all ten calculations, parser
+  e2e/                    Playwright: nine journeys + axe accessibility audits
+```
+
+### How a project works
+
+A `ProjectDefinition` is data: inputs, a pure `calculate` function, steps, FAQs,
+related projects, and SEO copy. Everything else — routing, the form, validation,
+results, the shopping list, saving, sharing, the Project Pack, the sitemap — is
+driven off that definition. There is one planner page, not ten.
+
+### Units
+
+All arithmetic happens in one canonical system (US customary: feet, inches,
+square feet, cubic feet and yards, short tons). Metric values are converted at
+the boundary, so each formula is written once and tested once.
+
+The unit toggle anchors to the value you actually typed rather than the rounded
+value on screen, so switching back and forth returns exactly `20`, not
+`15.999`. Results always reflect the numbers currently visible in the form.
+
+### Adding project #11
+
+Three files, no framework changes:
+
+```ts
+// 1. src/lib/calculations/skirting.ts — a pure function
+export function calculateSkirting({ values, unitSystem }: CalculationContext): CalculationResult {
+  const perimeter = 2 * (num(values, "length") + num(values, "width"));
+  const withWaste = perimeter * wasteMultiplier(num(values, "waste"));
+  // …return headline, summary, materials, scenarios, formulas, assumptions,
+  //   explanation, shoppingExtras, warnings, effort
+}
+
+// 2. src/data/projects/skirting.ts — the definition
+export const skirtingProject: ProjectDefinition = {
+  slug: "skirting-calculator",
+  name: "Skirting",
+  inputs: [ /* number | select | toggle, each tier: "quick" | "advanced" */ ],
+  calculate: calculateSkirting,
+  steps: [...], faq: [...], related: [...], seo: {...}, keywords: [...],
+};
+
+// 3. src/data/projects/index.ts — add it to the array
+export const projects = [ concreteProject, /* … */ skirtingProject ];
+```
+
+The route, sitemap entry, structured data, breadcrumbs, form, validation,
+results, shopping list, save/share, and Project Pack all appear automatically.
+Add a `describe` block in `tests/unit/calculations.test.ts` and the slug to
+`PLANNER_SLUGS` in the E2E suite.
+
+---
+
+## Optional integrations
+
+Every one of these degrades to something honest rather than breaking.
+
+| Integration | Without it |
+| --- | --- |
+| **Anthropic** (`ANTHROPIC_API_KEY`) | The deterministic parser handles the natural-language box; every planner works by hand regardless. |
+| **Stripe** (`STRIPE_SECRET_KEY`) | `NEXT_PUBLIC_PROJECT_PACK_DEV_UNLOCK=true` (the default) unlocks the Project Pack locally. With the flag off and no key, checkout explains that payments are not configured. Live keys are refused unless `STRIPE_ALLOW_LIVE_MODE=true`. |
+| **Analytics** (`NEXT_PUBLIC_ANALYTICS_ID`) | No script loads and every `track()` call is a no-op. |
+| **Ads** (`NEXT_PUBLIC_ADS_ENABLED`) | Ad slots render nothing. They never sit inside a calculator and reserve fixed height so they cannot shift layout. |
+| **Affiliate** (`NEXT_PUBLIC_AFFILIATE_SEARCH_URL`) | "Shop materials" points at a plain web search — nothing implies a retailer relationship that does not exist. |
+
+---
+
+## Testing
+
+**Unit** — `npm test`. Covers unit conversion round-trips, validation and edge
+cases, the natural-language parser, and every calculation including the
+reference case: a 20 × 16 ft slab at 4 in is 3.95 yd³ before waste, 4.35 yd³
+after 10%, ordered as 4.50 yd³.
+
+**End-to-end** — `npm run e2e`. Nine journeys (homepage → estimate,
+natural-language routing, shopping list, save and reopen, Project Pack and PDF
+download, mobile navigation, invalid input, unit switching, all ten planners)
+plus axe-core WCAG 2.1 AA audits, on Chromium and WebKit at desktop and phone
+sizes.
+
+Tests are the specification. If a calculation changes, the test changes with a
+stated reason — never the other way round.
+
+---
+
+## What ProjectKit will not claim
+
+Quantities are planning estimates. ProjectKit does not claim guaranteed
+quantities, guaranteed prices, structural adequacy, or code compliance, and it
+will not try to design a deck frame. Where an answer depends on a convention
+rather than a measurement, that assumption is shown on the page and can be
+changed.
+
+The deck planner in particular is material planning only: spans, beam sizing,
+footing depth, post spacing, and ledger attachment need a designer, a span
+table, and your building department.
+
+---
+
+## Deployment
+
+Standard Next.js. On Vercel: connect the repository, set `NEXT_PUBLIC_SITE_URL`
+to the production origin, and add whichever optional keys you have.
+
+Before going public: set `NEXT_PUBLIC_PROJECT_PACK_DEV_UNLOCK=false` if you are
+charging, have a lawyer review `/privacy` and `/terms` (both are marked where
+review is needed), and add a real affiliate disclosure if you enable affiliate
+links.
+
+Security headers (`X-Content-Type-Options`, `Referrer-Policy`,
+`X-Frame-Options`, `Permissions-Policy`) are set in `next.config.ts`.
