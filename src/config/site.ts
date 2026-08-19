@@ -5,8 +5,28 @@
  * here so it never has to be hunted down across the component tree.
  */
 
-const rawSiteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") || "http://localhost:3000";
+/**
+ * The site's own origin, used for canonical URLs, Open Graph tags, the sitemap,
+ * and Stripe redirects.
+ *
+ * Resolution order:
+ *   1. NEXT_PUBLIC_SITE_URL — set this once a real domain is attached.
+ *   2. Vercel's own production domain, exposed automatically on every build, so
+ *      a fresh deployment has correct canonicals with nothing to configure.
+ *   3. localhost, for development.
+ */
+function resolveSiteUrl(): string {
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (explicit) return explicit.replace(/\/+$/, "");
+
+  // Vercel supplies this without a scheme (e.g. "projectkit.vercel.app").
+  const vercelDomain = process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  if (vercelDomain) return `https://${vercelDomain.replace(/\/+$/, "")}`;
+
+  return "http://localhost:3000";
+}
+
+const rawSiteUrl = resolveSiteUrl();
 
 export const site = {
   name: "ProjectKit",
