@@ -1,0 +1,207 @@
+import { calculateConcrete } from "@/lib/calculations/concrete";
+import { planningDefaults, prices } from "@/lib/pricing";
+import type { ProjectDefinition } from "@/types/project";
+
+export const concreteProject: ProjectDefinition = {
+  slug: "concrete-calculator",
+  name: "Concrete",
+  h1: "Concrete Calculator & Project Planner",
+  category: "Outdoor & Structural",
+  tagline: "Patios, slabs, and pads — volume, bags, base, and cost.",
+  intro:
+    "Work out how much concrete a patio or slab actually needs, including waste, base gravel, and whether ready-mix or bags makes more sense. You get quantities, an estimated budget, and a shopping list you can take to the store.",
+  icon: "Square",
+  accent: "slate",
+  keywords: ["concrete", "slab", "patio", "cement", "pad", "footing", "driveway", "sidewalk"],
+
+  inputs: [
+    {
+      id: "length",
+      type: "number",
+      label: "Length",
+      measure: "length",
+      defaultValue: 20,
+      min: 0.5,
+      max: 1000,
+      step: 0.5,
+      required: true,
+      tier: "quick",
+    },
+    {
+      id: "width",
+      type: "number",
+      label: "Width",
+      measure: "length",
+      defaultValue: 16,
+      min: 0.5,
+      max: 1000,
+      step: 0.5,
+      required: true,
+      tier: "quick",
+    },
+    {
+      id: "thickness",
+      type: "number",
+      label: "Slab thickness",
+      help: "4 in is typical for patios and walkways. 5–6 in for driveways or vehicle loads.",
+      measure: "inch",
+      defaultValue: 4,
+      min: 1,
+      max: 24,
+      step: 0.5,
+      required: true,
+      tier: "quick",
+    },
+    {
+      id: "waste",
+      type: "number",
+      label: "Waste allowance",
+      help: "Covers spillage, uneven subgrade, and form deflection.",
+      measure: "percent",
+      defaultValue: planningDefaults.wasteConcrete,
+      min: 0,
+      max: 50,
+      step: 1,
+      required: true,
+      allowZero: true,
+      tier: "advanced",
+      group: "Quantities",
+    },
+    {
+      id: "baseDepth",
+      type: "number",
+      label: "Base gravel depth",
+      help: "Compacted gravel under the slab. Set to 0 if you are not adding a base.",
+      measure: "inch",
+      defaultValue: 4,
+      min: 0,
+      max: 24,
+      step: 1,
+      allowZero: true,
+      tier: "advanced",
+      group: "Quantities",
+    },
+    {
+      id: "reinforcement",
+      type: "select",
+      label: "Reinforcement",
+      defaultValue: "wire-mesh",
+      tier: "advanced",
+      group: "Quantities",
+      options: [
+        { value: "wire-mesh", label: "Welded wire mesh" },
+        { value: "rebar", label: "Rebar grid" },
+        { value: "none", label: "None" },
+      ],
+    },
+    {
+      id: "concretePrice",
+      type: "number",
+      label: "Ready-mix price",
+      measure: "currency",
+      unitOverride: "$ / yd³",
+      defaultValue: prices.concretePerCubicYard,
+      min: 0,
+      max: 2000,
+      step: 5,
+      allowZero: true,
+      tier: "advanced",
+      group: "Pricing",
+    },
+    {
+      id: "bagYield",
+      type: "select",
+      label: "Bag size",
+      help: "Used for the bagged-concrete comparison.",
+      defaultValue: "0.45",
+      tier: "advanced",
+      group: "Pricing",
+      options: [
+        { value: "0.3", label: "40 lb bag (0.30 cu ft)" },
+        { value: "0.45", label: "60 lb bag (0.45 cu ft)" },
+        { value: "0.6", label: "80 lb bag (0.60 cu ft)" },
+      ],
+    },
+    {
+      id: "bagPrice",
+      type: "number",
+      label: "Price per bag",
+      measure: "currency",
+      unitOverride: "$ / bag",
+      defaultValue: prices.concreteBag60lb,
+      min: 0,
+      max: 200,
+      step: 0.5,
+      allowZero: true,
+      tier: "advanced",
+      group: "Pricing",
+    },
+    {
+      id: "gravelPrice",
+      type: "number",
+      label: "Base gravel price",
+      measure: "currency",
+      unitOverride: "$ / yd³",
+      defaultValue: prices.gravelPerCubicYard,
+      min: 0,
+      max: 1000,
+      step: 5,
+      allowZero: true,
+      tier: "advanced",
+      group: "Pricing",
+      showWhen: (values) => Number(values.baseDepth) > 0,
+    },
+  ],
+
+  calculate: calculateConcrete,
+
+  steps: [
+    "Mark out the slab and check it for square by measuring both diagonals.",
+    "Call for utility locates before you dig.",
+    "Excavate to slab thickness plus base depth.",
+    "Add and compact the gravel base in layers.",
+    "Build and brace the forms, setting the slope for drainage.",
+    "Place reinforcement on chairs so it sits mid-slab.",
+    "Re-check dimensions, depth, and slope before the concrete arrives.",
+    "Place the concrete and screed it level with the forms.",
+    "Float, edge, and finish once the bleed water is gone.",
+    "Cure it — keep it damp or covered for several days.",
+    "Strip the forms and backfill the edges.",
+  ],
+
+  faq: [
+    {
+      question: "How thick should a concrete patio be?",
+      answer:
+        "Four inches is the common thickness for patios, walkways, and shed pads. Driveways and anything carrying vehicle weight are usually five to six inches, often with rebar. Local code and soil conditions can change that, so check before you pour.",
+    },
+    {
+      question: "How much concrete waste should I plan for?",
+      answer:
+        "Ten percent is a reasonable default for a small slab. Uneven subgrade is the biggest driver — if your excavation is rough or the ground is soft, plan closer to fifteen percent. Running short mid-pour is far more expensive than a little extra.",
+    },
+    {
+      question: "Is it cheaper to use bags or ready-mix?",
+      answer:
+        "Bags usually win below about one cubic yard, where delivery minimums and short-load fees dominate. Past that, ready-mix is normally both cheaper and dramatically less work — one cubic yard is roughly sixty 60 lb bags mixed by hand.",
+    },
+    {
+      question: "Do I need gravel under a concrete slab?",
+      answer:
+        "A compacted base spreads load and gives water somewhere to go, which is what keeps a slab from cracking as the ground moves. Four inches of compactable gravel is a common planning figure for patios. Local frost depth and drainage conditions matter here.",
+    },
+  ],
+
+  related: ["gravel-calculator", "fence-calculator", "deck-calculator", "sod-calculator"],
+
+  seo: {
+    title: "Concrete Calculator & Project Planner — Yards, Bags, Cost",
+    description:
+      "Calculate concrete volume, waste, bags, base material, and estimated cost for a patio or slab — plus a complete shopping list and project plan.",
+    breadcrumb: "Concrete",
+  },
+
+  disclaimers: [
+    "Slab thickness, reinforcement, base depth, and footing requirements vary by use, soil, climate, and local building code. Verify structural and code requirements before you build.",
+  ],
+};

@@ -1,26 +1,214 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * ProjectKit design tokens.
+ *
+ * Warm paper background, near-black ink, one confident accent. Deliberately
+ * restrained: this is a utility people trust with a shopping budget, not a
+ * dashboard.
+ */
+@theme {
+  --color-paper: #faf9f6;
+  --color-surface: #ffffff;
+  --color-surface-sunken: #f2f1ec;
+  --color-ink: #16181d;
+  --color-ink-muted: #5b6270;
+  --color-ink-subtle: #838a97;
+  --color-line: #e5e3dc;
+  --color-line-strong: #d3d0c6;
+
+  --color-brand: #0f5f52;
+  --color-brand-strong: #0a4a40;
+  --color-brand-soft: #e3f0ec;
+  --color-brand-ink: #073a32;
+
+  --color-accent: #c2620f;
+  --color-accent-soft: #fdf1e3;
+
+  --color-danger: #b3261e;
+  --color-danger-soft: #fdeceb;
+
+  --font-sans:
+    var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", monospace;
+
+  --radius-card: 0.875rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+    letter-spacing: -0.018em;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Visible, consistent focus for keyboard users across every control. */
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Numeric inputs: hide the spinners, they are hostile on mobile. */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .pk-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+  }
+
+  .pk-field {
+    width: 100%;
+    border-radius: 0.625rem;
+    border: 1px solid var(--color-line-strong);
+    background-color: var(--color-surface);
+    padding: 0.625rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    color: var(--color-ink);
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+  }
+  .pk-field:hover:not(:disabled) {
+    border-color: var(--color-ink-subtle);
+  }
+  .pk-field:focus {
+    outline: none;
+    border-color: var(--color-brand);
+    box-shadow: 0 0 0 3px var(--color-brand-soft);
+  }
+  .pk-field[aria-invalid="true"] {
+    border-color: var(--color-danger);
+  }
+  .pk-field[aria-invalid="true"]:focus {
+    box-shadow: 0 0 0 3px var(--color-danger-soft);
+  }
+
+  .pk-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.625rem;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    line-height: 1.25rem;
+    padding: 0.6875rem 1.125rem;
+    min-height: 2.75rem;
+    transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+    cursor: pointer;
+  }
+  .pk-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .pk-btn-primary {
+    background-color: var(--color-brand);
+    color: #ffffff;
+  }
+  .pk-btn-primary:hover:not(:disabled) {
+    background-color: var(--color-brand-strong);
+  }
+
+  .pk-btn-secondary {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    border: 1px solid var(--color-line-strong);
+  }
+  .pk-btn-secondary:hover:not(:disabled) {
+    background-color: var(--color-surface-sunken);
+  }
+
+  .pk-btn-ghost {
+    background-color: transparent;
+    color: var(--color-brand);
+  }
+  .pk-btn-ghost:hover:not(:disabled) {
+    background-color: var(--color-brand-soft);
+  }
+
+  .pk-prose {
+    color: var(--color-ink-muted);
+    line-height: 1.65;
+  }
+  .pk-prose strong {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+}
+
+/* Skip link: hidden until focused. */
+.pk-skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+}
+.pk-skip-link:focus {
+  left: 0.75rem;
+  top: 0.75rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line-strong);
+  border-radius: 0.5rem;
+  padding: 0.625rem 1rem;
+  font-weight: 600;
+}
+
+@media print {
+  .pk-no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+  .pk-card {
+    border-color: #d0d0d0;
+    break-inside: avoid;
+  }
+  a[href]::after {
+    content: "";
+  }
 }
