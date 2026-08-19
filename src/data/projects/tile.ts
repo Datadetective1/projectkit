@@ -82,11 +82,15 @@ export const tileProject: ProjectDefinition = {
       id: "jointWidth",
       type: "number",
       label: "Grout joint width",
+      help: "1/16 in for rectified tile, 3/16 in is the common default.",
       measure: "inch",
       defaultValue: 0.1875,
       min: 0.03,
       max: 1,
       step: 0.0625,
+      // Sixteenths need four decimals: at the default three, 3/16 in displays
+      // as 0.188 and a unit round-trip would quietly change the grout figure.
+      precision: 4,
       required: true,
       tier: "advanced",
       group: "Layout",
@@ -202,7 +206,7 @@ export const tileProject: ProjectDefinition = {
     {
       question: "How much thinset do I need?",
       answer:
-        "A 50 lb bag covers roughly 95 sq ft with a standard notched trowel, but trowel size drives that number hard. Large-format tile with a bigger notch can halve the coverage.",
+        "Trowel size drives this more than anything else, and trowel size follows tile size. Manufacturer charts put a 50 lb bag at roughly 80–100 sq ft with a 1/4 in notch for small tile, 60–80 sq ft with a 1/4 × 3/8 in notch for typical 12 in floor tile, and 40–50 sq ft with a 1/2 in notch for large format. This planner picks the band your tile size calls for rather than using one flat number.",
     },
     {
       question: "How much grout will I use?",
