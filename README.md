@@ -133,6 +133,20 @@ results, shopping list, save/share, and Project Pack all appear automatically.
 Add a `describe` block in `tests/unit/calculations.test.ts` and the slug to
 `PLANNER_SLUGS` in the E2E suite.
 
+### Deliberately not built: variant pages
+
+Pages like `/concrete/patio` or `/paint/bedroom` are a natural next step for
+search, and the registry is shaped to support them: add a `variants` array to
+`ProjectDefinition` (a label, a slug, prefilled input values, and its own SEO
+copy), then a `app/[slug]/[variant]/page.tsx` route that reads it and hands the
+same `ProjectPlanner` a prefill.
+
+They are not built because a variant page only earns its place if it says
+something a slider on the main page cannot — a driveway needs different
+thickness *and* different reinforcement advice, a bedroom repaint has different
+coverage assumptions. Generating ten near-identical pages per planner would
+inflate the page count and dilute every one of them.
+
 ---
 
 ## Optional integrations
