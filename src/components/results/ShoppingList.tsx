@@ -62,7 +62,7 @@ export function ShoppingList({
           type="button"
           className="pk-btn pk-btn-secondary pk-no-print"
           onClick={() => {
-            track("project_shared", { method: "print_list" });
+            track("project_shared", { method: "print_list", placement: "shopping_list" });
             window.print();
           }}
         >

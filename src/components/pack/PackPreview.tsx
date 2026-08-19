@@ -23,7 +23,7 @@ export function PackPreview({ id }: { id: string }) {
   const unlocked = purchased || isPackUnlocked(id);
 
   useEffect(() => {
-    if (slug) track("project_pack_previewed", { slug });
+    if (slug) track("project_pack_previewed", { projectType: slug });
   }, [slug]);
 
   // Returning from Stripe checkout: verify the session before unlocking.
@@ -80,7 +80,7 @@ export function PackPreview({ id }: { id: string }) {
       anchor.remove();
       URL.revokeObjectURL(url);
       setDownload("idle");
-      track("project_pack_downloaded", { slug: slug ?? "" });
+      track("project_pack_downloaded", { projectType: slug });
     } catch {
       setDownload("error");
     }

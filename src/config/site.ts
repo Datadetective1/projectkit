@@ -69,8 +69,15 @@ export const features = {
 } as const;
 
 export const analyticsConfig = {
+  /** Google Analytics measurement ID. Empty means no GA script is loaded. */
   measurementId: process.env.NEXT_PUBLIC_ANALYTICS_ID || "",
   debug: process.env.NEXT_PUBLIC_ANALYTICS_DEBUG === "true",
+  /**
+   * Vercel custom events require Web Analytics Plus. Page views, visitors,
+   * routes, referrers, and devices are collected on every plan and need no
+   * flag — this only gates the product-event funnel.
+   */
+  vercelCustomEvents: process.env.NEXT_PUBLIC_VERCEL_CUSTOM_EVENTS === "true",
 } as const;
 
 export const adsConfig = {

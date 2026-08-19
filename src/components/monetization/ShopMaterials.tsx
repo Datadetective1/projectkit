@@ -12,11 +12,16 @@ import { track } from "@/lib/analytics";
  */
 export function ShopMaterials({
   query,
+  projectType,
+  placement = "materials",
   label = "Shop materials",
   className = "",
   variant = "secondary",
 }: {
+  /** Search term for the retailer. Never sent to analytics. */
   query: string;
+  projectType?: string;
+  placement?: "results" | "materials" | "pack";
   label?: string;
   className?: string;
   variant?: "primary" | "secondary";
@@ -29,7 +34,7 @@ export function ShopMaterials({
         href={affiliateSearchUrl(query)}
         target="_blank"
         rel="noopener noreferrer sponsored"
-        onClick={() => track("affiliate_clicked", { query_length: query.length })}
+        onClick={() => track("affiliate_clicked", { projectType, placement })}
         className={`pk-btn ${variant === "primary" ? "pk-btn-primary" : "pk-btn-secondary"}`}
       >
         {label}

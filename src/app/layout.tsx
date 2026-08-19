@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { AnalyticsProvider } from "@/components/analytics/AnalyticsProvider";
+import { VercelAnalytics } from "@/components/analytics/VercelAnalytics";
 import { organizationJsonLd } from "@/lib/seo";
 import { site } from "@/config/site";
 import "./globals.css";
@@ -51,6 +52,8 @@ export default function RootLayout({
           {children}
         </main>
         <SiteFooter />
+        {/* Page views, routes, referrers, and devices — one integration, whole app. */}
+        <VercelAnalytics />
         <AnalyticsProvider />
       </body>
     </html>

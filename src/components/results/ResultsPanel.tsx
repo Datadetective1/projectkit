@@ -11,14 +11,21 @@ interface ResultsPanelProps {
   result: CalculationResult;
   system: UnitSystem;
   projectName: string;
+  /** Project slug, used as the categorical analytics label. */
+  projectType: string;
 }
 
-export function ResultsPanel({ result, system, projectName }: ResultsPanelProps) {
+export function ResultsPanel({ result, system, projectName, projectType }: ResultsPanelProps) {
   return (
     <div className="flex flex-col gap-6">
       <Headline result={result} system={system} />
       <SummaryCard result={result} system={system} />
-      <MaterialsCard result={result} system={system} projectName={projectName} />
+      <MaterialsCard
+        result={result}
+        system={system}
+        projectName={projectName}
+        projectType={projectType}
+      />
       {result.scenarios.length > 0 ? <ScenariosCard result={result} system={system} /> : null}
       <ExplanationCard result={result} />
       <HowCalculatedCard result={result} />
@@ -95,10 +102,12 @@ function MaterialsCard({
   result,
   system,
   projectName,
+  projectType,
 }: {
   result: CalculationResult;
   system: UnitSystem;
   projectName: string;
+  projectType: string;
 }) {
   const hasCosts = result.materials.some((line) => line.cost !== undefined);
 
@@ -228,6 +237,8 @@ function MaterialsCard({
         <ShopMaterials
           className="mt-4"
           query={`${projectName} materials`}
+          projectType={projectType}
+          placement="materials"
           label="Shop materials"
         />
       </div>

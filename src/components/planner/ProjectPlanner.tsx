@@ -79,7 +79,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
 
   useEffect(() => {
     if (initial.prefilled.length > 0) {
-      track("project_started", { slug, prefilled: initial.prefilled.length });
+      track("project_started", { projectType: slug, prefilled: initial.prefilled.length });
     }
   }, [initial.prefilled.length, slug]);
 
@@ -106,7 +106,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
       if (!project || next === system) return;
       setValues((current) => convertValues(project, current, system, next, anchors.current));
       setSystem(next);
-      track("units_changed", { slug: project.slug, system: next });
+      track("units_changed", { projectType: project.slug, system: next });
     },
     [project, system],
   );
@@ -148,8 +148,12 @@ export function ProjectPlanner({ slug }: { slug: string }) {
 
   const handleCalculate = () => {
     if (!evaluation?.ok) return;
-    track("project_completed", { slug: project.slug, system });
-    track("result_viewed", { slug: project.slug });
+    track("project_completed", {
+      projectType: project.slug,
+      mode: showAdvanced ? "advanced" : "quick",
+      system,
+    });
+    track("result_viewed", { projectType: project.slug });
     resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
@@ -176,7 +180,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
     }
     setSavedId(saved.id);
     setStatus({ kind: "saved", id: saved.id });
-    track("project_saved", { slug: project.slug });
+    track("project_saved", { projectType: project.slug });
   };
 
   /** A link that reproduces exactly these inputs. Carries no personal data. */
@@ -202,7 +206,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
     try {
       await navigator.clipboard.writeText(text);
       flashCopied();
-      track("project_shared", { slug: project.slug, method: "copy_summary" });
+      track("project_shared", { projectType: project.slug, method: "copy_summary" });
     } catch {
       setStatus({
         kind: "error",
@@ -220,7 +224,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
     try {
       if (navigator.share) {
         await navigator.share({ title: `${project.name} plan`, text: summary, url });
-        track("project_shared", { slug: project.slug, method: "web_share" });
+        track("project_shared", { projectType: project.slug, method: "web_share" });
         return;
       }
     } catch {
@@ -230,7 +234,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
     try {
       await navigator.clipboard.writeText(summary);
       flashCopied();
-      track("project_shared", { slug: project.slug, method: "clipboard" });
+      track("project_shared", { projectType: project.slug, method: "clipboard" });
     } catch {
       setStatus({ kind: "error", message: "Could not copy the link. You can copy it from the address bar." });
     }
@@ -238,7 +242,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
 
   const handlePackClick = () => {
     if (!evaluation?.ok) return;
-    track("project_pack_previewed", { slug: project.slug });
+    track("project_pack_previewed", { projectType: project.slug });
     const saved = saveProject({
       id: savedId,
       slug: project.slug,
@@ -365,6 +369,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
               result={evaluation.result}
               system={system}
               projectName={project.name}
+              projectType={project.slug}
             />
 
             <WhatIf
@@ -453,7 +458,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
                 setChecked((current) =>
                   next ? [...current, id] : current.filter((item) => item !== id),
                 );
-                track("shopping_list_item_toggled", { slug: project.slug, checked: next });
+                track("shopping_list_item_toggled", { projectType: project.slug, checked: next });
               }}
             />
 

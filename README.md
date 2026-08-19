@@ -165,6 +165,56 @@ Every one of these degrades to something honest rather than breaking.
 
 ---
 
+## Analytics
+
+**Vercel Web Analytics**, integrated once in `src/app/layout.tsx` via
+`src/components/analytics/VercelAnalytics.tsx`. It covers the whole app,
+including client-side navigation, and needs no environment variables.
+
+Collected automatically: visitors, page views, routes, referrers, countries,
+devices, browsers, and operating systems. Vercel separates production, preview,
+and local traffic on its own — nothing here hard-codes a hostname or labels
+localhost as production.
+
+### Privacy
+
+Nearly every query parameter ProjectKit puts in a URL is something the user
+typed — slab dimensions, room counts, prices, a natural-language description, a
+saved-project id, a Stripe session id. A `beforeSend` hook
+(`src/lib/analytics/redact.ts`) strips all of it before anything leaves the
+page, keeping only the route plus a short allowlist (`utm_*`, `ref`, `gclid`,
+`fbclid`, and `from=nl`). Per-user paths collapse to their route, so
+`/project-pack/9f3c…` reports as `/project-pack/[id]`.
+
+So `/plan?q=I want a 20 by 16 concrete patio` reports as `/plan`, and
+`/concrete-calculator?length=20&width=16&from=nl` as
+`/concrete-calculator?from=nl`. Redaction is covered by unit tests and by
+`tests/e2e/analytics.spec.ts`, which runs the page's own hook over real URLs.
+
+`Referrer-Policy` stays at `strict-origin-when-cross-origin`. It governs what
+*we* leak on outbound clicks, not what Vercel can attribute inbound — so it
+costs no analytics value and keeps query strings out of affiliate referrers.
+
+### Product events
+
+`src/lib/analytics.ts` keeps a provider-agnostic `track()` over the funnel:
+`project_started`, `project_completed`, `result_viewed`, `project_saved`,
+`project_shared`, `project_pack_previewed`, `project_pack_checkout_started`,
+`project_pack_purchased`, `project_pack_downloaded`, `affiliate_clicked`, and
+related.
+
+Metadata is closed-vocabulary by type — `projectType`, `mode`, `placement`,
+`method`, `system`, `prefilled`, `checked`. There is no field for a dimension, a
+price, or free text, so a careless call site cannot leak one.
+
+**Custom events are currently off.** They require Web Analytics Plus, a paid
+tier; sending them without it is a silent no-op, so rather than fake collection
+the path is gated behind `NEXT_PUBLIC_VERCEL_CUSTOM_EVENTS`. Set it to `true`
+once the tier is enabled and the existing calls forward to Vercel's `track()` —
+no refactor. Google Analytics works the same way via `NEXT_PUBLIC_ANALYTICS_ID`.
+
+Speed Insights is not installed; it can be added later.
+
 ## Testing
 
 **Unit** — `npm test`. Covers unit conversion round-trips, validation and edge
