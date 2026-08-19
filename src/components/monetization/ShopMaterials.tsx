@@ -24,7 +24,7 @@ export function ShopMaterials({
   if (!affiliateConfig.enabled) return null;
 
   return (
-    <div className={className}>
+    <div className={`pk-no-print ${className}`}>
       <a
         href={affiliateSearchUrl(query)}
         target="_blank"

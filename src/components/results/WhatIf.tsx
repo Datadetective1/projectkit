@@ -49,7 +49,7 @@ export function WhatIf({
   if (controls.length === 0) return null;
 
   return (
-    <section aria-labelledby="what-if" className="pk-card p-5 sm:p-6">
+    <section aria-labelledby="what-if" className="pk-card pk-no-print p-5 sm:p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 id="what-if" className="flex items-center gap-2 text-lg font-semibold text-ink">
           <SlidersHorizontal className="h-5 w-5 text-brand" aria-hidden />

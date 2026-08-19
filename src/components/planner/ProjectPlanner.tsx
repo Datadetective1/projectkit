@@ -263,10 +263,14 @@ export function ProjectPlanner({ slug }: { slug: string }) {
   // grid-cols-1 (rather than the implicit auto column) keeps a wide child — the
   // materials table — from stretching the whole layout on small screens.
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start">
+    <div className="pk-print-flow grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start">
       {/* --------------------------------------------------------- inputs -- */}
+      {/*
+        The form is omitted from print: its values are restated in the project
+        summary, and empty input boxes on paper help nobody.
+      */}
       <form
-        className="pk-card p-5 sm:p-6 lg:sticky lg:top-20"
+        className="pk-card pk-no-print p-5 sm:p-6 lg:sticky lg:top-20"
         onSubmit={(event) => {
           event.preventDefault();
           handleCalculate();
@@ -373,7 +377,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
 
             <AdSlot placement="result-below-summary" />
 
-            <section className="pk-card p-5 sm:p-6">
+            <section className="pk-card pk-no-print p-5 sm:p-6">
               <h2 className="text-lg font-semibold text-ink">Save, share, and take it with you</h2>
               <p className="mt-1 text-sm text-ink-muted">
                 No account needed. Saved projects stay in this browser.
@@ -489,7 +493,7 @@ function ProjectPackTeaser({
   costTotal: number;
 }) {
   return (
-    <section className="rounded-[var(--radius-card)] border border-brand/20 bg-brand-soft p-5 sm:p-6">
+    <section className="pk-no-print rounded-[var(--radius-card)] border border-brand/20 bg-brand-soft p-5 sm:p-6">
       <h2 className="text-lg font-semibold text-brand-ink">Take the whole plan with you</h2>
       <p className="mt-2 max-w-prose text-sm text-brand-ink/85">
         The Project Pack collects your quantities, the {formatCurrency(costTotal)} budget, the

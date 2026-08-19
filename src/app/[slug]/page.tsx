@@ -98,12 +98,13 @@ export default async function ProjectPage({
           <AdSlot placement="content-mid" />
         </div>
 
-        <div className="mt-12 max-w-3xl">
+        {/* Marketing and browsing sections are not worth the paper. */}
+        <div className="pk-no-print mt-12 max-w-3xl">
           <FaqSection items={project.faq} />
         </div>
 
         {related.length > 0 ? (
-          <section aria-labelledby="related-heading" className="mt-14">
+          <section aria-labelledby="related-heading" className="pk-no-print mt-14">
             <h2 id="related-heading" className="text-2xl font-semibold tracking-tight text-ink">
               What usually comes next
             </h2>

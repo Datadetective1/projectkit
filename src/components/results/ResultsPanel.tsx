@@ -119,7 +119,7 @@ function MaterialsCard({
       </div>
 
       {/* Phones get a card per material; a four-column table is unreadable there. */}
-      <ul className="divide-y divide-line border-y border-line sm:hidden">
+      <ul className="pk-print-cards divide-y divide-line border-y border-line sm:hidden">
         {result.materials.map((line) => (
           <li key={line.id} className="px-5 py-4">
             <p className="text-sm font-medium text-ink">
@@ -158,8 +158,8 @@ function MaterialsCard({
         ) : null}
       </ul>
 
-      <div className="hidden overflow-x-auto sm:block">
-        <table className="w-full min-w-[34rem] border-collapse text-sm">
+      <div className="hidden overflow-x-auto sm:block print:block">
+        <table className="pk-print-table w-full min-w-[34rem] border-collapse text-sm">
           <thead>
             <tr className="border-y border-line bg-surface-sunken text-left">
               <th scope="col" className="px-5 py-2.5 font-medium text-ink-muted sm:px-6">

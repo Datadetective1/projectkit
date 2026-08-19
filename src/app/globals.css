@@ -207,13 +207,53 @@
   .pk-no-print {
     display: none !important;
   }
+
   body {
     background: #fff;
   }
+
+  /*
+   * Hiding the form leaves the results stranded in the second grid column, so
+   * every print layout collapses to a single full-width flow.
+   */
+  .pk-print-flow {
+    display: block !important;
+  }
+
+  /* Tables scroll on screen; on paper they must simply fit. */
+  .pk-print-flow table,
+  .pk-print-table {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+  .pk-print-flow .overflow-x-auto {
+    overflow: visible !important;
+  }
+
+  /* Show the desktop table rather than the phone card list, whatever the width. */
+  .pk-print-table {
+    display: table !important;
+  }
+  .pk-print-cards {
+    display: none !important;
+  }
+
   .pk-card {
     border-color: #d0d0d0;
     break-inside: avoid;
+    box-shadow: none;
   }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  /* Keep sections from splitting across a page break mid-thought. */
+  section,
+  li {
+    break-inside: avoid;
+  }
+
   a[href]::after {
     content: "";
   }
