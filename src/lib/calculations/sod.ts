@@ -7,6 +7,7 @@ import {
   shoppingItem,
   wasteMultiplier,
 } from "@/lib/calc/helpers";
+import { describeFor } from "@/lib/calc/describe";
 import { planningDefaults, prices } from "@/lib/pricing";
 import type { CalculationContext, CalculationResult, MaterialLine } from "@/types/project";
 
@@ -95,6 +96,7 @@ export function calculateSod({
   );
   const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
     formatQuantity(value, measure, { system: unitSystem, precision });
+  const d = describeFor(unitSystem);
 
   return {
     headline: {
@@ -133,7 +135,7 @@ export function calculateSod({
       },
       {
         id: "by-sqft",
-        name: "Priced by the square foot",
+        name: `Priced by the ${d.unitName("area").replace(/s$/, "")}`,
         summary: "Common at garden centres for smaller quantities.",
         recommended: !palletIsBetter,
         rows: [
@@ -155,8 +157,8 @@ export function calculateSod({
       { kind: "math", label: "Pallets", expression: "⌈Sod to buy ÷ Pallet coverage⌉" },
     ],
     assumptions: [
-      { label: "Roll coverage", value: `${roundTo(rollCoverage, 1)} sq ft` },
-      { label: "Pallet coverage", value: `${roundTo(palletCoverage, 0)} sq ft` },
+      { label: "Roll coverage", value: d.area(rollCoverage, 2) },
+      { label: "Pallet coverage", value: d.area(palletCoverage) },
       { label: "Waste allowance", value: `${roundTo(wastePct, 1)}%` },
     ],
     shoppingExtras: [
@@ -177,7 +179,7 @@ export function calculateSod({
       timeCategory: rawArea > 2000 ? "A full weekend with help" : "One day",
       notes: [
         "Soil prep is the whole job; laying sod is the easy part.",
-        "A pallet weighs roughly a ton — plan how it gets to the back yard.",
+        `A pallet weighs roughly ${d.weight(1, 0)} — plan how it gets to the back garden.`,
       ],
     },
   };

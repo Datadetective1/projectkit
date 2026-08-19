@@ -1,4 +1,4 @@
-import { formatQuantity, roundTo } from "@/lib/units";
+import { formatCurrency, formatQuantity, roundTo } from "@/lib/units";
 import {
   costOf,
   num,
@@ -8,6 +8,7 @@ import {
   sumCost,
   wasteMultiplier,
 } from "@/lib/calc/helpers";
+import { describeFor } from "@/lib/calc/describe";
 import { planningDefaults, prices } from "@/lib/pricing";
 import type { CalculationContext, CalculationResult, MaterialLine } from "@/types/project";
 
@@ -68,11 +69,12 @@ export function calculateFlooring({
 
   const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
     formatQuantity(value, measure, { system: unitSystem, precision });
+  const d = describeFor(unitSystem);
 
   const materials: MaterialLine[] = [
     {
       id: "flooring",
-      name: `${MATERIAL_LABELS[material] ?? "Flooring"} (${roundTo(sqFtPerBox, 2)} sq ft per box)`,
+      name: `${MATERIAL_LABELS[material] ?? "Flooring"} (${d.area(sqFtPerBox, 2)} per box)`,
       quantity: boxes,
       measure: "count",
       unitOverride: boxes === 1 ? "box" : "boxes",
@@ -177,7 +179,7 @@ export function calculateFlooring({
       {
         id: "your-price",
         name: "Your price",
-        summary: `At ${roundTo(effectivePerSqFt, 2)} per sq ft as entered.`,
+        summary: `At ${d.pricePerUnit(effectivePerSqFt, "area")} as entered.`,
         recommended: pricePerSqFt > 5,
         rows: [{ label: "Estimated flooring cost", value: boxCost, measure: "currency" }],
         totalCost: boxCost,
@@ -185,7 +187,7 @@ export function calculateFlooring({
     ],
     explanation: [
       `Your ${roomCount === 1 ? "room covers" : `${roundTo(roomCount, 0)} areas cover`} ${fmt(rawArea, "area", 0)}. Adding ${roundTo(wastePct, 1)}% for cuts and mistakes brings the buying target to ${fmt(adjustedArea, "area", 0)}.`,
-      `Flooring is sold by the box, so ${boxes} ${boxes === 1 ? "box" : "boxes"} at ${roundTo(sqFtPerBox, 2)} sq ft each is what you actually take home — ${fmt(coverage, "area", 0)} of material.`,
+      `Flooring is sold by the box, so ${boxes} ${boxes === 1 ? "box" : "boxes"} at ${d.area(sqFtPerBox, 2)} each is what you actually take home — ${d.area(coverage)} of material.`,
       leftover > 0
         ? `That leaves roughly ${fmt(leftover, "area", 0)} spare. Keep it: matching a discontinued run later is close to impossible.`
         : "There is very little spare in this order. Consider one extra box for future repairs.",
@@ -193,16 +195,19 @@ export function calculateFlooring({
     formulas: [
       { kind: "math", label: "Floor area", expression: "Σ (Length × Width) for each area" },
       { kind: "math", label: "Area to buy", expression: "Floor area × (1 + Waste percentage)" },
-      { kind: "math", label: "Boxes", expression: "⌈Area to buy ÷ Square feet per box⌉" },
-      { kind: "math", label: "Leftover", expression: "(Boxes × Sq ft per box) − Floor area" },
+      { kind: "math", label: "Boxes", expression: "⌈Area to buy ÷ Area per box⌉" },
+      { kind: "math", label: "Leftover", expression: "(Boxes × Area per box) − Floor area" },
     ],
     assumptions: [
       { label: "Waste allowance", value: `${roundTo(wastePct, 1)}%` },
-      { label: "Box coverage", value: `${roundTo(sqFtPerBox, 2)} sq ft` },
+      { label: "Box coverage", value: d.area(sqFtPerBox, 2) },
       { label: "Material", value: MATERIAL_LABELS[material] ?? "Flooring" },
       {
         label: "Pricing basis",
-        value: pricePerBox > 0 ? `$${roundTo(pricePerBox, 2)} per box` : `$${roundTo(pricePerSqFt, 2)} per sq ft`,
+        value:
+          pricePerBox > 0
+            ? `${formatCurrency(pricePerBox)} per box`
+            : d.pricePerUnit(pricePerSqFt, "area"),
       },
     ],
     shoppingExtras: [

@@ -6,6 +6,7 @@ import {
   shoppingItem,
   sumCost,
 } from "@/lib/calc/helpers";
+import { describeFor } from "@/lib/calc/describe";
 import { planningDefaults, prices } from "@/lib/pricing";
 import type { CalculationContext, CalculationResult, MaterialLine } from "@/types/project";
 
@@ -62,22 +63,28 @@ export function calculatePaint({
   const trimGallonsExact = includeTrim ? (trimArea * coats) / coverage : 0;
   const trimPurchase = includeTrim ? roundUpTo(trimGallonsExact, 0.25) : 0;
 
+  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
+    formatQuantity(value, measure, { system: unitSystem, precision });
+  const d = describeFor(unitSystem);
+  const metric = unitSystem === "metric";
+
   const materials: MaterialLine[] = [
     {
       id: "paint",
       name: "Wall paint",
       quantity: gallonsPurchase,
-      measure: "count",
-      unitOverride: gallonsPurchase === 1 ? "gallon" : "gallons",
+      measure: "volumeLiquid",
       precision: 2,
       unitPrice: pricePerGallon,
-      unitPriceLabel: "per gallon",
+      unitPriceMeasure: "volumeLiquid" as const,
       cost: costOf(gallonsPurchase, pricePerGallon),
       searchTerm: "interior wall paint",
       note:
-        quarts > 0
-          ? `Buy ${wholeGallons} ${wholeGallons === 1 ? "gallon" : "gallons"} plus ${quarts} ${quarts === 1 ? "quart" : "quarts"}.`
-          : undefined,
+        metric
+          ? "Buy the tin sizes that add up to at least this much."
+          : quarts > 0
+            ? `Buy ${wholeGallons} ${wholeGallons === 1 ? "gallon" : "gallons"} plus ${quarts} ${quarts === 1 ? "quart" : "quarts"}.`
+            : undefined,
     },
     ...(includePrimer
       ? [
@@ -85,11 +92,10 @@ export function calculatePaint({
             id: "primer",
             name: "Primer",
             quantity: primerPurchase,
-            measure: "count" as const,
-            unitOverride: primerPurchase === 1 ? "gallon" : "gallons",
+            measure: "volumeLiquid" as const,
             precision: 2,
             unitPrice: primerPrice,
-            unitPriceLabel: "per gallon",
+            unitPriceMeasure: "volumeLiquid" as const,
             cost: costOf(primerPurchase, primerPrice),
             searchTerm: "interior primer",
             note: "One coat over the full wall area.",
@@ -102,11 +108,10 @@ export function calculatePaint({
             id: "trim-paint",
             name: "Trim & door paint",
             quantity: trimPurchase,
-            measure: "count" as const,
-            unitOverride: trimPurchase === 1 ? "gallon" : "gallons",
+            measure: "volumeLiquid" as const,
             precision: 2,
             unitPrice: pricePerGallon,
-            unitPriceLabel: "per gallon",
+            unitPriceMeasure: "volumeLiquid" as const,
             cost: costOf(trimPurchase, pricePerGallon),
             searchTerm: "trim enamel paint",
             isEstimate: true,
@@ -135,16 +140,15 @@ export function calculatePaint({
   ];
 
   const costTotal = sumCost(materials);
-  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
-    formatQuantity(value, measure, { system: unitSystem, precision });
 
   return {
     headline: {
       label: "You need approximately",
       value: gallonsPurchase,
-      measure: "count",
+      measure: "volumeLiquid",
       precision: 2,
-      unitOverride: gallonsPurchase === 1 ? "gallon of paint" : "gallons of paint",
+      // localiseOverride swaps the unit token, so this reads "L of paint".
+      unitOverride: "gal of paint",
       sublabel: `${coats} ${coats === 1 ? "coat" : "coats"} over ${fmt(paintableArea, "area", 0)} of paintable surface`,
     },
     summary: [
@@ -157,16 +161,14 @@ export function calculatePaint({
       {
         label: "Paint needed (exact)",
         value: gallonsExact,
-        measure: "count",
+        measure: "volumeLiquid",
         precision: 2,
-        unitOverride: "gallons",
       },
       {
         label: "Recommended purchase",
         value: gallonsPurchase,
-        measure: "count",
+        measure: "volumeLiquid",
         precision: 2,
-        unitOverride: "gallons",
         emphasis: true,
       },
     ],
@@ -182,9 +184,8 @@ export function calculatePaint({
           {
             label: "Paint",
             value: roundUpTo(paintableArea / coverage, 0.25),
-            measure: "count",
+            measure: "volumeLiquid",
             precision: 2,
-            unitOverride: "gallons",
           },
         ],
       },
@@ -197,16 +198,15 @@ export function calculatePaint({
           {
             label: "Paint",
             value: roundUpTo((paintableArea * 2) / coverage, 0.25),
-            measure: "count",
+            measure: "volumeLiquid",
             precision: 2,
-            unitOverride: "gallons",
           },
         ],
       },
     ],
     explanation: [
-      `${rooms > 1 ? `${roundTo(rooms, 0)} rooms of ` : ""}${roundTo(length, 1)} × ${roundTo(width, 1)} at ${roundTo(height, 1)} ft ceilings gives ${fmt(wallArea, "area", 0)} of wall after taking out ${roundTo(doors, 0)} ${doors === 1 ? "door" : "doors"} and ${roundTo(windows, 0)} ${windows === 1 ? "window" : "windows"}.`,
-      `At ${roundTo(coverage, 0)} sq ft per gallon and ${coats} ${coats === 1 ? "coat" : "coats"}, that is ${roundTo(gallonsExact, 2)} gallons of actual paint. Rounded up to what you can buy: ${roundTo(gallonsPurchase, 2)} gallons.`,
+      `${rooms > 1 ? `${roundTo(rooms, 0)} rooms of ` : ""}${d.length(length)} × ${d.length(width)} at ${d.length(height)} ceilings gives ${d.area(wallArea)} of wall after taking out ${roundTo(doors, 0)} ${doors === 1 ? "door" : "doors"} and ${roundTo(windows, 0)} ${windows === 1 ? "window" : "windows"}.`,
+      `At ${d.coveragePerLiquid(coverage)} and ${coats} ${coats === 1 ? "coat" : "coats"}, that is ${d.liquid(gallonsExact)} of actual paint. Rounded up to what you can buy: ${d.liquid(gallonsPurchase)}.`,
       "Coverage on the can is measured on smooth, primed, similar-coloured wall. Textured walls, deep colour changes, and fresh drywall all drink noticeably more.",
     ],
     formulas: [
@@ -214,15 +214,24 @@ export function calculatePaint({
       {
         kind: "math",
         label: "Openings",
-        expression: `Doors × ${planningDefaults.doorAreaSqFt} sq ft + Windows × ${planningDefaults.windowAreaSqFt} sq ft`,
+        expression: `Doors × ${d.area(planningDefaults.doorAreaSqFt, 2)} + Windows × ${d.area(planningDefaults.windowAreaSqFt, 2)}`,
       },
-      { kind: "math", label: "Paint", expression: "(Paintable area × Coats) ÷ Coverage per gallon" },
-      { kind: "assumption", label: "Purchase rounding", expression: "Rounded up to the next quart" },
+      {
+        kind: "math",
+        label: "Paint",
+        expression: `(Paintable area × Coats) ÷ Coverage per ${metric ? "litre" : "gallon"}`,
+      },
+      {
+        kind: "assumption",
+        label: "Purchase rounding",
+        // The increment is canonical, so metric names the litre figure it lands on.
+        expression: metric ? "Rounded up to the next 0.95 L" : "Rounded up to the next quart",
+      },
     ],
     assumptions: [
-      { label: "Coverage", value: `${roundTo(coverage, 0)} sq ft per gallon` },
-      { label: "Standard door", value: `${planningDefaults.doorAreaSqFt} sq ft` },
-      { label: "Standard window", value: `${planningDefaults.windowAreaSqFt} sq ft` },
+      { label: "Coverage", value: d.coveragePerLiquid(coverage) },
+      { label: "Standard door", value: d.area(planningDefaults.doorAreaSqFt, 2) },
+      { label: "Standard window", value: d.area(planningDefaults.windowAreaSqFt, 2) },
       { label: "Ceiling included", value: includeCeiling ? "Yes" : "No" },
       { label: "Primer included", value: includePrimer ? "Yes, one coat" : "No" },
     ],

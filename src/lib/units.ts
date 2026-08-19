@@ -15,6 +15,7 @@ export type Measure =
   | "area" // sq ft ↔ m²
   | "volumeFt" // cu ft ↔ m³
   | "volumeYd" // cu yd ↔ m³
+  | "volumeLiquid" // gal ↔ L
   | "weight" // short tons ↔ tonnes
   | "percent"
   | "currency"
@@ -27,6 +28,7 @@ const TO_METRIC: Record<Measure, number> = {
   area: 0.09290304, // sq ft → m²
   volumeFt: 0.028316846592, // cu ft → m³
   volumeYd: 0.764554857984, // cu yd → m³
+  volumeLiquid: 3.785411784, // US gallon → litre
   weight: 0.90718474, // short ton → tonne
   percent: 1,
   currency: 1,
@@ -39,6 +41,7 @@ const UNIT_LABELS: Record<Measure, { us: string; metric: string }> = {
   area: { us: "sq ft", metric: "m²" },
   volumeFt: { us: "cu ft", metric: "m³" },
   volumeYd: { us: "yd³", metric: "m³" },
+  volumeLiquid: { us: "gal", metric: "L" },
   weight: { us: "tons", metric: "t" },
   percent: { us: "%", metric: "%" },
   currency: { us: "$", metric: "$" },
@@ -47,11 +50,12 @@ const UNIT_LABELS: Record<Measure, { us: string; metric: string }> = {
 
 /** Spoken-word unit names, used in explanations and the Project Pack. */
 const UNIT_NAMES: Record<Measure, { us: string; metric: string }> = {
-  length: { us: "feet", metric: "meters" },
-  inch: { us: "inches", metric: "centimeters" },
-  area: { us: "square feet", metric: "square meters" },
-  volumeFt: { us: "cubic feet", metric: "cubic meters" },
-  volumeYd: { us: "cubic yards", metric: "cubic meters" },
+  length: { us: "feet", metric: "metres" },
+  inch: { us: "inches", metric: "centimetres" },
+  area: { us: "square feet", metric: "square metres" },
+  volumeFt: { us: "cubic feet", metric: "cubic metres" },
+  volumeYd: { us: "cubic yards", metric: "cubic metres" },
+  volumeLiquid: { us: "gallons", metric: "litres" },
   weight: { us: "tons", metric: "tonnes" },
   percent: { us: "percent", metric: "percent" },
   currency: { us: "dollars", metric: "dollars" },
@@ -108,6 +112,7 @@ export function defaultPrecision(measure: Measure): number {
       return 1;
     case "volumeYd":
     case "weight":
+    case "volumeLiquid":
       return 2;
     default:
       return 2;

@@ -7,6 +7,7 @@ import {
   sumCost,
   wasteMultiplier,
 } from "@/lib/calc/helpers";
+import { describeFor } from "@/lib/calc/describe";
 import { planningDefaults, prices } from "@/lib/pricing";
 import type { CalculationContext, CalculationResult, MaterialLine } from "@/types/project";
 
@@ -80,11 +81,15 @@ export function calculateTile({
 
   const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
     formatQuantity(value, measure, { system: unitSystem, precision });
+  const d = describeFor(unitSystem);
+  const metric = unitSystem === "metric";
+  // Tile is described by its face dimensions everywhere it appears.
+  const tileSize = `${d.inch(tileLength, 1)} × ${d.inch(tileWidth, 1)}`;
 
   const materials: MaterialLine[] = [
     {
       id: "tile",
-      name: `Tile ${roundTo(tileLength, 2)} × ${roundTo(tileWidth, 2)} in (${roundTo(sqFtPerBox, 2)} sq ft per box)`,
+      name: `Tile ${tileSize} (${d.area(sqFtPerBox, 2)} per box)`,
       quantity: boxes,
       measure: "count",
       unitOverride: boxes === 1 ? "box" : "boxes",
@@ -123,7 +128,7 @@ export function calculateTile({
       cost: costOf(groutBags, groutPrice),
       isEstimate: true,
       searchTerm: "tile grout",
-      note: `About ${roundTo(groutLb, 1)} lb for ${roundTo(jointWidth, 4)} in joints.`,
+      note: `About ${d.mass(groutLb, 1)} for ${d.inch(jointWidth, 2)} joints.`,
     },
     {
       id: "spacers",
@@ -143,11 +148,11 @@ export function calculateTile({
       value: boxes,
       measure: "count",
       unitOverride: boxes === 1 ? "box of tile" : "boxes of tile",
-      sublabel: `${tilesAdjusted} tiles including ${roundTo(wastePct, 1)}% waste, covering ${fmt(areaSqFt, "area", 0)}`,
+      sublabel: `${tilesAdjusted} tiles including ${roundTo(wastePct, 1)}% waste, covering ${d.area(areaSqFt)}`,
     },
     summary: [
       { label: "Area to tile", value: areaSqFt, measure: "area", precision: 0 },
-      { label: "Tile size", value: tileAreaSqFt, measure: "area", precision: 2, note: `${roundTo(tileLength, 2)} × ${roundTo(tileWidth, 2)} in` },
+      { label: "Tile size", value: tileAreaSqFt, measure: "area", precision: 2, note: tileSize },
       { label: "Tiles before waste", value: Math.ceil(tilesExact), measure: "count", unitOverride: "tiles" },
       { label: "Waste allowance", value: wastePct, measure: "percent" },
       {
@@ -192,30 +197,40 @@ export function calculateTile({
       },
     ],
     explanation: [
-      `${fmt(areaSqFt, "area", 0)} of floor at ${roundTo(tileLength, 2)} × ${roundTo(tileWidth, 2)} in per tile works out to about ${Math.ceil(tilesExact)} tiles before waste.`,
+      `${d.area(areaSqFt)} of floor at ${tileSize} per tile works out to about ${Math.ceil(tilesExact)} tiles before waste.`,
       `Adding ${roundTo(wastePct, 1)}% for cuts and breakage brings it to ${tilesAdjusted} tiles, which is ${boxes} ${boxes === 1 ? "box" : "boxes"}.`,
       "Buy every box from the same production lot. Colour and size vary between lots enough to see across a floor.",
     ],
     formulas: [
       { kind: "math", label: "Area", expression: "Length × Width" },
-      { kind: "math", label: "Tile area", expression: "(Tile length × Tile width) ÷ 144" },
+      {
+        kind: "math",
+        label: "Tile area",
+        expression: metric
+          ? "(Tile length × Tile width) ÷ 10,000"
+          : "(Tile length × Tile width) ÷ 144",
+      },
       { kind: "math", label: "Tiles", expression: "⌈(Area × waste) ÷ Tile area⌉" },
       {
         kind: "assumption",
         label: "Grout",
-        expression: "[(A + B) ÷ (A × B)] × Joint width × Tile thickness × 9.5 lb per sq ft",
+        // The published formula is stated in imperial and only holds in it; the
+        // result is converted, so metric says which units go in.
+        expression: metric
+          ? "[(A + B) ÷ (A × B)] × Joint width × Tile thickness × 9.5, with A, B, and thickness in inches"
+          : "[(A + B) ÷ (A × B)] × Joint width × Tile thickness × 9.5 lb per sq ft",
       },
       {
         kind: "assumption",
         label: "Thinset",
-        expression: `${thinset.coverage} sq ft per 50 lb bag (${thinset.trowel})`,
+        expression: `${d.area(thinset.coverage)} per 50 lb bag (${thinset.trowel})`,
       },
     ],
     assumptions: [
       { label: "Waste allowance", value: `${roundTo(wastePct, 1)}%` },
-      { label: "Grout joint", value: `${roundTo(jointWidth, 4)} in` },
-      { label: "Tile thickness", value: `${roundTo(tileThickness, 3)} in` },
-      { label: "Box coverage", value: `${roundTo(sqFtPerBox, 2)} sq ft` },
+      { label: "Grout joint", value: d.inch(jointWidth, 2) },
+      { label: "Tile thickness", value: d.inch(tileThickness, 2) },
+      { label: "Box coverage", value: d.area(sqFtPerBox, 2) },
     ],
     shoppingExtras: [
       shoppingItem("trowel", "Notched trowel sized for your tile"),

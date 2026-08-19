@@ -10,6 +10,11 @@ import {
 } from "@/lib/calc/engine";
 import { formatMaterialQuantity, formatRow, formatUnitPrice } from "@/lib/format";
 import { formatQuantity, type UnitSystem } from "@/lib/units";
+import {
+  imperialLeaks,
+  productSpecExemption,
+  IMPERIAL_UNIT,
+} from "../support/imperialUnits";
 import type { InputValues, ProjectDefinition } from "@/types/project";
 
 /**
@@ -379,15 +384,13 @@ describe("unit prices agree with the quantity printed beside them", () => {
     });
   }
 
-  it("never prints an imperial unit in metric mode", () => {
+  it("never prints an imperial unit in a metric quantity", () => {
     /*
-     * Catches the whole class rather than the one instance found: any line,
-     * summary row, or headline that hardcodes a US unit while its value is
-     * converted. "24 linear ft" beside "3.40 m³" was a third of the timber the
-     * project actually needed.
+     * The rendered numbers: headline, material quantities, unit prices, and
+     * summary rows. A hardcoded US unit here contradicts the value beside it —
+     * "24 linear ft" next to "3.40 m³" was a third of the timber the project
+     * actually needed.
      */
-    const imperial = /\b(sq ft|cu ft|yd³|linear ft|tons?)\b/;
-
     for (const project of projects) {
       const result = run(project, {}, "metric");
 
@@ -402,29 +405,46 @@ describe("unit prices agree with the quantity printed beside them", () => {
           .filter((line) => line.unitPrice !== undefined)
           .map((line) => formatUnitPrice(line, "metric")),
         ...result.summary.map((row) => formatRow(row, "metric")),
-        /*
-         * Notes sit directly under the quantity, so a stale imperial figure
-         * there contradicts the number above it — drywall said "Covers 608 sq
-         * ft" beneath a headline of 51 m².
-         *
-         * Product specifications are exempt: a 4 × 8 ft sheet, a 5 lb-per-sheet
-         * compound allowance, a 250 ft tape roll, and a 60 lb bag are what is
-         * printed on the packaging. Translating those would make the shelf
-         * harder to find, not easier.
-         */
-        ...result.materials
-          .filter((line) => line.note)
-          .map((line) =>
-            line
-              .note!.replace(/\b\d+(\.\d+)?\s*(lb|gal|in)\b/g, "")
-              .replace(/\b\d+\s*×\s*\d+\s*ft\b/g, ""),
-          ),
       ];
 
       for (const text of rendered) {
-        expect(imperial.test(text), `${project.slug}: "${text}"`).toBe(false);
+        const leaked = IMPERIAL_UNIT.test(text) && !productSpecExemption(text);
+        expect(leaked, `${project.slug}: "${text}"`).toBe(false);
       }
     }
+  });
+
+  it("never prints an imperial unit in metric prose", () => {
+    /*
+     * The sentences around the numbers: explanations, notes, assumption rows,
+     * formula expressions, scenario names, warnings, and effort notes. These
+     * were the last holdout — roughly sixty strings that interpolated a
+     * converted value next to a unit word typed by hand, so a metric reader was
+     * told "a 111 m² bed at 3 in deep".
+     *
+     * src/lib/calc/describe.ts exists so a calculator cannot write a unit name
+     * at all. This is the gate that keeps it that way.
+     */
+    for (const project of projects) {
+      const leaks = imperialLeaks(run(project, {}, "metric"));
+      const report = leaks.map(([where, text]) => `${where}: "${text}"`).join("\n");
+      expect(report, project.slug).toBe("");
+    }
+  });
+
+  it("keeps product specifications in the units they are sold under", () => {
+    // The exemptions are deliberate, so they need to still be reachable — a
+    // regex that stopped matching would silently widen the gate.
+    const drywall = run(getProjectOrThrow("drywall-calculator"), {}, "metric");
+    const sheet = drywall.materials.find((line) => line.id === "sheets")!;
+
+    expect(sheet.name).toContain("4 × 8 ft");
+    expect(productSpecExemption(sheet.name)?.why).toMatch(/nominal sheet size/);
+
+    const tile = run(getProjectOrThrow("tile-calculator"), {}, "metric");
+    const thinset = tile.materials.find((line) => line.id === "thinset")!;
+    expect(thinset.name).toContain("50 lb");
+    expect(productSpecExemption(thinset.name)).toBeDefined();
   });
 
   it("labels a per-measure price in the reader's own units", () => {

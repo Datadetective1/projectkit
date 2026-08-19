@@ -9,6 +9,7 @@ import {
   sumCost,
   wasteMultiplier,
 } from "@/lib/calc/helpers";
+import { describeFor } from "@/lib/calc/describe";
 import { planningDefaults, prices } from "@/lib/pricing";
 import type { CalculationContext, CalculationResult, MaterialLine } from "@/types/project";
 
@@ -64,11 +65,19 @@ export function calculateDrywall({
 
   const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
     formatQuantity(value, measure, { system: unitSystem, precision });
+  const d = describeFor(unitSystem);
+  /*
+   * Sheet sizes stay imperial. "4 × 8 ft" is the product name you ask for, and
+   * a metric reader hunting 1200 × 2400 mm board is better served by the label
+   * on the stack than by 1.22 × 2.44 m. The fallback is a real area, so it
+   * converts.
+   */
+  const sheetLabel = SHEET_LABELS[sheetKey] ?? d.area(sheetArea);
 
   const materials: MaterialLine[] = [
     {
       id: "sheets",
-      name: `Drywall sheets (${SHEET_LABELS[sheetKey] ?? `${sheetArea} sq ft`})`,
+      name: `Drywall sheets (${sheetLabel})`,
       quantity: sheets,
       measure: "count",
       unitOverride: sheets === 1 ? "sheet" : "sheets",
@@ -99,7 +108,7 @@ export function calculateDrywall({
       cost: costOf(compoundBuckets, compoundPrice),
       isEstimate: true,
       searchTerm: "all purpose joint compound",
-      note: `Allowance of about ${planningDefaults.drywallCompoundLbPerSheet} lb per sheet across three coats.`,
+      note: `Allowance of about ${d.mass(planningDefaults.drywallCompoundLbPerSheet)} per sheet across three coats.`,
     },
     {
       id: "tape",
@@ -141,7 +150,7 @@ export function calculateDrywall({
       value: sheets,
       measure: "count",
       unitOverride: sheets === 1 ? "sheet" : "sheets",
-      sublabel: `${SHEET_LABELS[sheetKey] ?? ""} drywall covering ${fmt(totalArea, "area", 0)}`,
+      sublabel: `${sheetLabel} drywall covering ${d.area(totalArea)}`,
     },
     summary: [
       { label: "Wall area (less openings)", value: netWallArea, measure: "area", precision: 0 },
@@ -178,7 +187,7 @@ export function calculateDrywall({
     ],
     explanation: [
       `Walls come to ${fmt(wallArea, "area", 0)} before openings. Taking out ${roundTo(doors, 0)} ${doors === 1 ? "door" : "doors"} and ${roundTo(windows, 0)} ${windows === 1 ? "window" : "windows"} leaves ${fmt(netWallArea, "area", 0)}${includeCeiling ? `, plus ${fmt(ceilingArea, "area", 0)} of ceiling` : ""}.`,
-      `At ${roundTo(wastePct, 1)}% waste that is ${fmt(adjustedArea, "area", 0)} to cover, which is ${sheets} ${sheets === 1 ? "sheet" : "sheets"} of ${SHEET_LABELS[sheetKey] ?? "board"}.`,
+      `At ${roundTo(wastePct, 1)}% waste that is ${fmt(adjustedArea, "area", 0)} to cover, which is ${sheets} ${sheets === 1 ? "sheet" : "sheets"} of ${sheetLabel}.`,
       "Screw, compound, and tape quantities are trade rules of thumb rather than exact figures — finishing style changes compound usage more than anything else.",
     ],
     formulas: [
@@ -188,14 +197,14 @@ export function calculateDrywall({
       {
         kind: "assumption",
         label: "Accessories",
-        expression: `${planningDefaults.drywallScrewsPerSheet} screws, ${planningDefaults.drywallCompoundLbPerSheet} lb compound, and ${planningDefaults.drywallTapeFtPerSheet} ft tape per sheet`,
+        expression: `${planningDefaults.drywallScrewsPerSheet} screws, ${d.mass(planningDefaults.drywallCompoundLbPerSheet)} compound, and ${d.length(planningDefaults.drywallTapeFtPerSheet)} tape per sheet`,
       },
     ],
     assumptions: [
-      { label: "Sheet size", value: SHEET_LABELS[sheetKey] ?? `${sheetArea} sq ft` },
+      { label: "Sheet size", value: sheetLabel },
       { label: "Ceiling included", value: includeCeiling ? "Yes" : "No" },
       { label: "Waste allowance", value: `${roundTo(wastePct, 1)}%` },
-      { label: "Compound allowance", value: `${planningDefaults.drywallCompoundLbPerSheet} lb per sheet` },
+      { label: "Compound allowance", value: `${d.mass(planningDefaults.drywallCompoundLbPerSheet)} per sheet` },
     ],
     shoppingExtras: [
       shoppingItem("t-square", "Drywall T-square"),

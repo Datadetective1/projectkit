@@ -9,6 +9,7 @@ import {
   str,
   wasteMultiplier,
 } from "@/lib/calc/helpers";
+import { describeFor } from "@/lib/calc/describe";
 import { planningDefaults, prices } from "@/lib/pricing";
 import type { CalculationContext, CalculationResult } from "@/types/project";
 
@@ -84,6 +85,8 @@ export function calculateConcrete({
 
   const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
     formatQuantity(value, measure, { system: unitSystem, precision });
+  const d = describeFor(unitSystem);
+  const metric = unitSystem === "metric";
 
   const materials = [
     readyMixRecommended
@@ -146,7 +149,7 @@ export function calculateConcrete({
       unitOverride: "stakes",
       isEstimate: true,
       searchTerm: "wood form stakes",
-      note: "Roughly one every 3 ft, plus corners.",
+      note: `Roughly one every ${d.length(3)}, plus corners.`,
     },
   ];
 
@@ -182,7 +185,7 @@ export function calculateConcrete({
       {
         id: "ready-mix",
         name: "Ready-mix delivery",
-        summary: "One truck, one pour. Best once you pass about a cubic yard.",
+        summary: `One truck, one pour. Best once you pass about ${metric ? "a cubic metre" : "a cubic yard"}.`,
         recommended: readyMixRecommended,
         rows: [
           { label: "Order quantity", value: purchaseYards, measure: "volumeYd", precision: 2 },
@@ -208,7 +211,7 @@ export function calculateConcrete({
       },
     ],
     explanation: [
-      `A ${roundTo(length, 2)} × ${roundTo(width, 2)} slab at ${roundTo(thicknessIn, 2)} in works out to ${fmt(areaSqFt, "area", 0)} of surface and ${fmt(cubicYards, "volumeYd", 2)} of concrete before waste.`,
+      `A ${d.length(length)} × ${d.length(width)} slab at ${d.inch(thicknessIn)} works out to ${d.area(areaSqFt)} of surface and ${d.volumeYd(cubicYards)} of concrete before waste.`,
       `Concrete is unforgiving: running short mid-pour means a cold joint. The ${roundTo(wastePct, 1)}% allowance covers spillage, uneven subgrade, and form deflection, which is why the recommended order is ${fmt(purchaseYards, "volumeYd", 2)}.`,
       readyMixRecommended
         ? `At this size, ready-mix delivery is normally the practical choice — ${bagsNeeded} bags would need mixing by hand.`
@@ -216,8 +219,17 @@ export function calculateConcrete({
     ],
     formulas: [
       { kind: "math", label: "Area", expression: "Length × Width" },
-      { kind: "math", label: "Volume", expression: "Area × (Thickness ÷ 12)" },
-      { kind: "math", label: "Cubic yards", expression: "Cubic feet ÷ 27" },
+      /*
+       * The ÷ 12 and ÷ 27 exist only to reconcile inches, feet, and yards. In
+       * metric the same arithmetic is one step, so showing the imperial
+       * divisors to a metric reader is noise that does not match their numbers.
+       */
+      ...(metric
+        ? ([{ kind: "math", label: "Volume", expression: "Area × Thickness" }] as const)
+        : ([
+            { kind: "math", label: "Volume", expression: "Area × (Thickness ÷ 12)" },
+            { kind: "math", label: "Cubic yards", expression: "Cubic feet ÷ 27" },
+          ] as const)),
       {
         kind: "math",
         label: "Waste adjusted",
@@ -231,17 +243,21 @@ export function calculateConcrete({
       {
         kind: "assumption",
         label: "Base gravel",
-        expression: "Area × (Base depth ÷ 12) × 1.10 compaction allowance",
+        expression: metric
+          ? "Area × Base depth × 1.10 compaction allowance"
+          : "Area × (Base depth ÷ 12) × 1.10 compaction allowance",
       },
     ],
     assumptions: [
       { label: "Waste allowance", value: `${roundTo(wastePct, 1)}%` },
-      { label: "Concrete price", value: `$${roundTo(pricePerYard, 2)} per yd³` },
-      { label: "Bag yield", value: `${roundTo(bagYieldCuFt, 2)} cu ft per bag` },
+      { label: "Concrete price", value: d.pricePerUnit(pricePerYard, "volumeYd") },
+            // Left imperial on purpose: this is the figure printed on the bag, and
+      // it is what the select above offers. See describe.ts on product specs.
+      { label: "Bag yield", value: d.productSpec(`${roundTo(bagYieldCuFt, 2)} cu ft per bag`) },
       { label: "Reinforcement", value: reinforcement === "none" ? "None selected" : reinforcementLine?.name ?? "—" },
       {
         label: "Base course",
-        value: baseDepthIn > 0 ? `${roundTo(baseDepthIn, 1)} in compacted gravel` : "Not included",
+        value: baseDepthIn > 0 ? `${d.inch(baseDepthIn)} compacted gravel` : "Not included",
       },
     ],
     shoppingExtras: [
