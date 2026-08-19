@@ -1,4 +1,4 @@
-import { bulkPurchaseStep, formatQuantity, roundTo, roundUpTo } from "@/lib/units";
+import { bulkPurchaseStep, formatCurrency, formatQuantity, roundTo, roundUpTo } from "@/lib/units";
 import {
   circleArea,
   costOf,
@@ -10,6 +10,7 @@ import {
   str,
   wasteMultiplier,
 } from "@/lib/calc/helpers";
+import { describeFor } from "@/lib/calc/describe";
 import { planningDefaults, prices } from "@/lib/pricing";
 import type { CalculationContext, CalculationResult, MaterialLine } from "@/types/project";
 
@@ -48,6 +49,11 @@ export function calculateMulch({
   // Below roughly a cubic yard, bags win on convenience even when bulk is cheaper.
   const recommendBulk = adjustedYards >= 1 && bulkIsCheaper;
 
+  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
+    formatQuantity(value, measure, { system: unitSystem, precision });
+  const d = describeFor(unitSystem);
+  const metric = unitSystem === "metric";
+
   const materials: MaterialLine[] = recommendBulk
     ? [
         {
@@ -57,7 +63,7 @@ export function calculateMulch({
           measure: "volumeYd",
           precision: 2,
           unitPrice: bulkPrice,
-          unitPriceLabel: "per yd³",
+          unitPriceMeasure: "volumeYd" as const,
           cost: bulkCost,
           searchTerm: "bulk mulch delivery",
         },
@@ -84,7 +90,7 @@ export function calculateMulch({
       measure: "area",
       precision: 0,
       unitPrice: num(values, "fabricPrice", 0),
-      unitPriceLabel: "per sq ft",
+      unitPriceMeasure: "area" as const,
       cost: costOf(Math.ceil(areaSqFt), num(values, "fabricPrice", 0)),
       searchTerm: "landscape fabric",
     });
@@ -94,9 +100,6 @@ export function calculateMulch({
     materials.reduce((total, line) => total + (line.cost ?? 0), 0),
     2,
   );
-  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
-    formatQuantity(value, measure, { system: unitSystem, precision });
-
   return {
     headline: {
       label: "You need approximately",
@@ -127,7 +130,7 @@ export function calculateMulch({
       {
         id: "bulk",
         name: "Bulk delivery",
-        summary: "Cheaper per yard once you need more than about a yard.",
+        summary: `Cheaper per ${d.unitName("volumeYd").replace(/s$/, "")} once you need more than about one.`,
         recommended: recommendBulk,
         rows: [
           { label: "Order", value: purchaseYards, measure: "volumeYd", precision: 2 },
@@ -148,11 +151,11 @@ export function calculateMulch({
       },
     ],
     explanation: [
-      `A ${fmt(areaSqFt, "area", 0)} bed at ${roundTo(depthIn, 1)} in deep needs ${fmt(cubicYards, "volumeYd", 2)} of mulch, or ${roundTo(cubicFeet, 1)} cubic feet.`,
+      `A ${d.area(areaSqFt)} bed at ${d.inch(depthIn)} deep needs ${d.volumeYd(cubicYards)} of mulch.`,
       `With a ${roundTo(wastePct, 1)}% allowance for settling and uneven spreading, plan on ${fmt(adjustedYards, "volumeYd", 2)}.`,
       bulkIsCheaper
-        ? `Bulk works out to about ${roundTo(bulkCost, 0)} versus ${roundTo(bagCost, 0)} in bags — a saving of roughly ${roundTo(Math.abs(bagCost - bulkCost), 0)} if you can handle a delivered pile.`
-        : `At your prices, bags come out at about ${roundTo(bagCost, 0)} versus ${roundTo(bulkCost, 0)} bulk.`,
+        ? `Bulk works out to about ${formatCurrency(bulkCost)} versus ${formatCurrency(bagCost)} in bags — a saving of roughly ${formatCurrency(Math.abs(bagCost - bulkCost))} if you can handle a delivered pile.`
+        : `At your prices, bags come out at about ${formatCurrency(bagCost)} versus ${formatCurrency(bulkCost)} bulk.`,
     ],
     formulas: [
       {
@@ -165,15 +168,22 @@ export function calculateMulch({
               ? "Entered square footage"
               : "Length × Width",
       },
-      { kind: "math", label: "Volume", expression: "Area × (Depth ÷ 12)" },
-      { kind: "math", label: "Cubic yards", expression: "Cubic feet ÷ 27" },
-      { kind: "math", label: "Bags", expression: "⌈Adjusted cubic feet ÷ Bag size⌉" },
+      {
+        kind: "math",
+        label: "Volume",
+        expression: metric ? "Area × Depth" : "Area × (Depth ÷ 12)",
+      },
+      ...(metric
+        ? []
+        : [{ kind: "math" as const, label: "Cubic yards", expression: "Cubic feet ÷ 27" }]),
+      { kind: "math", label: "Bags", expression: "⌈Adjusted volume ÷ Bag size⌉" },
     ],
     assumptions: [
-      { label: "Depth", value: `${roundTo(depthIn, 1)} in` },
+      { label: "Depth", value: d.inch(depthIn) },
       { label: "Waste allowance", value: `${roundTo(wastePct, 1)}%` },
-      { label: "Bag size", value: `${roundTo(bagSize, 2)} cu ft` },
-      { label: "Bulk price", value: `$${roundTo(bulkPrice, 2)} per yd³` },
+      // Left imperial: this is the bag size printed on the packaging.
+      { label: "Bag size", value: d.productSpec(`${roundTo(bagSize, 2)} cu ft`) },
+      { label: "Bulk price", value: d.pricePerUnit(bulkPrice, "volumeYd") },
     ],
     shoppingExtras: [
       shoppingItem("wheelbarrow", "Wheelbarrow"),
@@ -183,14 +193,14 @@ export function calculateMulch({
       shoppingItem("tarp", "Tarp to protect the driveway", undefined, true),
     ],
     warnings: [
-      "Keep mulch a few inches clear of trunks and stems — piling it against them invites rot.",
-      "Two to three inches is enough for most beds. Deeper does not suppress weeds better, it just holds water against roots.",
+      `Keep mulch ${metric ? "a few centimetres" : "a few inches"} clear of trunks and stems — piling it against them invites rot.`,
+      `${metric ? "Five to eight centimetres" : "Two to three inches"} is enough for most beds. Deeper does not suppress weeds better, it just holds water against roots.`,
     ],
     effort: {
       difficulty: "Easy",
       timeCategory: adjustedYards > 4 ? "A full day" : "A few hours",
       notes: [
-        "A cubic yard is roughly nine to fourteen wheelbarrow loads.",
+        `A ${d.unitName("volumeYd").replace(/s$/, "")} is roughly ${metric ? "twelve to eighteen" : "nine to fourteen"} wheelbarrow loads.`,
         "Weeding and edging before spreading is what makes it look finished.",
       ],
     },

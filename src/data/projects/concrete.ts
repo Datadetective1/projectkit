@@ -43,7 +43,8 @@ export const concreteProject: ProjectDefinition = {
       id: "thickness",
       type: "number",
       label: "Slab thickness",
-      help: "4 in is typical for patios and walkways. 5–6 in for driveways or vehicle loads.",
+      help: (d) =>
+        `${d.inch(4, 0)} is typical for patios and walkways. ${d.inchRange(5, 6)} for driveways or vehicle loads.`,
       measure: "inch",
       defaultValue: 4,
       min: 1,
@@ -99,7 +100,7 @@ export const concreteProject: ProjectDefinition = {
       type: "number",
       label: "Ready-mix price",
       measure: "currency",
-      unitOverride: "$ / yd³",
+      perMeasure: "volumeYd",
       defaultValue: prices.concretePerCubicYard,
       min: 0,
       max: 2000,
@@ -141,7 +142,7 @@ export const concreteProject: ProjectDefinition = {
       type: "number",
       label: "Base gravel price",
       measure: "currency",
-      unitOverride: "$ / yd³",
+      perMeasure: "volumeYd",
       defaultValue: prices.gravelPerCubicYard,
       min: 0,
       max: 1000,
@@ -195,7 +196,7 @@ export const concreteProject: ProjectDefinition = {
   related: ["gravel-calculator", "fence-calculator", "deck-calculator", "sod-calculator"],
 
   seo: {
-    title: "Concrete Calculator & Project Planner — Yards, Bags, Cost",
+    title: "Concrete Calculator — Yards, Bags & Cost",
     description:
       "Calculate concrete volume, waste, bags, base material, and estimated cost for a patio or slab — plus a complete shopping list and project plan.",
     breadcrumb: "Concrete",

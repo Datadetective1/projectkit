@@ -147,7 +147,7 @@ function MaterialsCard({
                 <span className="text-sm tabular-nums text-ink-muted">
                   {formatCurrency(line.cost)}
                   {line.unitPrice === undefined ? null : (
-                    <span className="text-ink-subtle"> · {formatUnitPrice(line)}</span>
+                    <span className="text-ink-subtle"> · {formatUnitPrice(line, system)}</span>
                   )}
                 </span>
               )}
@@ -205,7 +205,7 @@ function MaterialsCard({
                   {formatMaterialQuantity(line, system)}
                 </td>
                 <td className="whitespace-nowrap px-3 py-3 text-right tabular-nums text-ink-muted">
-                  {formatUnitPrice(line)}
+                  {formatUnitPrice(line, system)}
                 </td>
                 <td className="whitespace-nowrap px-5 py-3 text-right tabular-nums font-medium text-ink sm:px-6">
                   {line.cost === undefined ? "—" : formatCurrency(line.cost)}
@@ -232,7 +232,8 @@ function MaterialsCard({
         <p className="text-xs text-ink-subtle">
           Costs use the prices in the estimate options above. Items marked{" "}
           <span className="font-semibold">Estimate</span> are planning allowances rather than exact
-          quantities.
+          quantities. Sales tax, delivery, and equipment rental are not included — on bulk materials
+          delivery alone can add a meaningful amount.
         </p>
         <ShopMaterials
           className="mt-4"

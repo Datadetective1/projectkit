@@ -43,7 +43,9 @@ function writeAll(records: UnlockRecord[]): void {
 }
 
 export function isPackUnlocked(projectId: string): boolean {
-  if (features.projectPackDevUnlock) return true;
+  // Free-during-beta is a product state and applies everywhere; the dev unlock
+  // is a local convenience the server refuses in production.
+  if (features.projectPackFree || features.projectPackDevUnlock) return true;
   return readAll().some((record) => record.projectId === projectId);
 }
 
@@ -53,7 +55,7 @@ export function recordUnlock(projectId: string, sessionId?: string): void {
   writeAll(records);
 }
 
-/** True when unlock is granted by the dev flag rather than a real purchase. */
+/** True when access was granted by configuration rather than a purchase. */
 export function isDevUnlock(): boolean {
-  return features.projectPackDevUnlock;
+  return features.projectPackFree || features.projectPackDevUnlock;
 }

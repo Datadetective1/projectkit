@@ -8,6 +8,7 @@ import {
   str,
   wasteMultiplier,
 } from "@/lib/calc/helpers";
+import { describeFor } from "@/lib/calc/describe";
 import { planningDefaults, prices } from "@/lib/pricing";
 import type { CalculationContext, CalculationResult, MaterialLine } from "@/types/project";
 
@@ -54,6 +55,19 @@ export function calculateGravel({
   const yardCost = costOf(purchaseYards, pricePerYard);
   const tonCost = costOf(purchaseTons, pricePerTon);
 
+  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
+    formatQuantity(value, measure, { system: unitSystem, precision });
+  const d = describeFor(unitSystem);
+  const metric = unitSystem === "metric";
+  /*
+   * Density is the one figure here with a compound unit. 100 lb/cu ft is
+   * 1,602 kg/m³ — the pounds and the cubic foot both have to convert, which is
+   * exactly the kind of thing a hardcoded label gets wrong.
+   */
+  const densityLabel = metric
+    ? `${roundTo((density * 0.45359237) / 0.028316846592, 0).toLocaleString("en-US")} kg per cubic metre`
+    : `${roundTo(density, 0)} lb per cubic foot`;
+
   const materials: MaterialLine[] = [
     {
       id: "gravel",
@@ -62,10 +76,10 @@ export function calculateGravel({
       measure: "volumeYd",
       precision: 2,
       unitPrice: pricePerYard,
-      unitPriceLabel: "per yd³",
+      unitPriceMeasure: "volumeYd" as const,
       cost: yardCost,
       searchTerm: `${MATERIAL_NAMES[densityKey] ?? "gravel"} delivery`,
-      note: `Approximately ${roundTo(purchaseTons, 2)} tons at ${roundTo(density, 0)} lb per cubic foot.`,
+      note: `Approximately ${fmt(purchaseTons, "weight", 2)} at the density assumed below.`,
     },
     ...(num(values, "fabricPrice", 0) > 0
       ? [
@@ -76,7 +90,7 @@ export function calculateGravel({
             measure: "area" as const,
             precision: 0,
             unitPrice: num(values, "fabricPrice", 0),
-            unitPriceLabel: "per sq ft",
+            unitPriceMeasure: "area" as const,
             cost: costOf(Math.ceil(areaSqFt), num(values, "fabricPrice", 0)),
             searchTerm: "geotextile fabric driveway",
           },
@@ -88,9 +102,6 @@ export function calculateGravel({
     materials.reduce((total, line) => total + (line.cost ?? 0), 0),
     2,
   );
-  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
-    formatQuantity(value, measure, { system: unitSystem, precision });
-
   return {
     headline: {
       label: "You need approximately",
@@ -124,7 +135,7 @@ export function calculateGravel({
     scenarios: [
       {
         id: "by-volume",
-        name: "Priced by the cubic yard",
+        name: `Priced by the ${d.unitName("volumeYd").replace(/s$/, "")}`,
         summary: "How most landscape suppliers sell smaller loads.",
         recommended: yardCost <= tonCost || tonCost === 0,
         rows: [
@@ -135,7 +146,7 @@ export function calculateGravel({
       },
       {
         id: "by-weight",
-        name: "Priced by the ton",
+        name: `Priced by the ${metric ? "tonne" : "ton"}`,
         summary: "How quarries and bulk deliveries usually price it.",
         recommended: tonCost > 0 && tonCost < yardCost,
         rows: [
@@ -146,24 +157,30 @@ export function calculateGravel({
       },
     ],
     explanation: [
-      `${fmt(areaSqFt, "area", 0)} at ${roundTo(depthIn, 1)} in deep is ${fmt(cubicYards, "volumeYd", 2)} of material before waste.`,
+      `${d.area(areaSqFt)} at ${d.inch(depthIn)} deep is ${d.volumeYd(cubicYards)} of material before waste.`,
       `With ${roundTo(wastePct, 1)}% for compaction and spillage, order ${fmt(purchaseYards, "volumeYd", 2)}.`,
-      `At ${roundTo(density, 0)} lb per cubic foot that is roughly ${fmt(tons, "weight", 2)}. Suppliers sell by volume or by weight, so it is worth pricing both.`,
+      `At ${densityLabel} that is roughly ${d.weight(tons)}. Suppliers sell by volume or by weight, so it is worth pricing both.`,
     ],
     formulas: [
-      { kind: "math", label: "Volume", expression: "Length × Width × (Depth ÷ 12)" },
-      { kind: "math", label: "Cubic yards", expression: "Cubic feet ÷ 27" },
+      {
+        kind: "math",
+        label: "Volume",
+        expression: metric ? "Length × Width × Depth" : "Length × Width × (Depth ÷ 12)",
+      },
+      ...(metric
+        ? []
+        : [{ kind: "math" as const, label: "Cubic yards", expression: "Cubic feet ÷ 27" }]),
       {
         kind: "assumption",
         label: "Weight",
-        expression: `Cubic feet × ${roundTo(density, 0)} lb ÷ 2,000`,
+        expression: metric ? `Volume × ${densityLabel}` : `Cubic feet × ${roundTo(density, 0)} lb ÷ 2,000`,
       },
       { kind: "math", label: "Waste adjusted", expression: "Volume × (1 + Waste percentage)" },
     ],
     assumptions: [
       { label: "Material", value: MATERIAL_NAMES[densityKey] ?? "Aggregate" },
-      { label: "Density", value: `${roundTo(density, 0)} lb per cubic foot (dry, loose)` },
-      { label: "Depth", value: `${roundTo(depthIn, 1)} in` },
+      { label: "Density", value: `${densityLabel} (dry, loose)` },
+      { label: "Depth", value: d.inch(depthIn) },
       { label: "Waste allowance", value: `${roundTo(wastePct, 1)}%` },
     ],
     shoppingExtras: [

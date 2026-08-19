@@ -10,6 +10,7 @@ import {
   sumCost,
   wasteMultiplier,
 } from "@/lib/calc/helpers";
+import { describeFor } from "@/lib/calc/describe";
 import { planningDefaults, prices } from "@/lib/pricing";
 import type { CalculationContext, CalculationResult, MaterialLine } from "@/types/project";
 
@@ -76,11 +77,18 @@ export function calculateFence({
   const concreteYards = cubicFeetToYards(concreteCuFt);
 
   const screws = Math.ceil(pickets * Math.max(railsPerSection, 1) * 2 * 1.1);
+  // Screws are sold by weight, so the shopping list needs boxes, not pieces.
+  const screwBoxes = Math.max(1, packagesNeeded(screws, planningDefaults.exteriorScrewsPerBox));
+
+  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
+    formatQuantity(value, measure, { system: unitSystem, precision });
+  const d = describeFor(unitSystem);
+  const metric = unitSystem === "metric";
 
   const materials: MaterialLine[] = [
     {
       id: "posts",
-      name: `Fence posts (${roundTo(height + inchesToFeet(postDepth), 1)} ft minimum length)`,
+      name: `Fence posts (${d.length(height + inchesToFeet(postDepth))} minimum length)`,
       quantity: totalPosts,
       measure: "count",
       unitOverride: "posts",
@@ -92,7 +100,7 @@ export function calculateFence({
     },
     {
       id: "rails",
-      name: `Rails (${roundTo(postSpacing, 1)} ft)`,
+      name: `Rails (${d.length(postSpacing)})`,
       quantity: rails,
       measure: "count",
       unitOverride: "rails",
@@ -100,11 +108,11 @@ export function calculateFence({
       unitPriceLabel: "each",
       cost: costOf(rails, railPrice),
       searchTerm: "fence rails",
-      note: `${roundTo(railsPerSection, 0)} per section, ${railLinearFt} linear ft total.`,
+      note: `${roundTo(railsPerSection, 0)} per section, ${fmt(railLinearFt, "length", 1)} total.`,
     },
     {
       id: "pickets",
-      name: `Pickets (${roundTo(picketWidth, 2)} in wide)`,
+      name: `Pickets (${d.inch(picketWidth)} wide)`,
       quantity: pickets,
       measure: "count",
       unitOverride: "pickets",
@@ -112,7 +120,7 @@ export function calculateFence({
       unitPriceLabel: "each",
       cost: costOf(pickets, picketPrice),
       searchTerm: "fence pickets",
-      note: `Includes ${roundTo(wastePct, 1)}% waste and a ${roundTo(picketGap, 2)} in gap.`,
+      note: `Includes ${roundTo(wastePct, 1)}% waste and a ${d.inch(picketGap)} gap.`,
     },
     {
       id: "post-concrete",
@@ -125,7 +133,7 @@ export function calculateFence({
       cost: costOf(concreteBags, bagPrice),
       searchTerm: "fast setting concrete mix",
       isEstimate: true,
-      note: `${roundTo(concreteCuFt, 1)} cu ft total. Hole size and depth vary by frost depth and soil.`,
+      note: `${fmt(concreteCuFt, "volumeFt", 2)} total. Hole size and depth vary by frost depth and soil.`,
     },
     ...(gateCount > 0
       ? [
@@ -145,19 +153,16 @@ export function calculateFence({
     {
       id: "screws",
       name: "Exterior screws / fasteners",
-      quantity: screws,
+      quantity: screwBoxes,
       measure: "count",
-      unitOverride: "screws",
+      unitOverride: "boxes (5 lb)",
       isEstimate: true,
       searchTerm: "exterior deck screws",
-      note: "Two per picket per rail plus 10%.",
+      note: `About ${screws.toLocaleString("en-US")} screws — two per picket per rail plus 10%.`,
     },
   ];
 
   const costTotal = sumCost(materials);
-  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
-    formatQuantity(value, measure, { system: unitSystem, precision });
-
   return {
     headline: {
       label: "You need approximately",
@@ -185,7 +190,7 @@ export function calculateFence({
     scenarios: [
       {
         id: "spacing-6",
-        name: "6 ft post spacing",
+        name: `${d.length(6)} post spacing`,
         summary: "Stiffer fence, more posts, more concrete.",
         recommended: postSpacing <= 6,
         rows: [
@@ -199,7 +204,7 @@ export function calculateFence({
       },
       {
         id: "spacing-8",
-        name: "8 ft post spacing",
+        name: `${d.length(8)} post spacing`,
         summary: "The common default for residential privacy fence.",
         recommended: postSpacing > 6,
         rows: [
@@ -213,9 +218,9 @@ export function calculateFence({
       },
     ],
     explanation: [
-      `Your fence line runs ${fmt(totalLinearFt, "length", 1)}. Taking out ${roundTo(gateCount, 0)} gate ${gateCount === 1 ? "opening" : "openings"} leaves ${fmt(fencedLinearFt, "length", 1)} of actual fence, which divides into ${sections} ${sections === 1 ? "section" : "sections"} at ${roundTo(postSpacing, 1)} ft spacing.`,
-      `Posts are the part you cannot fudge — each one needs a hole roughly ${roundTo(holeDiameter, 0)} in across and ${roundTo(postDepth, 0)} in deep, which is where the ${concreteBags} bags of concrete go.`,
-      `Picket count assumes ${roundTo(picketWidth, 2)} in boards with a ${roundTo(picketGap, 2)} in gap. Shrinkage after installation is normal with wet lumber.`,
+      `Your fence line runs ${fmt(totalLinearFt, "length", 1)}. Taking out ${roundTo(gateCount, 0)} gate ${gateCount === 1 ? "opening" : "openings"} leaves ${fmt(fencedLinearFt, "length", 1)} of actual fence, which divides into ${sections} ${sections === 1 ? "section" : "sections"} at ${d.length(postSpacing)} spacing.`,
+      `Posts are the part you cannot fudge — each one needs a hole roughly ${d.inch(holeDiameter, 0)} across and ${d.inch(postDepth, 0)} deep, which is where the ${concreteBags} bags of concrete go.`,
+      `Picket count assumes ${d.inch(picketWidth)} boards with a ${d.inch(picketGap)} gap. Shrinkage after installation is normal with wet lumber.`,
     ],
     formulas: [
       {
@@ -232,7 +237,9 @@ export function calculateFence({
       {
         kind: "math",
         label: "Pickets",
-        expression: "⌈(Fenced run × 12 × waste) ÷ (Picket width + gap)⌉",
+        expression: metric
+          ? "⌈(Fenced run × 100 × waste) ÷ (Picket width + gap)⌉"
+          : "⌈(Fenced run × 12 × waste) ÷ (Picket width + gap)⌉",
       },
       {
         kind: "assumption",
@@ -241,12 +248,12 @@ export function calculateFence({
       },
     ],
     assumptions: [
-      { label: "Post spacing", value: `${roundTo(postSpacing, 1)} ft on centre` },
-      { label: "Post hole", value: `${roundTo(holeDiameter, 0)} in wide × ${roundTo(postDepth, 0)} in deep` },
+      { label: "Post spacing", value: `${d.length(postSpacing)} on centre` },
+      { label: "Post hole", value: `${d.inch(holeDiameter, 0)} wide × ${d.inch(postDepth, 0)} deep` },
       { label: "Rails per section", value: `${roundTo(railsPerSection, 0)}` },
-      { label: "Picket spacing", value: `${roundTo(picketWidth, 2)} in wide, ${roundTo(picketGap, 2)} in gap` },
+      { label: "Picket spacing", value: `${d.inch(picketWidth)} wide, ${d.inch(picketGap)} gap` },
       { label: "Waste allowance", value: `${roundTo(wastePct, 1)}%` },
-      { label: "Post concrete", value: `${roundTo(concreteYards, 2)} yd³ total` },
+      { label: "Post concrete", value: `${d.volumeYd(concreteYards)} total` },
     ],
     shoppingExtras: [
       shoppingItem("string-line", "String line and marking paint"),

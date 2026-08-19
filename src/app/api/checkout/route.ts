@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { features, projectPack, site } from "@/config/site";
-import { getStripe, stripeUnavailableReason } from "@/lib/stripe";
+import { devUnlockAllowed, getStripe, stripeUnavailableReason } from "@/lib/stripe";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,9 +24,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid project reference." }, { status: 400 });
   }
 
-  // Local and preview builds unlock without touching Stripe at all.
-  if (features.projectPackDevUnlock) {
-    return NextResponse.json({ devUnlock: true });
+  // The pack is free right now as a stated product decision, so this holds in
+  // production too.
+  if (features.projectPackFree) {
+    return NextResponse.json({ devUnlock: true, reason: "free" });
+  }
+
+  // Local and preview builds unlock without touching Stripe at all. Production
+  // never does, whatever the build-time flag was set to.
+  if (features.projectPackDevUnlock && devUnlockAllowed()) {
+    return NextResponse.json({ devUnlock: true, reason: "dev" });
   }
 
   const stripe = getStripe();

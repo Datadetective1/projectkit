@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { LegalReviewNote, ProsePage } from "@/components/ui/Prose";
 import { pageMetadata } from "@/lib/seo";
-import { formatPackPrice, legal, site } from "@/config/site";
+import { features, formatPackPrice, legal, site } from "@/config/site";
 
 export const metadata = pageMetadata({
   title: "Terms of Use",
@@ -86,19 +86,41 @@ export default function TermsPage() {
       </section>
 
       <section>
-        <h2>6. Project Pack purchases</h2>
-        <p>
-          The Project Pack is a one-time purchase, currently {formatPackPrice()}, that unlocks the
-          downloadable PDF of a project plan in the browser where you bought it. Because it is a
-          digital product delivered immediately, and because the pack contents are visible on screen
-          before purchase, it is generally non-refundable — but if it does not work, contact us and
-          we will make it right.
-        </p>
-        <p>
-          Payments are processed by Stripe under Stripe&apos;s terms. We never receive or store card
-          details. Because there are no accounts, an unlock is recorded in the browser used for the
-          purchase; clearing that browser&apos;s data may remove it.
-        </p>
+        <h2>6. The Project Pack</h2>
+        {/*
+          Kept truthful against the deployment rather than describing a purchase
+          flow nobody is currently in. Saying "currently $6.99" while the pack is
+          free during beta is the kind of small inaccuracy that makes a reader
+          doubt the rest of the page.
+        */}
+        {features.projectPackFree ? (
+          <>
+            <p>
+              The Project Pack is <strong>free during the beta</strong>. No payment is taken and no
+              card details are collected. We intend to charge for it later; if that changes, the
+              price will be shown before anything is bought and this page will be updated first.
+            </p>
+            <p>
+              Because there are no accounts, a pack is unlocked in the browser you are using.
+              Clearing that browser&apos;s data may remove the unlock.
+            </p>
+          </>
+        ) : (
+          <>
+            <p>
+              The Project Pack is a one-time purchase, currently {formatPackPrice()}, that unlocks
+              the downloadable PDF of a project plan in the browser where you bought it. Because it
+              is a digital product delivered immediately, and because the pack contents are visible
+              on screen before purchase, it is generally non-refundable — but if it does not work,
+              contact us and we will make it right.
+            </p>
+            <p>
+              Payments are processed by Stripe under Stripe&apos;s terms. We never receive or store
+              card details. Because there are no accounts, an unlock is recorded in the browser used
+              for the purchase; clearing that browser&apos;s data may remove it.
+            </p>
+          </>
+        )}
       </section>
 
       <section>

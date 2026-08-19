@@ -158,7 +158,7 @@ Every one of these degrades to something honest rather than breaking.
 | Integration | Without it |
 | --- | --- |
 | **Anthropic** (`ANTHROPIC_API_KEY`) | The deterministic parser handles the natural-language box; every planner works by hand regardless. |
-| **Stripe** (`STRIPE_SECRET_KEY`) | `NEXT_PUBLIC_PROJECT_PACK_DEV_UNLOCK=true` (the default) unlocks the Project Pack locally. With the flag off and no key, checkout explains that payments are not configured. Live keys are refused unless `STRIPE_ALLOW_LIVE_MODE=true`. |
+| **Stripe** (`STRIPE_SECRET_KEY`) | `NEXT_PUBLIC_PROJECT_PACK_DEV_UNLOCK=true` unlocks the Project Pack locally; it is off unless explicitly set, and the server refuses it on production deployments regardless. Without the flag and without a key, checkout explains that payments are not configured. Live keys are refused unless `STRIPE_ALLOW_LIVE_MODE=true`. |
 | **Analytics** (`NEXT_PUBLIC_ANALYTICS_ID`) | No script loads and every `track()` call is a no-op. |
 | **Ads** (`NEXT_PUBLIC_ADS_ENABLED`) | Ad slots render nothing. They never sit inside a calculator and reserve fixed height so they cannot shift layout. |
 | **Affiliate** (`NEXT_PUBLIC_AFFILIATE_SEARCH_URL`) | "Shop materials" points at a plain web search — nothing implies a retailer relationship that does not exist. |
@@ -265,8 +265,8 @@ the box. Set `NEXT_PUBLIC_SITE_URL` once you attach a real domain.
 
 Before charging or promoting it:
 
-- `NEXT_PUBLIC_PROJECT_PACK_DEV_UNLOCK=false` plus Stripe keys, or the Project
-  Pack keeps unlocking for free.
+- Stripe keys. Leave `NEXT_PUBLIC_PROJECT_PACK_DEV_UNLOCK` unset in production;
+  it defaults to off and the server ignores it there anyway.
 - A lawyer's review of `/privacy` and `/terms` — both are marked inline where
   review is needed.
 - A real affiliate disclosure if you turn affiliate links on.

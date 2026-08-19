@@ -4,10 +4,12 @@ import {
   costOf,
   inchesToFeet,
   num,
+  packagesNeeded,
   shoppingItem,
   sumCost,
   wasteMultiplier,
 } from "@/lib/calc/helpers";
+import { describeFor } from "@/lib/calc/describe";
 import { planningDefaults, prices } from "@/lib/pricing";
 import type { CalculationContext, CalculationResult, MaterialLine } from "@/types/project";
 
@@ -53,10 +55,16 @@ export function calculateDeck({
   // Rim joists / ledger around the perimeter.
   const rimLinearFt = 2 * (length + width);
 
-  // Beams and posts: a planning allowance only.
-  const beamLinearFt = length * 2;
-  const postCount = Math.max(4, (Math.floor(length / 8) + 1) * 2);
-  const footings = postCount;
+  /*
+   * Beams, posts, and footings are deliberately NOT quantified.
+   *
+   * Their sizes and spacing come from joist span, lumber species and grade,
+   * deck height, soil, frost depth, and local code — none of which this
+   * planner knows. Printing "6 posts, 6 footings, 32 linear ft of beam" from a
+   * formula like `length * 2` would put a number that looks engineered next to
+   * a dollar figure, and a homeowner could reasonably build to it. They appear
+   * on the shopping list as items to size from a real structural design.
+   */
 
   const perimeter = 2 * (length + width);
   const railingLinearFt = includeRailing
@@ -67,35 +75,42 @@ export function calculateDeck({
   const stringers = includeStairs ? 3 : 0;
 
   const screws = Math.ceil(areaSqFt * 3.5);
+  // Screws are sold by weight, so the shopping list needs boxes, not pieces.
+  const screwBoxes = Math.max(1, packagesNeeded(screws, planningDefaults.exteriorScrewsPerBox));
   const joistHangers = joistCount * 2;
+
+  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
+    formatQuantity(value, measure, { system: unitSystem, precision });
+  const d = describeFor(unitSystem);
+  const metric = unitSystem === "metric";
 
   const materials: MaterialLine[] = [
     {
       id: "decking",
-      name: `Decking boards (${roundTo(boardWidth, 2)} in wide)`,
+      name: `Decking boards (${d.inch(boardWidth, 2)} wide)`,
       quantity: Math.ceil(deckingLinearFt),
       measure: "length",
       precision: 0,
       unitOverride: "linear ft",
       unitPrice: deckingPrice,
-      unitPriceLabel: "per linear ft",
+      unitPriceMeasure: "length" as const,
       cost: costOf(Math.ceil(deckingLinearFt), deckingPrice),
       searchTerm: "composite decking boards",
-      note: `${rows} rows across ${roundTo(length, 1)} ft with a ${roundTo(boardGap, 3)} in gap, plus ${roundTo(wastePct, 1)}% waste.`,
+      note: `${rows} rows across ${d.length(length)} with a ${d.inch(boardGap, 2)} gap, plus ${roundTo(wastePct, 1)}% waste.`,
     },
     {
       id: "joists",
-      name: `Joists at ${roundTo(joistSpacing, 0)} in on centre`,
+      name: `Joists at ${d.inch(joistSpacing, 0)} on centre`,
       quantity: Math.ceil(joistLinearFt),
       measure: "length",
       precision: 0,
       unitOverride: "linear ft",
       unitPrice: joistPrice,
-      unitPriceLabel: "per linear ft",
+      unitPriceMeasure: "length" as const,
       cost: costOf(Math.ceil(joistLinearFt), joistPrice),
       isEstimate: true,
       searchTerm: "pressure treated joist lumber",
-      note: `About ${joistCount} joists spanning ${roundTo(width, 1)} ft. Joist size and span must be verified against code.`,
+      note: `About ${joistCount} joists spanning ${d.length(width)}. Joist size and span must be verified against code.`,
     },
     {
       id: "rim",
@@ -105,44 +120,10 @@ export function calculateDeck({
       precision: 0,
       unitOverride: "linear ft",
       unitPrice: joistPrice,
-      unitPriceLabel: "per linear ft",
+      unitPriceMeasure: "length" as const,
       cost: costOf(Math.ceil(rimLinearFt), joistPrice),
       isEstimate: true,
       searchTerm: "pressure treated lumber",
-    },
-    {
-      id: "beams",
-      name: "Beam material",
-      quantity: Math.ceil(beamLinearFt),
-      measure: "length",
-      precision: 0,
-      unitOverride: "linear ft",
-      unitPrice: joistPrice,
-      unitPriceLabel: "per linear ft",
-      cost: costOf(Math.ceil(beamLinearFt), joistPrice),
-      isEstimate: true,
-      searchTerm: "pressure treated beam lumber",
-      note: "Rough allowance. Beam size and span require structural verification.",
-    },
-    {
-      id: "posts",
-      name: "Support posts",
-      quantity: postCount,
-      measure: "count",
-      unitOverride: "posts",
-      isEstimate: true,
-      searchTerm: "6x6 pressure treated post",
-      note: `Planning allowance for a deck ${roundTo(height, 1)} ft off the ground. Spacing and footing depth are code-driven.`,
-    },
-    {
-      id: "footings",
-      name: "Footings",
-      quantity: footings,
-      measure: "count",
-      unitOverride: "footings",
-      isEstimate: true,
-      searchTerm: "concrete deck footing form",
-      note: "Footing size and depth depend on frost line, soil, and load. Verify locally.",
     },
     ...(includeRailing
       ? [
@@ -154,7 +135,7 @@ export function calculateDeck({
             precision: 0,
             unitOverride: "linear ft",
             unitPrice: railingPrice,
-            unitPriceLabel: "per linear ft",
+            unitPriceMeasure: "length" as const,
             cost: costOf(Math.ceil(railingLinearFt), railingPrice),
             searchTerm: "deck railing kit",
             note: `Perimeter less ${roundTo(attachedSides, 0)} attached ${attachedSides === 1 ? "side" : "sides"}.`,
@@ -171,11 +152,11 @@ export function calculateDeck({
             precision: 0,
             unitOverride: "linear ft",
             unitPrice: deckingPrice,
-            unitPriceLabel: "per linear ft",
+            unitPriceMeasure: "length" as const,
             cost: costOf(Math.ceil(stairTreadLinearFt), deckingPrice),
             isEstimate: true,
             searchTerm: "decking boards",
-            note: `Assumes a 3 ft wide stair. Plus ${stringers} stringers.`,
+            note: `Assumes a ${d.length(3, 0)} wide stair. Plus ${stringers} stringers.`,
           },
         ]
       : []),
@@ -190,19 +171,17 @@ export function calculateDeck({
     },
     {
       id: "screws",
-      name: "Deck screws / hidden fasteners",
-      quantity: screws,
+      name: "Deck screws",
+      quantity: screwBoxes,
       measure: "count",
-      unitOverride: "fasteners",
+      unitOverride: "boxes (5 lb)",
       isEstimate: true,
       searchTerm: "deck screws",
-      note: "Roughly 3.5 per square foot.",
+      note: `About ${screws.toLocaleString("en-US")} screws, roughly ${d.area(1 / 3.5, 2)} of deck per screw. A hidden fastener system is sold by deck area instead.`,
     },
   ];
 
   const costTotal = sumCost(materials);
-  const fmt = (value: number, measure: Parameters<typeof formatQuantity>[1], precision?: number) =>
-    formatQuantity(value, measure, { system: unitSystem, precision });
 
   const deckingAt = (spacingBoardWidth: number) => {
     const pitch = inchesToFeet(spacingBoardWidth + boardGap);
@@ -216,7 +195,7 @@ export function calculateDeck({
       measure: "length",
       precision: 0,
       unitOverride: "linear ft of decking",
-      sublabel: `${fmt(areaSqFt, "area", 0)} deck with about ${joistCount} joists at ${roundTo(joistSpacing, 0)} in on centre`,
+      sublabel: `${d.area(areaSqFt)} deck with about ${joistCount} joists at ${d.inch(joistSpacing, 0)} on centre`,
     },
     summary: [
       { label: "Deck area", value: areaSqFt, measure: "area", precision: 0 },
@@ -248,7 +227,9 @@ export function calculateDeck({
     scenarios: [
       {
         id: "5-4-board",
-        name: '5/4 × 6 decking (5.5 in)',
+        // "5/4 × 6" is the nominal lumber name you ask for; the parenthetical
+        // is the actual width, which is a measurement and converts.
+        name: `5/4 × 6 decking (${d.inch(5.5, 2)})`,
         summary: "The most common residential decking width.",
         recommended: boardWidth >= 5,
         rows: [
@@ -263,7 +244,7 @@ export function calculateDeck({
       },
       {
         id: "2x4-board",
-        name: "2 × 4 decking (3.5 in)",
+        name: `2 × 4 decking (${d.inch(3.5, 2)})`,
         summary: "Narrower boards, more rows, more fasteners.",
         recommended: boardWidth < 5,
         rows: [
@@ -278,40 +259,56 @@ export function calculateDeck({
       },
     ],
     explanation: [
-      `A ${roundTo(length, 1)} × ${roundTo(width, 1)} deck is ${fmt(areaSqFt, "area", 0)}. With ${roundTo(boardWidth, 2)} in boards and a ${roundTo(boardGap, 3)} in gap you get ${rows} rows, each ${roundTo(width, 1)} ft long.`,
+      `A ${d.length(length)} × ${d.length(width)} deck is ${d.area(areaSqFt)}. With ${d.inch(boardWidth, 2)} boards and a ${d.inch(boardGap, 2)} gap you get ${rows} rows, each ${d.length(width)} long.`,
       `Including ${roundTo(wastePct, 1)}% waste that is about ${fmt(Math.ceil(deckingLinearFt), "length", 0)} of decking to buy.`,
-      "Framing, post, beam, and footing figures here are rough allowances for budgeting. Actual sizes and spacing must come from a span table or a designer for your load, species, and local code.",
+      "Joist and rim quantities follow from the spacing you chose above — they are lumber counts, not a structural design. Beams, posts, and footings are not quantified at all: those sizes come from a span table, a designer, or your building department, so the budget below excludes them.",
     ],
     formulas: [
       { kind: "math", label: "Deck area", expression: "Length × Width" },
-      { kind: "math", label: "Decking rows", expression: "⌈Length ÷ ((Board width + gap) ÷ 12)⌉" },
+      {
+        kind: "math",
+        label: "Decking rows",
+        expression: metric
+          ? "⌈Length ÷ ((Board width + gap) ÷ 100)⌉"
+          : "⌈Length ÷ ((Board width + gap) ÷ 12)⌉",
+      },
       { kind: "math", label: "Decking", expression: "Rows × Width × (1 + Waste percentage)" },
-      { kind: "math", label: "Joists", expression: "⌊Length ÷ (Joist spacing ÷ 12)⌋ + 1" },
+      {
+        kind: "math",
+        label: "Joists",
+        expression: metric ? "⌊Length ÷ (Joist spacing ÷ 100)⌋ + 1" : "⌊Length ÷ (Joist spacing ÷ 12)⌋ + 1",
+      },
       {
         kind: "assumption",
-        label: "Posts and footings",
-        expression: "Planning allowance only — not a structural calculation",
+        label: "Beams, posts, footings",
+        expression: "Not calculated — structural design required",
       },
     ],
     assumptions: [
-      { label: "Board width", value: `${roundTo(boardWidth, 2)} in` },
-      { label: "Board gap", value: `${roundTo(boardGap, 3)} in` },
-      { label: "Joist spacing", value: `${roundTo(joistSpacing, 0)} in on centre` },
+      { label: "Board width", value: d.inch(boardWidth, 2) },
+      { label: "Board gap", value: d.inch(boardGap, 2) },
+      { label: "Joist spacing", value: `${d.inch(joistSpacing, 0)} on centre` },
       { label: "Waste allowance", value: `${roundTo(wastePct, 1)}%` },
-      { label: "Deck height", value: `${roundTo(height, 1)} ft` },
-      { label: "Railing", value: includeRailing ? `${roundTo(railingLinearFt, 0)} linear ft` : "Not included" },
+      { label: "Deck height", value: d.length(height) },
+      { label: "Railing", value: includeRailing ? d.length(railingLinearFt, 0) : "Not included" },
     ],
     shoppingExtras: [
+      // Deliberately unquantified: sizing these is structural design, not
+      // arithmetic, so the list names them without inventing a number.
+      shoppingItem("beams", "Beams — size and span from your structural design"),
+      shoppingItem("posts", "Support posts — size and spacing from your structural design"),
+      shoppingItem("footings", "Footings — size and depth per local code and frost line"),
+      shoppingItem("concrete", "Concrete for footings"),
+      shoppingItem("gravel", "Gravel for footing bases"),
       shoppingItem("flashing", "Ledger flashing"),
       shoppingItem("hardware", "Structural connectors and approved fasteners"),
       shoppingItem("string", "String line, level, and layout square"),
-      shoppingItem("concrete", "Concrete for footings"),
-      shoppingItem("gravel", "Gravel for footing bases"),
       shoppingItem("sealer", "Stain or sealer for wood decking", undefined, true),
       shoppingItem("permit", "Building permit — check before you start"),
     ],
     warnings: [
       "Material-planning estimate only. Structural requirements, footing sizes, spans, loads, permits, and code requirements vary by location and project. Verify structural design and local building requirements before construction.",
+      "Beams, posts, and footings are deliberately not quantified here. Their sizes and spacing depend on span, lumber species and grade, load, soil, and frost depth — get them from a span table, a designer, or your building department, and budget for them separately.",
       "Ledger attachment to a house is the single most common cause of deck failure. Have it detailed and inspected.",
       "Decks almost always require a permit and inspection.",
     ],

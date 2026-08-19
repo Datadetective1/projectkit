@@ -14,6 +14,7 @@ import {
 
 const concrete = getProjectOrThrow("concrete-calculator");
 const mulch = getProjectOrThrow("mulch-calculator");
+const paint = getProjectOrThrow("paint-calculator");
 
 describe("defaults", () => {
   it("fills every input", () => {
@@ -123,11 +124,51 @@ describe("unit switching", () => {
     expect(Number(back.thickness)).toBeCloseTo(Number(us.thickness), 2);
   });
 
-  it("leaves prices and percentages alone", () => {
+  it("leaves percentages and per-package prices alone", () => {
     const us = defaultValues(concrete, "us");
     const metric = convertValues(concrete, us, "us", "metric");
+
     expect(metric.waste).toBe(us.waste);
-    expect(metric.concretePrice).toBe(us.concretePrice);
+    // A bag is a bag in both systems, so its price is the same number.
+    expect(metric.bagPrice).toBe(us.bagPrice);
+  });
+
+  it("converts a price that is quoted per unit of measure", () => {
+    /*
+     * This asserts the opposite of what it used to. Ready-mix is priced per
+     * cubic yard, and the old behaviour left the number at 165 while the field
+     * beside it converted to cubic metres — so a metric user was asked for a
+     * per-m³ price and shown a per-yd³ one, a 31% understatement they had no
+     * way to notice.
+     */
+    const us = defaultValues(concrete, "us");
+    const metric = convertValues(concrete, us, "us", "metric");
+
+    expect(Number(metric.concretePrice)).toBeCloseTo(Number(us.concretePrice) / 0.764554857984, 2);
+    // The price per cubic metre must be the larger number — a cubic metre is
+    // more concrete than a cubic yard.
+    expect(Number(metric.concretePrice)).toBeGreaterThan(Number(us.concretePrice));
+  });
+
+  it("round-trips a rate without drift", () => {
+    const us = defaultValues(concrete, "us");
+    const metric = convertValues(concrete, us, "us", "metric");
+    const back = convertValues(concrete, metric, "metric", "us");
+
+    expect(Number(back.concretePrice)).toBeCloseTo(Number(us.concretePrice), 2);
+    expect(Number(back.gravelPrice)).toBeCloseTo(Number(us.gravelPrice), 2);
+  });
+
+  it("inverts coverage, which is an area per unit of liquid", () => {
+    /*
+     * The trap: converting the area alone gives 32.5 m² per gallon, which is
+     * four times the truth. 350 sq ft per US gallon is 8.59 m² per litre.
+     */
+    const paintDefaults = defaultValues(paint, "us");
+    const metric = convertValues(paint, paintDefaults, "us", "metric");
+
+    expect(Number(paintDefaults.coverage)).toBe(350);
+    expect(Number(metric.coverage)).toBeCloseTo(8.59, 1);
   });
 
   it("preserves select and toggle values", () => {

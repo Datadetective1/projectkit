@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FileText, FolderOpen, Trash2 } from "lucide-react";
 import { ProjectIcon } from "@/components/ProjectCard";
 import { getProject } from "@/data/projects";
-import { deleteProject, isStorageAvailable } from "@/lib/storage/savedProjects";
+import { clearProjects, deleteProject, isStorageAvailable } from "@/lib/storage/savedProjects";
 import { useSavedProjects, useStorageReady } from "@/lib/storage/useSavedProjects";
 
 const DATE_FORMAT = new Intl.DateTimeFormat("en-US", {
@@ -19,7 +19,10 @@ export function SavedProjectList() {
   const ready = useStorageReady();
 
   if (!ready) {
-    return <div className="pk-card h-40 animate-pulse bg-surface-sunken/50" />;
+    // Sized to the empty state, which is what most first visits resolve to.
+    // At the old h-40 the card grew by ~110px on hydration and shoved the
+    // footer down with it — 0.044 CLS, the whole of this page's score.
+    return <div className="pk-card h-[17rem] animate-pulse bg-surface-sunken/50" />;
   }
 
   if (!isStorageAvailable()) {
@@ -54,7 +57,8 @@ export function SavedProjectList() {
   }
 
   return (
-    <ul className="grid gap-4 sm:grid-cols-2">
+    <>
+      <ul className="grid gap-4 sm:grid-cols-2">
       {projects.map((saved) => {
         const definition = getProject(saved.slug);
         const checkedCount = saved.checked.length;
@@ -116,7 +120,33 @@ export function SavedProjectList() {
             </div>
           </li>
         );
-      })}
-    </ul>
+        })}
+      </ul>
+
+      {/*
+        Beta testers end up with a drawer full of throwaway projects, and
+        deleting them one at a time to reproduce a first-visit bug is tedious.
+        Confirmed, and honest that it cannot be undone — this is the only copy
+        of the data.
+      */}
+      <div className="mt-8 border-t border-line pt-5">
+        <button
+          type="button"
+          className="text-xs text-ink-subtle underline-offset-4 hover:text-danger hover:underline"
+          onClick={() => {
+            const count = projects.length;
+            if (
+              window.confirm(
+                `Delete all ${count} saved ${count === 1 ? "project" : "projects"}? They are stored only in this browser, so this cannot be undone.`,
+              )
+            ) {
+              clearProjects();
+            }
+          }}
+        >
+          Clear all saved projects
+        </button>
+      </div>
+    </>
   );
 }

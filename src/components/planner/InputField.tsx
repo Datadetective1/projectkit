@@ -1,7 +1,8 @@
 "use client";
 
 import { useId } from "react";
-import { unitLabel, type UnitSystem } from "@/lib/units";
+import { rateLabel, unitLabel, type UnitSystem } from "@/lib/units";
+import { describeFor } from "@/lib/calc/describe";
 import type { InputValue, InputValues, ProjectInput } from "@/types/project";
 
 interface InputFieldProps {
@@ -14,8 +15,11 @@ interface InputFieldProps {
 
 export function InputField({ input, values, system, error, onChange }: InputFieldProps) {
   const reactId = useId();
+  // Help text that quotes a measurement is a function of the unit system, so a
+  // field showing centimetres never explains itself in inches.
+  const help = typeof input.help === "function" ? input.help(describeFor(system)) : input.help;
   const fieldId = `${input.id}-${reactId}`;
-  const helpId = input.help ? `${fieldId}-help` : undefined;
+  const helpId = help ? `${fieldId}-help` : undefined;
   const errorId = error ? `${fieldId}-error` : undefined;
   const describedBy = [helpId, errorId].filter(Boolean).join(" ") || undefined;
   const value = values[input.id];
@@ -36,9 +40,9 @@ export function InputField({ input, values, system, error, onChange }: InputFiel
           <label htmlFor={fieldId} className="block text-sm font-medium text-ink">
             {input.label}
           </label>
-          {input.help ? (
+          {help ? (
             <p id={helpId} className="mt-0.5 text-xs text-ink-muted">
-              {input.help}
+              {help}
             </p>
           ) : null}
         </div>
@@ -65,16 +69,24 @@ export function InputField({ input, values, system, error, onChange }: InputFiel
             </option>
           ))}
         </select>
-        {input.help ? (
+        {help ? (
           <p id={helpId} className="mt-1.5 text-xs text-ink-muted">
-            {input.help}
+            {help}
           </p>
         ) : null}
       </div>
     );
   }
 
-  const suffix = input.unitOverride ?? unitLabel(input.measure, system);
+  /*
+   * A rate names both its units, so it builds its own suffix — a hardcoded
+   * override would say "$ / yd³" beside a value the engine has converted to
+   * per-cubic-metre. Everything else falls back to the override, then to the
+   * measure's own label.
+   */
+  const suffix = input.perMeasure
+    ? rateLabel(input.measure, input.perMeasure, system)
+    : (input.unitOverride ?? unitLabel(input.measure, system));
 
   return (
     <div>
@@ -110,9 +122,9 @@ export function InputField({ input, values, system, error, onChange }: InputFiel
           </span>
         ) : null}
       </div>
-      {input.help && !error ? (
+      {help && !error ? (
         <p id={helpId} className="mt-1.5 text-xs text-ink-muted">
-          {input.help}
+          {help}
         </p>
       ) : null}
       {error ? (

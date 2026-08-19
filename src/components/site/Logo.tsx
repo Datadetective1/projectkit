@@ -1,4 +1,4 @@
-import { site } from "@/config/site";
+import { features, site } from "@/config/site";
 
 export function Logo({ className = "" }: { className?: string }) {
   return (
@@ -27,6 +27,16 @@ export function Logo({ className = "" }: { className?: string }) {
       <span className="text-[1.0625rem] font-semibold tracking-tight text-ink">
         {site.name}
       </span>
+      {/*
+        Expectation-setting, not a warning. The estimates are validated and the
+        site is stable; what "beta" says here is that the numbers are still
+        being checked against real projects and that feedback changes them.
+      */}
+      {features.beta ? (
+        <span className="rounded-full bg-surface-sunken px-1.5 py-0.5 text-[0.625rem] font-semibold uppercase tracking-wide text-ink-subtle">
+          Beta
+        </span>
+      ) : null}
     </span>
   );
 }

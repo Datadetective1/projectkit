@@ -15,6 +15,7 @@ export type Measure =
   | "area" // sq ft ↔ m²
   | "volumeFt" // cu ft ↔ m³
   | "volumeYd" // cu yd ↔ m³
+  | "volumeLiquid" // gal ↔ L
   | "weight" // short tons ↔ tonnes
   | "percent"
   | "currency"
@@ -27,6 +28,7 @@ const TO_METRIC: Record<Measure, number> = {
   area: 0.09290304, // sq ft → m²
   volumeFt: 0.028316846592, // cu ft → m³
   volumeYd: 0.764554857984, // cu yd → m³
+  volumeLiquid: 3.785411784, // US gallon → litre
   weight: 0.90718474, // short ton → tonne
   percent: 1,
   currency: 1,
@@ -39,6 +41,7 @@ const UNIT_LABELS: Record<Measure, { us: string; metric: string }> = {
   area: { us: "sq ft", metric: "m²" },
   volumeFt: { us: "cu ft", metric: "m³" },
   volumeYd: { us: "yd³", metric: "m³" },
+  volumeLiquid: { us: "gal", metric: "L" },
   weight: { us: "tons", metric: "t" },
   percent: { us: "%", metric: "%" },
   currency: { us: "$", metric: "$" },
@@ -47,11 +50,12 @@ const UNIT_LABELS: Record<Measure, { us: string; metric: string }> = {
 
 /** Spoken-word unit names, used in explanations and the Project Pack. */
 const UNIT_NAMES: Record<Measure, { us: string; metric: string }> = {
-  length: { us: "feet", metric: "meters" },
-  inch: { us: "inches", metric: "centimeters" },
-  area: { us: "square feet", metric: "square meters" },
-  volumeFt: { us: "cubic feet", metric: "cubic meters" },
-  volumeYd: { us: "cubic yards", metric: "cubic meters" },
+  length: { us: "feet", metric: "metres" },
+  inch: { us: "inches", metric: "centimetres" },
+  area: { us: "square feet", metric: "square metres" },
+  volumeFt: { us: "cubic feet", metric: "cubic metres" },
+  volumeYd: { us: "cubic yards", metric: "cubic metres" },
+  volumeLiquid: { us: "gallons", metric: "litres" },
   weight: { us: "tons", metric: "tonnes" },
   percent: { us: "percent", metric: "percent" },
   currency: { us: "dollars", metric: "dollars" },
@@ -60,6 +64,38 @@ const UNIT_NAMES: Record<Measure, { us: string; metric: string }> = {
 
 export function unitLabel(measure: Measure, system: UnitSystem): string {
   return UNIT_LABELS[measure][system];
+}
+
+/**
+ * Rates — a quantity *per* another quantity: "$ / yd³", "sq ft / gal".
+ *
+ * Both halves have to move together, and the denominator moves the value the
+ * other way. A price per cubic yard becomes a *larger* number per cubic metre;
+ * paint coverage of 350 sq ft per gallon is 8.59 m² per litre, not the 32.5 you
+ * get by converting the area and leaving the gallon alone. Getting this wrong
+ * is a 31% error on concrete pricing and a 4× error on paint coverage, in both
+ * cases displayed as a confident number.
+ */
+export function rateScale(
+  measure: Measure,
+  perMeasure: Measure | undefined,
+  system: UnitSystem,
+): number {
+  const numerator = fromCanonical(1, measure, system);
+  const denominator = perMeasure ? fromCanonical(1, perMeasure, system) : 1;
+  return denominator === 0 ? numerator : numerator / denominator;
+}
+
+/** The label for a rate, both halves in the reader's system. */
+export function rateLabel(
+  measure: Measure,
+  perMeasure: Measure | undefined,
+  system: UnitSystem,
+): string {
+  const top = measure === "currency" ? "$" : unitLabel(measure, system);
+  if (!perMeasure) return top;
+  // "per ton", not "per tons" — the denominator is always one of something.
+  return `${top} / ${singularise(unitLabel(perMeasure, system))}`;
 }
 
 export function unitName(measure: Measure, system: UnitSystem): string {
@@ -108,6 +144,7 @@ export function defaultPrecision(measure: Measure): number {
       return 1;
     case "volumeYd":
     case "weight":
+    case "volumeLiquid":
       return 2;
     default:
       return 2;
@@ -170,6 +207,54 @@ export interface FormatQuantityOptions {
 }
 
 /** Format a canonical value for display, converting units as needed. */
+/**
+ * Translate the unit inside a custom label into the reader's system.
+ *
+ * A `unitOverride` exists to add a word the plain unit label cannot carry —
+ * "linear ft", "linear ft of decking", "sq ft / box". The value beside it is
+ * always converted, so a hardcoded imperial label silently mislabels it: form
+ * boards showed "24 linear ft" in metric mode when the real figure was 79 ft
+ * and 24 was the metre count. A reader would have bought a third of the timber
+ * they needed.
+ *
+ * Only the measure's own unit token is swapped, so surrounding words survive
+ * and a label that names no unit ("bags", "posts") passes straight through.
+ */
+function localiseOverride(
+  unitOverride: string | undefined,
+  measure: Measure,
+  system: UnitSystem,
+): string {
+  if (unitOverride === undefined) return unitLabel(measure, system);
+  if (system === "us") return unitOverride;
+
+  const from = UNIT_LABELS[measure].us;
+  const to = UNIT_LABELS[measure].metric;
+  if (!from || from === to) return unitOverride;
+
+  // Word-bounded so "ft" does not match inside another word.
+  return unitOverride.replace(new RegExp(`(^|[\\s/])${escapeForRegExp(from)}(?=$|[\\s/])`, "g"), `$1${to}`);
+}
+
+function escapeForRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * "1 bags" and "1 rolls" read as sloppiness on a page whose whole job is to be
+ * trusted with numbers. Counted things get singularised at exactly one.
+ *
+ * Only the leading word changes, so "2 boxes (1 lb)" becomes "1 box (1 lb)"
+ * rather than mangling the parenthetical. Applied to `count` alone — "1 sq ft"
+ * and "1 linear ft" are already correct and must not be touched.
+ */
+function singularise(label: string): string {
+  const [head, ...rest] = label.split(" ");
+  if (!head || !head.endsWith("s") || head.endsWith("ss")) return label;
+  const singular = /(?:ch|sh|s|x|z)es$/.test(head) ? head.slice(0, -2) : head.slice(0, -1);
+  return [singular, ...rest].join(" ");
+}
+
 export function formatQuantity(
   canonicalValue: number,
   measure: Measure,
@@ -180,7 +265,9 @@ export function formatQuantity(
 
   const displayValue = fromCanonical(canonicalValue, measure, system);
   const decimals = precision ?? defaultPrecision(measure);
-  const label = unitOverride ?? unitLabel(measure, system);
+  const rawLabel = localiseOverride(unitOverride, measure, system);
+  const label =
+    measure === "count" && displayValue === 1 ? singularise(rawLabel) : rawLabel;
   const formatted = formatNumber(displayValue, decimals);
   if (!label) return formatted;
   if (label === "%") return `${formatted}%`;

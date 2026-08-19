@@ -1,3 +1,4 @@
+import type { Describe } from "@/lib/calc/describe";
 import type { Measure, UnitSystem } from "@/lib/units";
 
 /* ---------------------------------------------------------------- inputs -- */
@@ -7,8 +8,15 @@ export type InputTier = "quick" | "advanced";
 interface InputBase {
   id: string;
   label: string;
-  /** Short helper shown under the field. Keep it plain-English. */
-  help?: string;
+  /**
+   * Short helper shown under the field. Keep it plain-English.
+   *
+   * Takes a function when it quotes a measurement, because a fixed string
+   * cannot: "4 in is typical for patios" sat under a field showing centimetres.
+   * The function is handed the unit-aware formatters so the help text is
+   * written the same way the results are.
+   */
+  help?: string | ((describe: Describe) => string);
   tier: InputTier;
   /** Optional grouping heading inside a tier. */
   group?: string;
@@ -19,6 +27,17 @@ interface InputBase {
 export interface NumberInput extends InputBase {
   type: "number";
   measure: Measure;
+  /**
+   * The denominator, when this field holds a *rate* rather than a quantity:
+   * a price per cubic yard, paint coverage per gallon.
+   *
+   * Both halves then convert together, and the denominator moves the value the
+   * other way — 350 sq ft per gallon is 8.59 m² per litre, not the 32.5 you get
+   * by converting the area and leaving the gallon alone. Omit it for a rate
+   * whose denominator is a package ("$ / bag", "$ / sheet"), since a bag means
+   * the same thing in both systems.
+   */
+  perMeasure?: Measure;
   /** Default expressed in canonical (US) units. */
   defaultValue: number;
   /** Inclusive bounds in canonical units. Used for validation messages. */
@@ -79,9 +98,21 @@ export interface MaterialLine {
   precision?: number;
   /** e.g. "bags", "boxes", "sheets", "posts". */
   unitOverride?: string;
-  /** Price per displayed unit, in dollars. */
+  /** Price per *canonical* unit, in dollars. */
   unitPrice?: number;
+  /**
+   * Fixed label for a price whose unit does not change between systems —
+   * "per bag", "per pallet", "per set". Ignored when `unitPriceMeasure` is set.
+   */
   unitPriceLabel?: string;
+  /**
+   * Set this instead of `unitPriceLabel` when the price is per unit of
+   * *measure* rather than per package. The formatter then converts the price
+   * into the active system and labels it accordingly, so a metric reader sees
+   * "$215.82 per m³" beside a m³ quantity rather than a per-yd³ price that does
+   * not multiply out against the number next to it.
+   */
+  unitPriceMeasure?: Measure;
   cost?: number;
   note?: string;
   /** Rough planning allowance rather than a computed quantity. */

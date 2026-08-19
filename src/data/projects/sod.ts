@@ -9,7 +9,7 @@ export const sodProject: ProjectDefinition = {
   category: "Yard & Garden",
   tagline: "Square footage, rolls, pallets, and delivery cost.",
   intro:
-    "Add up multiple lawn sections, including curved areas, and get the sod you need in square feet, rolls, and pallets — priced both ways so you can compare a garden centre against a sod farm.",
+    "Add up multiple lawn sections, including curved areas, and get the sod you need by area, by roll, and by pallet — priced both ways so you can compare a garden centre against a sod farm.",
   icon: "Sprout",
   accent: "indigo",
   keywords: ["sod", "turf", "lawn", "grass", "new lawn", "pallet"],
@@ -142,7 +142,7 @@ export const sodProject: ProjectDefinition = {
       type: "number",
       label: "Price per square foot",
       measure: "currency",
-      unitOverride: "$ / sq ft",
+      perMeasure: "area",
       defaultValue: prices.sodPerSqFt,
       min: 0,
       max: 50,
@@ -219,7 +219,7 @@ export const sodProject: ProjectDefinition = {
   related: ["mulch-calculator", "gravel-calculator", "fence-calculator"],
 
   seo: {
-    title: "Sod Calculator — Square Feet, Rolls, Pallets & Cost",
+    title: "Sod Calculator — Rolls, Pallets & Cost",
     description:
       "Calculate how much sod you need across multiple areas in square feet, rolls, and pallets, with waste allowance and estimated cost.",
     breadcrumb: "Sod",

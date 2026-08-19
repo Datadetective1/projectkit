@@ -107,7 +107,8 @@ export const fenceProject: ProjectDefinition = {
       id: "postSpacing",
       type: "number",
       label: "Post spacing",
-      help: "6–8 ft on centre is typical. Closer spacing makes a stiffer fence.",
+      help: (d) =>
+        `${d.lengthRange(6, 8)} on centre is typical. Closer spacing makes a stiffer fence.`,
       measure: "length",
       defaultValue: 8,
       min: 2,
@@ -134,7 +135,7 @@ export const fenceProject: ProjectDefinition = {
       id: "picketWidth",
       type: "number",
       label: "Picket width",
-      help: "A nominal 1×6 board actually measures 5.5 in.",
+      help: (d) => `A nominal 1×6 board actually measures ${d.inch(5.5, 1)}.`,
       measure: "inch",
       defaultValue: 5.5,
       min: 1,
@@ -148,7 +149,7 @@ export const fenceProject: ProjectDefinition = {
       id: "picketGap",
       type: "number",
       label: "Gap between pickets",
-      help: "Zero for privacy fence, 2–4 in for a spaced picket look.",
+      help: (d) => `Zero for privacy fence, ${d.inchRange(2, 4)} for a spaced picket look.`,
       measure: "inch",
       defaultValue: 0,
       min: 0,
@@ -311,7 +312,7 @@ export const fenceProject: ProjectDefinition = {
   related: ["concrete-calculator", "sod-calculator", "deck-calculator", "mulch-calculator"],
 
   seo: {
-    title: "Fence Calculator & Project Planner — Posts, Pickets, Cost",
+    title: "Fence Calculator — Posts, Rails, Pickets & Cost",
     description:
       "Calculate fence posts, rails, pickets, gate hardware, post-hole concrete, and estimated cost — plus a shopping list and step-by-step project plan.",
     breadcrumb: "Fence",

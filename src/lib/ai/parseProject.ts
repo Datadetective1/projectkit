@@ -132,11 +132,13 @@ const STRONG_SIGNALS: { slug: string; patterns: RegExp[] }[] = [
   { slug: "paint-calculator", patterns: [/\bpaint\w*/i, /\brepaint\w*/i] },
   { slug: "flooring-calculator", patterns: [/\bfloor\w*/i, /\blaminate\b/i, /\bvinyl plank\b/i, /\blvp\b/i, /\bhardwood\b/i] },
   { slug: "mulch-calculator", patterns: [/\bmulch\b/i, /\bbark\b/i] },
-  { slug: "gravel-calculator", patterns: [/\bgravel\b/i, /\bcrushed stone\b/i, /\bpea gravel\b/i, /\baggregate\b/i] },
+  // "road base" and "crusher run" are what suppliers call it, and without them
+  // "road base for a shed pad" ties on keyword score and loses to concrete.
+  { slug: "gravel-calculator", patterns: [/\bgravel\b/i, /\bcrushed stone\b/i, /\bpea gravel\b/i, /\baggregate\b/i, /\broad ?base\b/i, /\bbase rock\b/i, /\bcrusher run\b/i] },
   { slug: "drywall-calculator", patterns: [/\bdrywall\b/i, /\bsheetrock\b/i, /\bplasterboard\b/i] },
   { slug: "tile-calculator", patterns: [/\btiles?\b/i, /\btiling\b/i, /\bbacksplash\b/i] },
   { slug: "deck-calculator", patterns: [/\bdeck\w*/i] },
-  { slug: "sod-calculator", patterns: [/\bsod\b/i, /\bturf\b/i, /\bnew lawn\b/i] },
+  { slug: "sod-calculator", patterns: [/\bre-?sod\w*/i, /\bsod\b/i, /\bturf\b/i, /\bnew lawn\b/i] },
 ];
 
 function detectProject(text: string): { slug?: string; candidates: string[] } {

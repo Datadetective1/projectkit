@@ -81,11 +81,33 @@ export default function PrivacyPage() {
       <section>
         <h2>Analytics</h2>
         <p>
-          If analytics are enabled on this deployment, we record which pages are viewed and which
-          product actions occur — a project calculated, a pack previewed, a link followed. Events
-          carry no free-text input, no measurements you entered, and no notes. IP anonymisation is
-          enabled where the provider supports it. If no analytics identifier is configured, no
-          analytics script loads at all.
+          This deployment runs Vercel Web Analytics, which records page views, visitor counts,
+          referrers, countries, devices, and browsers. It is cookieless and does not build a profile
+          of you across sites. Vercel&apos;s own privacy policy governs what they hold.
+        </p>
+        <p>
+          Google Analytics is used in addition only where a measurement identifier is configured. If
+          none is set, no Google script is loaded at all.
+        </p>
+        <p>
+          Whichever is running, the page address is stripped before it is sent. ProjectKit puts your
+          measurements, prices, natural-language description, saved-project identifier, and Stripe
+          session identifier in the URL, and none of those leave your browser: only the route and a
+          short list of campaign parameters survive. A saved project is reported as
+          &ldquo;/project-pack/[id]&rdquo; rather than by its identifier. Product events — a project
+          calculated, a pack previewed, a link followed — carry only the planner name, the unit
+          system, and similar fixed labels.
+        </p>
+      </section>
+
+      <section>
+        <h2>Reporting a problem</h2>
+        <p>
+          The &ldquo;Does this estimate look wrong?&rdquo; link under each result opens your email
+          client or a feedback form with the planner name, the unit system, the build identifier,
+          and the page route filled in. It does not include your measurements, your notes, or
+          anything you typed in your own words. If you want to send those, you can add them to the
+          message yourself before you send it.
         </p>
       </section>
 
