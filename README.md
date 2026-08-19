@@ -2,6 +2,8 @@
 
 **Tell us what you're building. We'll figure out everything you need.**
 
+**Live:** <https://projectkit-beta.vercel.app>
+
 ProjectKit turns a home improvement project into material quantities, an
 estimated budget, a shopping list, an order of operations, and a printable
 Project Pack. It is a project-completion utility, not a calculator directory.
@@ -197,13 +199,19 @@ table, and your building department.
 
 ## Deployment
 
-Standard Next.js. On Vercel: connect the repository, set `NEXT_PUBLIC_SITE_URL`
-to the production origin, and add whichever optional keys you have.
+Deployed on Vercel from `main`; every push to `main` ships. No environment
+variables are required — the site origin falls back to Vercel's own production
+domain, so canonical URLs, Open Graph tags, and the sitemap are correct out of
+the box. Set `NEXT_PUBLIC_SITE_URL` once you attach a real domain.
 
-Before going public: set `NEXT_PUBLIC_PROJECT_PACK_DEV_UNLOCK=false` if you are
-charging, have a lawyer review `/privacy` and `/terms` (both are marked where
-review is needed), and add a real affiliate disclosure if you enable affiliate
-links.
+Before charging or promoting it:
+
+- `NEXT_PUBLIC_PROJECT_PACK_DEV_UNLOCK=false` plus Stripe keys, or the Project
+  Pack keeps unlocking for free.
+- A lawyer's review of `/privacy` and `/terms` — both are marked inline where
+  review is needed.
+- A real affiliate disclosure if you turn affiliate links on.
 
 Security headers (`X-Content-Type-Options`, `Referrer-Policy`,
-`X-Frame-Options`, `Permissions-Policy`) are set in `next.config.ts`.
+`X-Frame-Options`, `Permissions-Policy`) are set in `next.config.ts`; Vercel
+adds HSTS.
