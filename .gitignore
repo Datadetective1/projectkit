@@ -44,6 +44,8 @@ next-env.d.ts
 
 # playwright
 /test-results/
+# Audit probe output — screenshots and reports are regenerated on demand
+/audit-shots/
 /playwright-report/
 /blob-report/
 /.playwright-mcp/
