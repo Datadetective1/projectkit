@@ -68,6 +68,13 @@ export interface Describe {
    * materials table.
    */
   pricePerUnit: (canonicalPrice: number, measure: Measure) => string;
+  /**
+   * A range, with the unit named once: "2–2.5 in" / "5–6 cm".
+   *
+   * Formatting each end separately gives "5 cm–6 cm", which reads as two
+   * measurements rather than one span.
+   */
+  inchRange: (from: number, to: number, precision?: number) => string;
   /** The spoken name of a unit, for sentences like "sold by the cubic yard". */
   unitName: (measure: Measure) => string;
   /**
@@ -123,6 +130,12 @@ export function describeFor(system: UnitSystem): Describe {
       const perDisplayUnit = fromCanonical(1, measure, system);
       const price = perDisplayUnit > 0 ? canonicalPrice / perDisplayUnit : canonicalPrice;
       return `${formatCurrency(price)} per ${unitLabel(measure, system)}`;
+    },
+
+    inchRange: (from, to, precision) => {
+      const decimals = precision ?? (system === "us" ? 1 : 0);
+      const low = formatNumber(fromCanonical(from, "inch", system), decimals);
+      return `${low}–${formatQuantity(to, "inch", { system, precision: decimals })}`;
     },
 
     unitName: (measure) => unitName(measure, system),

@@ -19,7 +19,12 @@ export const IMPERIAL_UNIT = new RegExp(
     "sq ft",
     "cu ft",
     "cubic yards?",
-    "yards?",
+    /*
+     * A bare "yard" needs a unit context. Without one this matches the
+     * "Yard & Garden" category on three planners, which is a garden rather
+     * than 0.9144 m.
+     */
+    String.raw`(?:per|a|one|\d+(?:\.\d+)?) yards?`,
     "cubic (foot|feet)",
     "square (foot|feet)",
     "linear ft",
@@ -53,6 +58,9 @@ export const PRODUCT_SPECS: { pattern: RegExp; why: string }[] = [
   { pattern: /\(\s*\d+(\.\d+)?\s*lb\s*\)/i, why: "package weight in a product name" },
   { pattern: /\bcu ft\s+(per bag|yield)\b/i, why: "bag yield printed on the packaging" },
   { pattern: /^Bag size:/i, why: "bag size printed on the packaging" },
+  // The pack renders an assumption label and its value on separate rows, so
+  // the bag-size value arrives on its own as a bare "2 cu ft".
+  { pattern: /^\d+(\.\d+)?\s*cu ft$/i, why: "bag size printed on the packaging" },
   { pattern: /\b\d+\s*×\s*\d+\s*ft\b/i, why: "nominal sheet size, the name you ask for" },
   { pattern: /notch\b/i, why: "trowel size, a tool specification" },
   { pattern: /\bwith A, B, and thickness in inches\b/i, why: "formula states its own input units" },

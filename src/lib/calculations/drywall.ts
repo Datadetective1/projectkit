@@ -209,7 +209,7 @@ export function calculateDrywall({
     shoppingExtras: [
       shoppingItem("t-square", "Drywall T-square"),
       shoppingItem("knife", "Utility knife and spare blades"),
-      shoppingItem("taping-knives", "6 in and 12 in taping knives"),
+      shoppingItem("taping-knives", `Taping knives (${d.inchRange(6, 12)})`),
       shoppingItem("mud-pan", "Mud pan"),
       shoppingItem("sander", "Pole sander and sanding screens"),
       shoppingItem("lift", "Drywall lift rental for ceilings", undefined, !includeCeiling),

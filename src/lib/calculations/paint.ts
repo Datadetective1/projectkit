@@ -236,7 +236,7 @@ export function calculatePaint({
       { label: "Primer included", value: includePrimer ? "Yes, one coat" : "No" },
     ],
     shoppingExtras: [
-      shoppingItem("brushes", "Angled sash brush (2–2.5 in)"),
+      shoppingItem("brushes", `Angled sash brush (${d.inchRange(2, 2.5)})`),
       shoppingItem("frame", "Roller frame and extension pole"),
       shoppingItem("tray", "Paint tray and liners"),
       shoppingItem("drop", "Drop cloths"),

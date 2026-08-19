@@ -1,6 +1,7 @@
 import { chromium, devices } from "@playwright/test";
 import { mkdirSync } from "node:fs";
 import { projects } from "../src/data/projects";
+import { IMPERIAL_UNIT, productSpecExemption } from "../tests/support/imperialUnits";
 
 /**
  * Drives a real save -> Project Pack for every project and screenshots the
@@ -54,6 +55,22 @@ async function packFor(slug: string, viewport: { width: number; height: number }
   }
   if (/\b1 (bags|rolls|boxes|sheets|pallets|sets|tiles|posts)\b/.test(body)) {
     problems.push("plural unit at a quantity of one");
+  }
+
+  /*
+   * Imperial units in a metric pack.
+   *
+   * Checked line by line so a genuine product specification on one row does
+   * not excuse a leak on another, and against the same rule the unit tests
+   * gate on — a 50 lb bag and a 4 × 8 ft sheet are how you find the thing on a
+   * shelf, and translating them helps nobody.
+   */
+  if (units === "metric") {
+    for (const line of body.split(/\n+/)) {
+      const text = line.trim();
+      if (!text || !IMPERIAL_UNIT.test(text) || productSpecExemption(text)) continue;
+      problems.push(`imperial unit: "${text.slice(0, 90)}"`);
+    }
   }
 
   await page.screenshot({ path: `${OUT}/${slug}-${label}-${units}.png`, fullPage: true });
