@@ -139,13 +139,24 @@ export default async function ProjectPage({
  */
 function PlannerSkeleton() {
   return (
-    // The min-height keeps whatever follows the planner — the disclaimer card,
-    // the FAQ — below the fold while the real planner loads. Without it that
-    // content sits just inside the viewport and is shoved down when the planner
-    // arrives, which measured as 0.12 CLS on a desktop viewport.
+    /*
+     * The min-height keeps whatever follows the planner — the disclaimer card,
+     * the FAQ — below the fold while the real planner loads. Without it that
+     * content sits just inside the viewport and is shoved down when the planner
+     * arrives, which measured as 0.12 CLS on a desktop viewport.
+     *
+     * It has to be at least a viewport tall, not a fixed 44rem. A flat 44rem is
+     * only "below the fold" on the viewport it was tuned for: on a 1600px-tall
+     * window the FAQ and related-projects sections were visible at first paint
+     * and their displacement measured 0.18–0.22 CLS on every planner route.
+     * `100svh` makes the reservation follow the window instead of guessing at
+     * it, and the 44rem floor keeps the skeleton looking deliberate on a short
+     * one. The real planner is 3,800–7,500px tall, so it always overflows this
+     * — the reservation is about what is *visible*, not about matching height.
+     */
     <div
       aria-hidden
-      className="grid min-h-[44rem] grid-cols-1 gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start"
+      className="grid min-h-[max(44rem,100svh)] grid-cols-1 gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start"
     >
       <div className="pk-card animate-pulse p-5 sm:p-6">
         <div className="h-6 w-32 rounded bg-surface-sunken" />

@@ -19,7 +19,10 @@ export function SavedProjectList() {
   const ready = useStorageReady();
 
   if (!ready) {
-    return <div className="pk-card h-40 animate-pulse bg-surface-sunken/50" />;
+    // Sized to the empty state, which is what most first visits resolve to.
+    // At the old h-40 the card grew by ~110px on hydration and shoved the
+    // footer down with it — 0.044 CLS, the whole of this page's score.
+    return <div className="pk-card h-[17rem] animate-pulse bg-surface-sunken/50" />;
   }
 
   if (!isStorageAvailable()) {
