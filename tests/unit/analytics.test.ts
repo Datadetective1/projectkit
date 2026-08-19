@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   redactAnalyticsEvent,
   redactPathname,
@@ -181,5 +181,116 @@ describe("the beforeSend hook", () => {
     const event = { type: "pageview" as const, url: `${ORIGIN}/x?length=20` };
     redactAnalyticsEvent(event);
     expect(event.url).toBe(`${ORIGIN}/x?length=20`);
+  });
+});
+
+/* ------------------------------------------- the Google Analytics pipeline -- */
+
+/**
+ * The redaction above only protects the Vercel pipeline, which routes every
+ * event through `beforeSend`. Google Analytics has no such hook: GA4 stamps
+ * `page_location` onto every event by reading `document.location.href`
+ * directly, and on a planner URL that href *is* the user's dimensions.
+ *
+ * These tests call the real `track`/`trackPageView` against a stub gtag and
+ * assert on what would actually go over the wire.
+ */
+describe("the Google Analytics pipeline", () => {
+  const LEAKY = `${ORIGIN}/concrete-calculator?length=20&width=16&thickness=6&pricePerCubicYard=165`;
+
+  type GtagCall = [string, string, Record<string, unknown>];
+
+  async function captureGtag(
+    href: string,
+    run: (api: typeof import("@/lib/analytics")) => void,
+  ): Promise<GtagCall[]> {
+    const calls: GtagCall[] = [];
+    vi.resetModules();
+    vi.doMock("@/config/site", () => ({
+      analyticsConfig: { measurementId: "G-TEST", vercelCustomEvents: false, debug: false },
+    }));
+
+    const globalWithWindow = globalThis as unknown as { window?: unknown };
+    const previousWindow = globalWithWindow.window;
+    globalWithWindow.window = {
+      location: { href },
+      gtag: (...args: unknown[]) => calls.push(args as GtagCall),
+    };
+
+    try {
+      run(await import("@/lib/analytics"));
+    } finally {
+      globalWithWindow.window = previousWindow;
+      vi.doUnmock("@/config/site");
+      vi.resetModules();
+    }
+    return calls;
+  }
+
+  it("overrides page_location on a page view so the query string cannot ride along", async () => {
+    const calls = await captureGtag(LEAKY, (analytics) =>
+      analytics.trackPageView("/concrete-calculator"),
+    );
+
+    expect(calls).toHaveLength(1);
+    const [, event, payload] = calls[0];
+    expect(event).toBe("page_view");
+    // Present at all — leaving it unset is what makes GA4 read the real href.
+    expect(payload.page_location).toBeDefined();
+    expect(String(payload.page_location)).not.toContain("length");
+    expect(String(payload.page_location)).not.toContain("165");
+    expect(payload.page_location).toBe(`${ORIGIN}/concrete-calculator`);
+    expect(payload.page_path).toBe("/concrete-calculator");
+  });
+
+  it("overrides page_location on custom events too", async () => {
+    const calls = await captureGtag(LEAKY, (analytics) =>
+      analytics.track("result_viewed", { projectType: "concrete-calculator", mode: "advanced" }),
+    );
+
+    expect(calls).toHaveLength(1);
+    const [, event, payload] = calls[0];
+    expect(event).toBe("result_viewed");
+    expect(payload.page_location).toBe(`${ORIGIN}/concrete-calculator`);
+    // The closed-vocabulary props still come through untouched.
+    expect(payload.projectType).toBe("concrete-calculator");
+    expect(payload.mode).toBe("advanced");
+  });
+
+  it("collapses a saved-project id rather than sending it to Google", async () => {
+    const calls = await captureGtag(`${ORIGIN}/project-pack/9f3c1b7e-aa21-4d55-9f10-c0ffee123456`, (analytics) =>
+      analytics.trackPageView("/project-pack/9f3c1b7e-aa21-4d55-9f10-c0ffee123456"),
+    );
+
+    const [, , payload] = calls[0];
+    expect(payload.page_path).toBe("/project-pack/[id]");
+    expect(payload.page_location).toBe(`${ORIGIN}/project-pack/[id]`);
+    expect(JSON.stringify(payload)).not.toContain("9f3c1b7e");
+  });
+
+  it("sends nothing at all when no measurement id is configured", async () => {
+    const calls: GtagCall[] = [];
+    vi.resetModules();
+    vi.doMock("@/config/site", () => ({
+      analyticsConfig: { measurementId: "", vercelCustomEvents: false, debug: false },
+    }));
+
+    const globalWithWindow = globalThis as unknown as { window?: unknown };
+    const previousWindow = globalWithWindow.window;
+    globalWithWindow.window = {
+      location: { href: LEAKY },
+      gtag: (...args: unknown[]) => calls.push(args as GtagCall),
+    };
+
+    try {
+      const analytics = await import("@/lib/analytics");
+      analytics.trackPageView("/concrete-calculator");
+      analytics.track("result_viewed", { projectType: "concrete-calculator" });
+      expect(calls).toHaveLength(0);
+    } finally {
+      globalWithWindow.window = previousWindow;
+      vi.doUnmock("@/config/site");
+      vi.resetModules();
+    }
   });
 });

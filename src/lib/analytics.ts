@@ -1,5 +1,6 @@
 import { track as vercelTrack } from "@vercel/analytics";
 import { analyticsConfig } from "@/config/site";
+import { redactPathname, redactUrl } from "@/lib/analytics/redact";
 
 /**
  * Product analytics abstraction.
@@ -122,7 +123,13 @@ export function track(event: AnalyticsEvent, props: AnalyticsProps = {}): void {
 
     if (isGoogleAnalyticsEnabled()) {
       const gtag = (window as GtagWindow).gtag;
-      if (typeof gtag === "function") gtag("event", event, payload);
+      // GA4 stamps every event with `page_location` read straight from
+      // `document.location.href`. On a planner URL that href is the user's
+      // dimensions, so the redacted value has to be supplied explicitly — the
+      // closed `AnalyticsProps` vocabulary does not protect this field.
+      if (typeof gtag === "function") {
+        gtag("event", event, { ...payload, page_location: redactUrl(window.location.href) });
+      }
     }
   } catch {
     // Analytics must never break the product.
@@ -139,7 +146,22 @@ export function trackPageView(path: string): void {
     if (typeof window === "undefined" || !isGoogleAnalyticsEnabled()) return;
     const gtag = (window as GtagWindow).gtag;
     if (typeof gtag !== "function") return;
-    gtag("event", "page_view", { page_path: path });
+
+    /*
+     * Both fields have to be set, and both have to be redacted.
+     *
+     * `page_path` alone is not enough: GA4 fills `page_location` from
+     * `document.location.href` when we do not supply it, which would ship the
+     * planner's entire query string — every dimension the user typed — to
+     * Google. Passing a redacted absolute URL overrides that.
+     *
+     * `page_referrer` is left alone. It is the previous *site*, not our own
+     * URL, so it carries no ProjectKit user input.
+     */
+    gtag("event", "page_view", {
+      page_path: redactPathname(path),
+      page_location: redactUrl(window.location.href),
+    });
   } catch {
     // Ignored by design.
   }
