@@ -1,0 +1,261 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main"
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - link "ProjectKit home" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e6]: ProjectKit
+      - navigation "Main" [ref=e12]:
+        - link "All projects" [ref=e13] [cursor=pointer]:
+          - /url: /projects
+        - link "My projects" [ref=e14] [cursor=pointer]:
+          - /url: /my-projects
+        - link "About" [ref=e15] [cursor=pointer]:
+          - /url: /about
+        - link "Plan a project" [ref=e16] [cursor=pointer]:
+          - /url: /#plan
+  - main [ref=e17]:
+    - generic [ref=e19]:
+      - heading "What are you trying to build?" [level=1] [ref=e20]
+      - paragraph [ref=e21]: Describe your project in plain English. ProjectKit works out the quantities, the cost, the shopping list, and the plan.
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - generic [ref=e24]: Describe your project
+          - textbox "Describe your project" [ref=e25]:
+            - /placeholder: I want to build a 20 × 16 concrete patio
+        - button "Plan my project" [ref=e26] [cursor=pointer]
+      - generic [ref=e29]:
+        - paragraph [ref=e30]: Try
+        - list [ref=e31]:
+          - listitem [ref=e32]:
+            - link "I want to build a 20 by 16 concrete patio" [ref=e33] [cursor=pointer]:
+              - /url: /plan?q=I%20want%20to%20build%20a%2020%20by%2016%20concrete%20patio
+          - listitem [ref=e34]:
+            - link "I need a 6 foot privacy fence around my backyard" [ref=e35] [cursor=pointer]:
+              - /url: /plan?q=I%20need%20a%206%20foot%20privacy%20fence%20around%20my%20backyard
+          - listitem [ref=e36]:
+            - link "I want to repaint three bedrooms" [ref=e37] [cursor=pointer]:
+              - /url: /plan?q=I%20want%20to%20repaint%20three%20bedrooms
+          - listitem [ref=e38]:
+            - link "I need mulch for a 1,200 sq ft flower bed" [ref=e39] [cursor=pointer]:
+              - /url: /plan?q=I%20need%20mulch%20for%20a%201%2C200%20sq%20ft%20flower%20bed
+      - paragraph [ref=e40]: No account. No sign-up. Free to use.
+    - region [ref=e41]:
+      - generic [ref=e42]:
+        - generic [ref=e43]:
+          - heading "Or pick a project" [level=2] [ref=e44]
+          - paragraph [ref=e45]: Ten planners, all built on the same engine. Every one gives you quantities, cost, and a shopping list.
+        - link "See all projects" [ref=e46] [cursor=pointer]:
+          - /url: /projects
+      - generic [ref=e47]:
+        - link [ref=e48] [cursor=pointer]:
+          - /url: /concrete-calculator
+          - heading "Concrete" [level=3] [ref=e52]
+          - paragraph [ref=e53]: Patios, slabs, and pads — volume, bags, base, and cost.
+          - generic [ref=e54]: Plan it
+        - link [ref=e57] [cursor=pointer]:
+          - /url: /fence-calculator
+          - heading "Fence" [level=3] [ref=e63]
+          - paragraph [ref=e64]: Posts, rails, pickets, gates, and post-hole concrete.
+          - generic [ref=e65]: Plan it
+        - link [ref=e68] [cursor=pointer]:
+          - /url: /paint-calculator
+          - heading "Paint" [level=3] [ref=e74]
+          - paragraph [ref=e75]: Gallons, coats, primer, and what to actually buy.
+          - generic [ref=e76]: Plan it
+        - link [ref=e79] [cursor=pointer]:
+          - /url: /flooring-calculator
+          - heading "Flooring" [level=3] [ref=e83]
+          - paragraph [ref=e84]: Square footage, waste, boxes, and leftover material.
+          - generic [ref=e85]: Plan it
+        - link [ref=e88] [cursor=pointer]:
+          - /url: /mulch-calculator
+          - heading "Mulch" [level=3] [ref=e93]
+          - paragraph [ref=e94]: Cubic yards, bags, and bulk-versus-bagged cost.
+          - generic [ref=e95]: Plan it
+        - link [ref=e98] [cursor=pointer]:
+          - /url: /gravel-calculator
+          - heading "Gravel" [level=3] [ref=e102]
+          - paragraph [ref=e103]: Cubic yards, approximate tons, and delivery cost.
+          - generic [ref=e104]: Plan it
+        - link [ref=e107] [cursor=pointer]:
+          - /url: /drywall-calculator
+          - heading "Drywall" [level=3] [ref=e113]
+          - paragraph [ref=e114]: Sheets, screws, compound, tape, and corner bead.
+          - generic [ref=e115]: Plan it
+        - link [ref=e118] [cursor=pointer]:
+          - /url: /tile-calculator
+          - heading "Tile" [level=3] [ref=e122]
+          - paragraph [ref=e123]: Tiles, boxes, thinset, grout, and cost.
+          - generic [ref=e124]: Plan it
+        - link [ref=e127] [cursor=pointer]:
+          - /url: /deck-calculator
+          - heading "Deck" [level=3] [ref=e133]
+          - paragraph [ref=e134]: Decking, joists, railing, stairs, and budget.
+          - generic [ref=e135]: Plan it
+        - link [ref=e138] [cursor=pointer]:
+          - /url: /sod-calculator
+          - heading "Sod" [level=3] [ref=e143]
+          - paragraph [ref=e144]: Square footage, rolls, pallets, and delivery cost.
+          - generic [ref=e145]: Plan it
+    - region [ref=e148]:
+      - generic [ref=e149]:
+        - heading "How it works" [level=2] [ref=e150]
+        - list [ref=e151]:
+          - listitem [ref=e152]:
+            - heading "1. Describe your project" [level=3] [ref=e157]:
+              - generic [ref=e158]: "1."
+              - text: Describe your project
+            - paragraph [ref=e159]: Type what you are building, or pick a planner and enter the dimensions.
+          - listitem [ref=e160]:
+            - heading "2. Get real quantities" [level=3] [ref=e168]:
+              - generic [ref=e169]: "2."
+              - text: Get real quantities
+            - paragraph [ref=e170]: Deterministic calculations with waste, packaging sizes, and rounding to what you can actually buy.
+          - listitem [ref=e171]:
+            - heading "3. Leave with a plan" [level=3] [ref=e176]:
+              - generic [ref=e177]: "3."
+              - text: Leave with a plan
+            - paragraph [ref=e178]: A budget, a shopping list, a project sequence, and a pack you can print or share.
+    - region [ref=e179]:
+      - generic [ref=e180]:
+        - generic [ref=e181]:
+          - heading "Not just a number" [level=2] [ref=e182]
+          - paragraph [ref=e183]: A calculator tells you the volume. ProjectKit tells you what to order, what it costs, what else you need, and what order to do it in — then hands you a document you can take to the store.
+          - list [ref=e184]:
+            - listitem [ref=e185]:
+              - generic [ref=e192]: Quantities with waste and real purchase rounding
+            - listitem [ref=e193]:
+              - generic [ref=e197]: An editable budget using your own prices
+            - listitem [ref=e198]:
+              - generic [ref=e202]: A tickable shopping list, including the bits people forget
+            - listitem [ref=e203]:
+              - generic [ref=e206]: Scenario comparisons — ready-mix versus bags, bulk versus bagged
+          - link "Try the concrete planner" [ref=e207] [cursor=pointer]:
+            - /url: /concrete-calculator
+        - generic [ref=e210]:
+          - generic [ref=e211]:
+            - paragraph [ref=e212]: You need approximately
+            - paragraph [ref=e213]: 4.35 yd³
+            - paragraph [ref=e214]: "Recommended purchase: 4.5 yd³ including 10% waste"
+          - generic [ref=e215]:
+            - generic [ref=e216]:
+              - term [ref=e217]: Project area
+              - definition [ref=e218]: 320 sq ft
+            - generic [ref=e219]:
+              - term [ref=e220]: Calculated volume
+              - definition [ref=e221]: 3.95 yd³
+            - generic [ref=e222]:
+              - term [ref=e223]: Base gravel
+              - definition [ref=e224]: 4.5 yd³
+            - generic [ref=e225]:
+              - term [ref=e226]: Estimated materials
+              - definition [ref=e227]: $990
+          - paragraph [ref=e228]: Example output for a 20 × 16 ft patio at 4 in thick, using ProjectKit planning prices.
+    - region [ref=e229]:
+      - generic [ref=e230]:
+        - heading "Browse by category" [level=2] [ref=e231]
+        - generic [ref=e232]:
+          - generic [ref=e233]:
+            - heading "Outdoor & Structural" [level=3] [ref=e234]
+            - list [ref=e235]:
+              - listitem [ref=e236]:
+                - link "Concrete calculator" [ref=e237] [cursor=pointer]:
+                  - /url: /concrete-calculator
+              - listitem [ref=e238]:
+                - link "Fence calculator" [ref=e239] [cursor=pointer]:
+                  - /url: /fence-calculator
+              - listitem [ref=e240]:
+                - link "Deck calculator" [ref=e241] [cursor=pointer]:
+                  - /url: /deck-calculator
+          - generic [ref=e242]:
+            - heading "Interior" [level=3] [ref=e243]
+            - list [ref=e244]:
+              - listitem [ref=e245]:
+                - link "Paint calculator" [ref=e246] [cursor=pointer]:
+                  - /url: /paint-calculator
+              - listitem [ref=e247]:
+                - link "Flooring calculator" [ref=e248] [cursor=pointer]:
+                  - /url: /flooring-calculator
+              - listitem [ref=e249]:
+                - link "Drywall calculator" [ref=e250] [cursor=pointer]:
+                  - /url: /drywall-calculator
+              - listitem [ref=e251]:
+                - link "Tile calculator" [ref=e252] [cursor=pointer]:
+                  - /url: /tile-calculator
+          - generic [ref=e253]:
+            - heading "Yard & Garden" [level=3] [ref=e254]
+            - list [ref=e255]:
+              - listitem [ref=e256]:
+                - link "Mulch calculator" [ref=e257] [cursor=pointer]:
+                  - /url: /mulch-calculator
+              - listitem [ref=e258]:
+                - link "Gravel calculator" [ref=e259] [cursor=pointer]:
+                  - /url: /gravel-calculator
+              - listitem [ref=e260]:
+                - link "Sod calculator" [ref=e261] [cursor=pointer]:
+                  - /url: /sod-calculator
+  - contentinfo [ref=e262]:
+    - generic [ref=e263]:
+      - generic [ref=e264]:
+        - generic [ref=e265]:
+          - generic [ref=e266]: ProjectKit
+          - paragraph [ref=e272]: Calculate materials, estimate costs, create a shopping list, and plan your project in minutes.
+        - navigation "Project planners" [ref=e273]:
+          - heading "Planners" [level=2] [ref=e274]
+          - list [ref=e275]:
+            - listitem [ref=e276]:
+              - link "Concrete" [ref=e277] [cursor=pointer]:
+                - /url: /concrete-calculator
+            - listitem [ref=e278]:
+              - link "Fence" [ref=e279] [cursor=pointer]:
+                - /url: /fence-calculator
+            - listitem [ref=e280]:
+              - link "Paint" [ref=e281] [cursor=pointer]:
+                - /url: /paint-calculator
+            - listitem [ref=e282]:
+              - link "Flooring" [ref=e283] [cursor=pointer]:
+                - /url: /flooring-calculator
+            - listitem [ref=e284]:
+              - link "Mulch" [ref=e285] [cursor=pointer]:
+                - /url: /mulch-calculator
+            - listitem [ref=e286]:
+              - link "Gravel" [ref=e287] [cursor=pointer]:
+                - /url: /gravel-calculator
+            - listitem [ref=e288]:
+              - link "Drywall" [ref=e289] [cursor=pointer]:
+                - /url: /drywall-calculator
+            - listitem [ref=e290]:
+              - link "Tile" [ref=e291] [cursor=pointer]:
+                - /url: /tile-calculator
+            - listitem [ref=e292]:
+              - link "Deck" [ref=e293] [cursor=pointer]:
+                - /url: /deck-calculator
+            - listitem [ref=e294]:
+              - link "Sod" [ref=e295] [cursor=pointer]:
+                - /url: /sod-calculator
+        - navigation "Company" [ref=e296]:
+          - heading "ProjectKit" [level=2] [ref=e297]
+          - list [ref=e298]:
+            - listitem [ref=e299]:
+              - link "All projects" [ref=e300] [cursor=pointer]:
+                - /url: /projects
+            - listitem [ref=e301]:
+              - link "My projects" [ref=e302] [cursor=pointer]:
+                - /url: /my-projects
+            - listitem [ref=e303]:
+              - link "About" [ref=e304] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e305]:
+              - link "Contact" [ref=e306] [cursor=pointer]:
+                - /url: /contact
+            - listitem [ref=e307]:
+              - link "Privacy" [ref=e308] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=e309]:
+              - link "Terms" [ref=e310] [cursor=pointer]:
+                - /url: /terms
+      - generic [ref=e311]:
+        - paragraph [ref=e312]: ProjectKit provides planning estimates only. Actual requirements, costs, installation methods, structural requirements, permits, safety requirements, and building codes vary. Verify critical specifications before purchasing materials or beginning work.
+        - paragraph [ref=e313]: © 2026 ProjectKit. Planning estimates only.

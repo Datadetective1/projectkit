@@ -37,7 +37,8 @@ import {
   saveProject,
   type SavedProject,
 } from "@/lib/storage/savedProjects";
-import type { InputValue, InputValues } from "@/types/project";
+import type { ReadonlyURLSearchParams } from "next/navigation";
+import type { InputValue, InputValues, ProjectDefinition } from "@/types/project";
 
 type Status = { kind: "idle" } | { kind: "saved"; id: string } | { kind: "error"; message: string };
 
@@ -46,61 +47,31 @@ export function ProjectPlanner({ slug }: { slug: string }) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const [system, setSystem] = useState<UnitSystem>("us");
-  const [values, setValues] = useState<InputValues>(() =>
-    project ? defaultValues(project, "us") : {},
-  );
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [prefilled, setPrefilled] = useState<string[]>([]);
-  const [fromNaturalLanguage, setFromNaturalLanguage] = useState(false);
-  const [savedId, setSavedId] = useState<string | undefined>();
-  const [notes, setNotes] = useState("");
-  const [checked, setChecked] = useState<string[]>([]);
-  const [contractorQuote, setContractorQuote] = useState<number | "">("");
+  // Everything the URL and local storage determine is resolved once, lazily,
+  // rather than assigned from an effect — the form never renders with defaults
+  // it is about to replace.
+  const initial = useState(() => resolveInitialState(project, searchParams))[0];
+
+  const [system, setSystem] = useState<UnitSystem>(initial.system);
+  const [values, setValues] = useState<InputValues>(initial.values);
+  const [showAdvanced, setShowAdvanced] = useState(initial.showAdvanced);
+  const [savedId, setSavedId] = useState<string | undefined>(initial.savedId);
+  const [notes, setNotes] = useState(initial.notes);
+  const [checked, setChecked] = useState<string[]>(initial.checked);
+  const [contractorQuote, setContractorQuote] = useState<number | "">(initial.contractorQuote);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [copied, setCopied] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
+
+  const prefilled = initial.prefilled;
+  const fromNaturalLanguage = initial.fromNaturalLanguage;
 
   const resultsRef = useRef<HTMLDivElement>(null);
-  const initialised = useRef(false);
 
-  /* ------------------------------------------------- initial state setup -- */
   useEffect(() => {
-    if (!project || initialised.current) return;
-    initialised.current = true;
-    setHydrated(true);
-
-    const params = Object.fromEntries(searchParams.entries());
-    const savedParam = params.saved;
-
-    if (savedParam) {
-      const saved = getSavedProject(savedParam);
-      if (saved && saved.slug === project.slug) {
-        setSystem(saved.unitSystem);
-        setValues({ ...defaultValues(project, saved.unitSystem), ...saved.values });
-        setSavedId(saved.id);
-        setNotes(saved.notes);
-        setChecked(saved.checked);
-        setContractorQuote(saved.contractorQuote ?? "");
-        setShowAdvanced(true);
-        return;
-      }
+    if (initial.prefilled.length > 0) {
+      track("project_started", { slug, prefilled: initial.prefilled.length });
     }
-
-    const requestedSystem: UnitSystem = params.units === "metric" ? "metric" : "us";
-    const base = defaultValues(project, requestedSystem);
-    const { values: next, applied } = applyPrefill(project, base, params);
-    setSystem(requestedSystem);
-    setValues(next);
-    setPrefilled(applied);
-    if (params.from === "nl") setFromNaturalLanguage(true);
-    if (applied.some((id) => project.inputs.find((input) => input.id === id)?.tier === "advanced")) {
-      setShowAdvanced(true);
-    }
-    if (applied.length > 0) {
-      track("project_started", { slug: project.slug, prefilled: applied.length });
-    }
-  }, [project, searchParams]);
+  }, [initial.prefilled.length, slug]);
 
   const handleChange = useCallback((id: string, value: InputValue) => {
     setValues((current) => ({ ...current, [id]: value }));
@@ -164,7 +135,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
     const saved: SavedProject | undefined = saveProject({
       id: savedId,
       slug: project.slug,
-      title: buildTitle(project.name, evaluation.result.headline.sublabel),
+      title: buildTitle(project, values, system),
       unitSystem: system,
       values,
       notes,
@@ -218,7 +189,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
     const saved = saveProject({
       id: savedId,
       slug: project.slug,
-      title: buildTitle(project.name, evaluation.result.headline.sublabel),
+      title: buildTitle(project, values, system),
       unitSystem: system,
       values,
       notes,
@@ -236,8 +207,10 @@ export function ProjectPlanner({ slug }: { slug: string }) {
     router.push(`/project-pack/${saved.id}`);
   };
 
+  // grid-cols-1 (rather than the implicit auto column) keeps a wide child — the
+  // materials table — from stretching the whole layout on small screens.
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,22rem)_minmax(0,1fr)] lg:items-start">
       {/* --------------------------------------------------------- inputs -- */}
       <form
         className="pk-card p-5 sm:p-6 lg:sticky lg:top-20"
@@ -428,7 +401,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
           <div className="pk-card p-6">
             <h2 className="text-lg font-semibold text-ink">Your estimate will appear here</h2>
             <p className="pk-prose mt-2 text-sm">
-              {hydrated && evaluation && !evaluation.ok && evaluation.message
+              {evaluation && !evaluation.ok && evaluation.message
                 ? evaluation.message
                 : "Fill in the project details on the left and we will work out quantities, cost, and a shopping list."}
             </p>
@@ -462,7 +435,97 @@ function ProjectPackTeaser({
   );
 }
 
-function buildTitle(projectName: string, sublabel?: string): string {
-  if (!sublabel) return `${projectName} project`;
-  return `${projectName} — ${sublabel}`.slice(0, 110);
+/**
+ * A saved project's name. Dimensions read better in a list than a headline
+ * figure does — "Concrete — 20 × 16 ft" beats "Concrete — 4.50 yd³".
+ */
+function buildTitle(
+  project: ProjectDefinition,
+  values: InputValues,
+  system: UnitSystem,
+): string {
+  const unit = system === "us" ? "ft" : "m";
+  const dimension = (id: string) => {
+    const raw = values[id];
+    const numeric = typeof raw === "number" ? raw : Number(raw);
+    return Number.isFinite(numeric) && numeric > 0 ? numeric : undefined;
+  };
+
+  const length = dimension("length") ?? dimension("length1") ?? dimension("runLength");
+  const width = dimension("width") ?? dimension("width1");
+
+  if (length && width) return `${project.name} — ${length} × ${width} ${unit}`;
+  if (length) return `${project.name} — ${length} ${unit}`;
+
+  const area = dimension("area") ?? dimension("extraArea");
+  if (area) return `${project.name} — ${area} ${system === "us" ? "sq ft" : "m²"}`;
+
+  return `${project.name} project`;
+}
+
+interface InitialState {
+  system: UnitSystem;
+  values: InputValues;
+  showAdvanced: boolean;
+  savedId?: string;
+  notes: string;
+  checked: string[];
+  contractorQuote: number | "";
+  prefilled: string[];
+  fromNaturalLanguage: boolean;
+}
+
+/**
+ * Resolve the planner's opening state from a saved project (`?saved=`) or from
+ * prefill parameters, falling back to the project's defaults.
+ */
+function resolveInitialState(
+  project: ProjectDefinition | undefined,
+  searchParams: ReadonlyURLSearchParams,
+): InitialState {
+  const empty: InitialState = {
+    system: "us",
+    values: {},
+    showAdvanced: false,
+    notes: "",
+    checked: [],
+    contractorQuote: "",
+    prefilled: [],
+    fromNaturalLanguage: false,
+  };
+  if (!project) return empty;
+
+  const params = Object.fromEntries(searchParams.entries());
+
+  if (params.saved) {
+    const saved = getSavedProject(params.saved);
+    if (saved && saved.slug === project.slug) {
+      return {
+        system: saved.unitSystem,
+        values: { ...defaultValues(project, saved.unitSystem), ...saved.values },
+        showAdvanced: true,
+        savedId: saved.id,
+        notes: saved.notes,
+        checked: saved.checked,
+        contractorQuote: saved.contractorQuote ?? "",
+        prefilled: [],
+        fromNaturalLanguage: false,
+      };
+    }
+  }
+
+  const system: UnitSystem = params.units === "metric" ? "metric" : "us";
+  const { values, applied } = applyPrefill(project, defaultValues(project, system), params);
+  const touchedAdvanced = applied.some(
+    (id) => project.inputs.find((input) => input.id === id)?.tier === "advanced",
+  );
+
+  return {
+    ...empty,
+    system,
+    values,
+    showAdvanced: touchedAdvanced,
+    prefilled: applied,
+    fromNaturalLanguage: params.from === "nl",
+  };
 }

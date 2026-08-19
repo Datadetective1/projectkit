@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { Logo } from "./Logo";
 import { projects } from "@/data/projects";
@@ -15,12 +15,15 @@ const primaryLinks = [
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
+  const [menu, setMenu] = useState<{ open: boolean; at: string }>({
+    open: false,
+    at: pathname,
+  });
 
-  // Close the mobile menu whenever navigation happens.
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+  // Derive the menu closed on navigation rather than closing it from an effect,
+  // which would render the open menu once on the new page before hiding it.
+  const open = menu.open && menu.at === pathname;
+  const setOpen = (next: boolean) => setMenu({ open: next, at: pathname });
 
   return (
     <header className="pk-no-print sticky top-0 z-40 border-b border-line bg-paper/90 backdrop-blur">
@@ -57,7 +60,7 @@ export function SiteHeader() {
           className="pk-btn pk-btn-secondary px-3 md:hidden"
           aria-expanded={open}
           aria-controls="mobile-nav"
-          onClick={() => setOpen((value) => !value)}
+          onClick={() => setOpen(!open)}
         >
           {open ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}
           <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>

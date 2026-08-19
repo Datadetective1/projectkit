@@ -118,7 +118,47 @@ function MaterialsCard({
         ) : null}
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Phones get a card per material; a four-column table is unreadable there. */}
+      <ul className="divide-y divide-line border-y border-line sm:hidden">
+        {result.materials.map((line) => (
+          <li key={line.id} className="px-5 py-4">
+            <p className="text-sm font-medium text-ink">
+              {line.name}
+              {line.isEstimate ? (
+                <span className="ml-2 inline-flex items-center rounded-full bg-accent-soft px-2 py-0.5 text-[0.6875rem] font-semibold uppercase tracking-wide text-accent">
+                  Estimate
+                </span>
+              ) : null}
+            </p>
+            <div className="mt-1.5 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+              <span className="text-base font-semibold tabular-nums text-ink">
+                {formatMaterialQuantity(line, system)}
+              </span>
+              {line.cost === undefined ? null : (
+                <span className="text-sm tabular-nums text-ink-muted">
+                  {formatCurrency(line.cost)}
+                  {line.unitPrice === undefined ? null : (
+                    <span className="text-ink-subtle"> · {formatUnitPrice(line)}</span>
+                  )}
+                </span>
+              )}
+            </div>
+            {line.note ? (
+              <p className="mt-1 text-xs text-ink-subtle">{line.note}</p>
+            ) : null}
+          </li>
+        ))}
+        {hasCosts ? (
+          <li className="flex items-baseline justify-between gap-4 bg-surface-sunken px-5 py-3">
+            <span className="text-sm font-semibold text-ink">Estimated material total</span>
+            <span className="tabular-nums font-semibold text-ink">
+              {formatCurrency(result.costTotal)}
+            </span>
+          </li>
+        ) : null}
+      </ul>
+
+      <div className="hidden overflow-x-auto sm:block">
         <table className="w-full min-w-[34rem] border-collapse text-sm">
           <thead>
             <tr className="border-y border-line bg-surface-sunken text-left">

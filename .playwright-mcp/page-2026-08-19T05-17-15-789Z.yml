@@ -1,0 +1,140 @@
+- generic [active] [ref=f2e1]:
+  - link "Skip to content" [ref=f2e2] [cursor=pointer]:
+    - /url: "#main"
+  - banner [ref=f2e3]:
+    - generic [ref=f2e4]:
+      - link "ProjectKit home" [ref=f2e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f2e6]: ProjectKit
+      - button "Open menu" [ref=f2e12] [cursor=pointer]
+  - main [ref=f2e15]:
+    - generic [ref=f2e16]:
+      - navigation "Breadcrumb" [ref=f2e17]:
+        - list [ref=f2e18]:
+          - listitem [ref=f2e19]:
+            - link "Home" [ref=f2e20] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f2e21]:
+            - link "Projects" [ref=f2e24] [cursor=pointer]:
+              - /url: /projects
+          - listitem [ref=f2e25]:
+            - generic [ref=f2e28]: Concrete
+      - generic [ref=f2e29]:
+        - paragraph [ref=f2e30]: Outdoor & Structural
+        - heading "Concrete Calculator & Project Planner" [level=1] [ref=f2e31]
+        - paragraph [ref=f2e32]: Work out how much concrete a patio or slab actually needs, including waste, base gravel, and whether ready-mix or bags makes more sense. You get quantities, an estimated budget, and a shopping list you can take to the store.
+      - generic [ref=f2e40]:
+        - heading "Before you build" [level=2] [ref=f2e41]
+        - paragraph [ref=f2e42]: Slab thickness, reinforcement, base depth, and footing requirements vary by use, soil, climate, and local building code. Verify structural and code requirements before you build.
+      - region [ref=f2e44]:
+        - heading "Common questions" [level=2] [ref=f2e45]
+        - generic [ref=f2e46]:
+          - group [ref=f2e47]:
+            - generic [ref=f2e48] [cursor=pointer]:
+              - heading "How thick should a concrete patio be?" [level=3] [ref=f2e49]
+              - generic [ref=f2e50]: +
+          - group [ref=f2e51]:
+            - generic [ref=f2e52] [cursor=pointer]:
+              - heading "How much concrete waste should I plan for?" [level=3] [ref=f2e53]
+              - generic [ref=f2e54]: +
+          - group [ref=f2e55]:
+            - generic [ref=f2e56] [cursor=pointer]:
+              - heading "Is it cheaper to use bags or ready-mix?" [level=3] [ref=f2e57]
+              - generic [ref=f2e58]: +
+          - group [ref=f2e59]:
+            - generic [ref=f2e60] [cursor=pointer]:
+              - heading "Do I need gravel under a concrete slab?" [level=3] [ref=f2e61]
+              - generic [ref=f2e62]: +
+      - region [ref=f2e63]:
+        - heading "What usually comes next" [level=2] [ref=f2e64]
+        - paragraph [ref=f2e65]: Projects that tend to follow a concrete job.
+        - generic [ref=f2e66]:
+          - link [ref=f2e67] [cursor=pointer]:
+            - /url: /gravel-calculator
+            - heading "Gravel" [level=3] [ref=f2e71]
+            - paragraph [ref=f2e72]: Cubic yards, approximate tons, and delivery cost.
+            - generic [ref=f2e73]: Plan it
+          - link [ref=f2e76] [cursor=pointer]:
+            - /url: /fence-calculator
+            - heading "Fence" [level=3] [ref=f2e82]
+            - paragraph [ref=f2e83]: Posts, rails, pickets, gates, and post-hole concrete.
+            - generic [ref=f2e84]: Plan it
+          - link [ref=f2e87] [cursor=pointer]:
+            - /url: /deck-calculator
+            - heading "Deck" [level=3] [ref=f2e93]
+            - paragraph [ref=f2e94]: Decking, joists, railing, stairs, and budget.
+            - generic [ref=f2e95]: Plan it
+          - link [ref=f2e98] [cursor=pointer]:
+            - /url: /sod-calculator
+            - heading "Sod" [level=3] [ref=f2e103]
+            - paragraph [ref=f2e104]: Square footage, rolls, pallets, and delivery cost.
+            - generic [ref=f2e105]: Plan it
+      - paragraph [ref=f2e108]:
+        - text: ProjectKit provides planning estimates only. Actual requirements, costs, installation methods, structural requirements, permits, safety requirements, and building codes vary. Verify critical specifications before purchasing materials or beginning work.
+        - link "Read the full terms" [ref=f2e109] [cursor=pointer]:
+          - /url: /terms
+        - text: .
+  - contentinfo [ref=f2e110]:
+    - generic [ref=f2e111]:
+      - generic [ref=f2e112]:
+        - generic [ref=f2e113]:
+          - generic [ref=f2e114]: ProjectKit
+          - paragraph [ref=f2e120]: Calculate materials, estimate costs, create a shopping list, and plan your project in minutes.
+        - navigation "Project planners" [ref=f2e121]:
+          - heading "Planners" [level=2] [ref=f2e122]
+          - list [ref=f2e123]:
+            - listitem [ref=f2e124]:
+              - link "Concrete" [ref=f2e125] [cursor=pointer]:
+                - /url: /concrete-calculator
+            - listitem [ref=f2e126]:
+              - link "Fence" [ref=f2e127] [cursor=pointer]:
+                - /url: /fence-calculator
+            - listitem [ref=f2e128]:
+              - link "Paint" [ref=f2e129] [cursor=pointer]:
+                - /url: /paint-calculator
+            - listitem [ref=f2e130]:
+              - link "Flooring" [ref=f2e131] [cursor=pointer]:
+                - /url: /flooring-calculator
+            - listitem [ref=f2e132]:
+              - link "Mulch" [ref=f2e133] [cursor=pointer]:
+                - /url: /mulch-calculator
+            - listitem [ref=f2e134]:
+              - link "Gravel" [ref=f2e135] [cursor=pointer]:
+                - /url: /gravel-calculator
+            - listitem [ref=f2e136]:
+              - link "Drywall" [ref=f2e137] [cursor=pointer]:
+                - /url: /drywall-calculator
+            - listitem [ref=f2e138]:
+              - link "Tile" [ref=f2e139] [cursor=pointer]:
+                - /url: /tile-calculator
+            - listitem [ref=f2e140]:
+              - link "Deck" [ref=f2e141] [cursor=pointer]:
+                - /url: /deck-calculator
+            - listitem [ref=f2e142]:
+              - link "Sod" [ref=f2e143] [cursor=pointer]:
+                - /url: /sod-calculator
+        - navigation "Company" [ref=f2e144]:
+          - heading "ProjectKit" [level=2] [ref=f2e145]
+          - list [ref=f2e146]:
+            - listitem [ref=f2e147]:
+              - link "All projects" [ref=f2e148] [cursor=pointer]:
+                - /url: /projects
+            - listitem [ref=f2e149]:
+              - link "My projects" [ref=f2e150] [cursor=pointer]:
+                - /url: /my-projects
+            - listitem [ref=f2e151]:
+              - link "About" [ref=f2e152] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=f2e153]:
+              - link "Contact" [ref=f2e154] [cursor=pointer]:
+                - /url: /contact
+            - listitem [ref=f2e155]:
+              - link "Privacy" [ref=f2e156] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=f2e157]:
+              - link "Terms" [ref=f2e158] [cursor=pointer]:
+                - /url: /terms
+      - generic [ref=f2e159]:
+        - paragraph [ref=f2e160]: ProjectKit provides planning estimates only. Actual requirements, costs, installation methods, structural requirements, permits, safety requirements, and building codes vary. Verify critical specifications before purchasing materials or beginning work.
+        - paragraph [ref=f2e161]: © 2026 ProjectKit. Planning estimates only.
+  - button "Open Next.js Dev Tools" [ref=f2e167] [cursor=pointer]

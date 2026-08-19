@@ -1,0 +1,314 @@
+- generic [active] [ref=f7e1]:
+  - link "Skip to content" [ref=f7e2] [cursor=pointer]:
+    - /url: "#main"
+  - banner [ref=f7e3]:
+    - generic [ref=f7e4]:
+      - link "ProjectKit home" [ref=f7e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f7e6]: ProjectKit
+      - navigation "Main" [ref=f7e12]:
+        - link "All projects" [ref=f7e13] [cursor=pointer]:
+          - /url: /projects
+        - link "My projects" [ref=f7e14] [cursor=pointer]:
+          - /url: /my-projects
+        - link "About" [ref=f7e15] [cursor=pointer]:
+          - /url: /about
+        - link "Plan a project" [ref=f7e16] [cursor=pointer]:
+          - /url: /#plan
+  - main [ref=f7e17]:
+    - generic [ref=f7e165]:
+      - generic [ref=f7e166]:
+        - link "Back to the planner" [ref=f7e167] [cursor=pointer]:
+          - /url: /concrete-calculator?saved=a257614c-b8bd-483f-96a5-5def150481cd
+        - generic [ref=f7e170]:
+          - button "Print" [ref=f7e171] [cursor=pointer]
+          - button "Download PDF" [ref=f7e176] [cursor=pointer]
+      - article [ref=f7e180]:
+        - generic [ref=f7e181]:
+          - generic [ref=f7e182]:
+            - paragraph [ref=f7e183]: ProjectKit
+            - paragraph [ref=f7e184]: Tell us what you're building. We'll figure out everything you need.
+          - generic [ref=f7e185]:
+            - paragraph [ref=f7e186]: Project pack
+            - paragraph [ref=f7e187]: August 19, 2026
+        - generic [ref=f7e188]:
+          - generic [ref=f7e189]:
+            - heading "Concrete — 20 × 16 ft" [level=1] [ref=f7e190]
+            - paragraph [ref=f7e191]: Outdoor & Structural · Challenging · A full weekend with help
+            - generic [ref=f7e192]:
+              - paragraph [ref=f7e193]: You need approximately
+              - paragraph [ref=f7e194]: 4.35 yd³
+              - paragraph [ref=f7e195]: "Recommended purchase: 4.50 yd³ including 10% waste"
+          - generic [ref=f7e196]:
+            - heading "Project summary" [level=2] [ref=f7e197]
+            - generic [ref=f7e198]:
+              - generic [ref=f7e199]:
+                - term [ref=f7e200]: Project area
+                - definition [ref=f7e201]: 320 sq ft
+              - generic [ref=f7e202]:
+                - term [ref=f7e203]: Slab thickness
+                - definition [ref=f7e204]: 4 in
+              - generic [ref=f7e205]:
+                - term [ref=f7e206]: Calculated volume
+                - definition [ref=f7e207]: 3.95 yd³
+              - generic [ref=f7e208]:
+                - term [ref=f7e209]: Waste allowance
+                - definition [ref=f7e210]: 10%
+              - generic [ref=f7e211]:
+                - term [ref=f7e212]: Recommended purchase
+                - definition [ref=f7e213]: 4.50 yd³
+          - generic [ref=f7e214]:
+            - heading "Materials & budget" [level=2] [ref=f7e215]
+            - list [ref=f7e216]:
+              - listitem [ref=f7e217]:
+                - generic [ref=f7e218]:
+                  - paragraph [ref=f7e219]: Ready-mix concrete (delivered)
+                  - paragraph [ref=f7e220]: Order quantity rounded up to the nearest supplier increment.
+                - paragraph [ref=f7e221]: 4.50 yd³
+                - paragraph [ref=f7e222]: $165 per yd³
+                - paragraph [ref=f7e223]: $743
+              - listitem [ref=f7e224]:
+                - generic [ref=f7e225]:
+                  - paragraph [ref=f7e226]: Compactable base gravel
+                  - paragraph [ref=f7e227]: Includes 10% compaction allowance.
+                - paragraph [ref=f7e228]: 4.50 yd³
+                - paragraph [ref=f7e229]: $55.00 per yd³
+                - paragraph [ref=f7e230]: $248
+              - listitem [ref=f7e231]:
+                - generic [ref=f7e232]:
+                  - paragraph [ref=f7e233]: Welded wire meshEstimate
+                  - paragraph [ref=f7e234]: Coverage allowance including overlap. Reinforcement needs vary by use and local practice.
+                - paragraph [ref=f7e235]: 336 sq ft
+                - paragraph [ref=f7e236]: —
+                - paragraph [ref=f7e237]: —
+              - listitem [ref=f7e238]:
+                - generic [ref=f7e239]:
+                  - paragraph [ref=f7e240]: Form boards (2×4 or 2×6)Estimate
+                  - paragraph [ref=f7e241]: Perimeter plus 10% for corners and overlap.
+                - paragraph [ref=f7e242]: 79 linear ft
+                - paragraph [ref=f7e243]: —
+                - paragraph [ref=f7e244]: —
+              - listitem [ref=f7e245]:
+                - generic [ref=f7e246]:
+                  - paragraph [ref=f7e247]: Form stakesEstimate
+                  - paragraph [ref=f7e248]: Roughly one every 3 ft, plus corners.
+                - paragraph [ref=f7e249]: 28 stakes
+                - paragraph [ref=f7e250]: —
+                - paragraph [ref=f7e251]: —
+            - generic [ref=f7e252]:
+              - generic [ref=f7e253]: Estimated material total
+              - generic [ref=f7e254]: $990
+            - paragraph [ref=f7e255]: Costs use ProjectKit planning prices or the prices entered by the project owner. They are not live retail prices.
+          - generic [ref=f7e256]:
+            - heading "Options compared" [level=2] [ref=f7e257]
+            - generic [ref=f7e258]:
+              - generic [ref=f7e259]:
+                - heading "Ready-mix delivery" [level=3] [ref=f7e260]
+                - paragraph [ref=f7e261]: One truck, one pour. Best once you pass about a cubic yard.
+                - generic [ref=f7e262]:
+                  - generic [ref=f7e263]:
+                    - term [ref=f7e264]: Order quantity
+                    - definition [ref=f7e265]: 4.50 yd³
+                  - generic [ref=f7e266]:
+                    - term [ref=f7e267]: Estimated concrete cost
+                    - definition [ref=f7e268]: $743
+              - generic [ref=f7e269]:
+                - heading "Bagged concrete" [level=3] [ref=f7e270]
+                - paragraph [ref=f7e271]: No delivery minimum, but mixing is the whole afternoon.
+                - generic [ref=f7e272]:
+                  - generic [ref=f7e273]:
+                    - term [ref=f7e274]: Bags needed
+                    - definition [ref=f7e275]: 261 bags
+                  - generic [ref=f7e276]:
+                    - term [ref=f7e277]: Estimated concrete cost
+                    - definition [ref=f7e278]: $1,697
+          - generic [ref=f7e279]:
+            - heading "Shopping list" [level=2] [ref=f7e280]
+            - list [ref=f7e281]:
+              - listitem [ref=f7e282]:
+                - generic [ref=f7e284]:
+                  - generic [ref=f7e285]: Ready-mix concrete (delivered)
+                  - generic [ref=f7e286]: 4.50 yd³
+              - listitem [ref=f7e287]:
+                - generic [ref=f7e289]:
+                  - generic [ref=f7e290]: Compactable base gravel
+                  - generic [ref=f7e291]: 4.50 yd³
+              - listitem [ref=f7e292]:
+                - generic [ref=f7e294]:
+                  - generic [ref=f7e295]: Welded wire mesh
+                  - generic [ref=f7e296]: 336 sq ft
+              - listitem [ref=f7e297]:
+                - generic [ref=f7e299]:
+                  - generic [ref=f7e300]: Form boards (2×4 or 2×6)
+                  - generic [ref=f7e301]: 79 linear ft
+              - listitem [ref=f7e302]:
+                - generic [ref=f7e304]:
+                  - generic [ref=f7e305]: Form stakes
+                  - generic [ref=f7e306]: 28 stakes
+              - listitem [ref=f7e307]:
+                - generic [ref=f7e309]: Screed board (straight 2×4 longer than the slab width)
+              - listitem [ref=f7e311]:
+                - generic [ref=f7e313]: Expansion joint material where the slab meets existing concrete
+              - listitem [ref=f7e315]:
+                - generic [ref=f7e317]: Bull float or magnesium float
+              - listitem [ref=f7e319]:
+                - generic [ref=f7e321]: Concrete edger and groover
+              - listitem [ref=f7e323]:
+                - generic [ref=f7e325]: Curing compound or plastic sheeting
+              - listitem [ref=f7e327]:
+                - generic [ref=f7e329]: Waterproof gloves, eye protection, knee pads
+              - listitem [ref=f7e331]:
+                - generic [ref=f7e333]: Rebar chairs or mesh supports
+          - generic [ref=f7e335]:
+            - heading "Project sequence" [level=2] [ref=f7e336]
+            - list [ref=f7e337]:
+              - listitem [ref=f7e338]:
+                - generic [ref=f7e339]: "1."
+                - generic [ref=f7e340]: Mark out the slab and check it for square by measuring both diagonals.
+              - listitem [ref=f7e341]:
+                - generic [ref=f7e342]: "2."
+                - generic [ref=f7e343]: Call for utility locates before you dig.
+              - listitem [ref=f7e344]:
+                - generic [ref=f7e345]: "3."
+                - generic [ref=f7e346]: Excavate to slab thickness plus base depth.
+              - listitem [ref=f7e347]:
+                - generic [ref=f7e348]: "4."
+                - generic [ref=f7e349]: Add and compact the gravel base in layers.
+              - listitem [ref=f7e350]:
+                - generic [ref=f7e351]: "5."
+                - generic [ref=f7e352]: Build and brace the forms, setting the slope for drainage.
+              - listitem [ref=f7e353]:
+                - generic [ref=f7e354]: "6."
+                - generic [ref=f7e355]: Place reinforcement on chairs so it sits mid-slab.
+              - listitem [ref=f7e356]:
+                - generic [ref=f7e357]: "7."
+                - generic [ref=f7e358]: Re-check dimensions, depth, and slope before the concrete arrives.
+              - listitem [ref=f7e359]:
+                - generic [ref=f7e360]: "8."
+                - generic [ref=f7e361]: Place the concrete and screed it level with the forms.
+              - listitem [ref=f7e362]:
+                - generic [ref=f7e363]: "9."
+                - generic [ref=f7e364]: Float, edge, and finish once the bleed water is gone.
+              - listitem [ref=f7e365]:
+                - generic [ref=f7e366]: "10."
+                - generic [ref=f7e367]: Cure it — keep it damp or covered for several days.
+              - listitem [ref=f7e368]:
+                - generic [ref=f7e369]: "11."
+                - generic [ref=f7e370]: Strip the forms and backfill the edges.
+          - generic [ref=f7e371]:
+            - heading "Assumptions used" [level=2] [ref=f7e372]
+            - generic [ref=f7e373]:
+              - generic [ref=f7e374]:
+                - term [ref=f7e375]: Waste allowance
+                - definition [ref=f7e376]: 10%
+              - generic [ref=f7e377]:
+                - term [ref=f7e378]: Concrete price
+                - definition [ref=f7e379]: $165 per yd³
+              - generic [ref=f7e380]:
+                - term [ref=f7e381]: Bag yield
+                - definition [ref=f7e382]: 0.45 cu ft per bag
+              - generic [ref=f7e383]:
+                - term [ref=f7e384]: Reinforcement
+                - definition [ref=f7e385]: Welded wire mesh
+              - generic [ref=f7e386]:
+                - term [ref=f7e387]: Base course
+                - definition [ref=f7e388]: 4 in compacted gravel
+          - generic [ref=f7e389]:
+            - heading "How it was calculated" [level=2] [ref=f7e390]
+            - generic [ref=f7e391]:
+              - generic [ref=f7e392]:
+                - term [ref=f7e393]: AreaExact
+                - definition [ref=f7e394]: Length × Width
+              - generic [ref=f7e395]:
+                - term [ref=f7e396]: VolumeExact
+                - definition [ref=f7e397]: Area × (Thickness ÷ 12)
+              - generic [ref=f7e398]:
+                - term [ref=f7e399]: Cubic yardsExact
+                - definition [ref=f7e400]: Cubic feet ÷ 27
+              - generic [ref=f7e401]:
+                - term [ref=f7e402]: Waste adjustedExact
+                - definition [ref=f7e403]: Calculated quantity × (1 + Waste percentage)
+              - generic [ref=f7e404]:
+                - term [ref=f7e405]: Order roundingAssumption
+                - definition [ref=f7e406]: Rounded up to the next 0.25 yd³
+              - generic [ref=f7e407]:
+                - term [ref=f7e408]: Base gravelAssumption
+                - definition [ref=f7e409]: Area × (Base depth ÷ 12) × 1.10 compaction allowance
+          - generic [ref=f7e410]:
+            - heading "Before you start" [level=2] [ref=f7e411]
+            - list [ref=f7e412]:
+              - listitem [ref=f7e413]:
+                - generic [ref=f7e416]: Concrete sets on its own schedule. Have every tool, helper, and form check done before the truck arrives.
+              - listitem [ref=f7e417]:
+                - generic [ref=f7e420]: Slab thickness, reinforcement, and base depth requirements vary by use and by local code. Verify before you pour.
+              - listitem [ref=f7e421]:
+                - generic [ref=f7e424]: Slab thickness, reinforcement, base depth, and footing requirements vary by use, soil, climate, and local building code. Verify structural and code requirements before you build.
+          - generic [ref=f7e425]:
+            - heading "Notes" [level=2] [ref=f7e426]
+            - generic [ref=f7e427]: Add notes on the ProjectKit planner page and they appear here.
+          - paragraph [ref=f7e428]: ProjectKit provides planning estimates only. Actual requirements, costs, installation methods, structural requirements, permits, safety requirements, and building codes vary. Verify critical specifications before purchasing materials or beginning work.
+  - contentinfo [ref=f7e112]:
+    - generic [ref=f7e113]:
+      - generic [ref=f7e114]:
+        - generic [ref=f7e115]:
+          - generic [ref=f7e116]: ProjectKit
+          - paragraph [ref=f7e122]: Calculate materials, estimate costs, create a shopping list, and plan your project in minutes.
+        - navigation "Project planners" [ref=f7e123]:
+          - heading "Planners" [level=2] [ref=f7e124]
+          - list [ref=f7e125]:
+            - listitem [ref=f7e126]:
+              - link "Concrete" [ref=f7e127] [cursor=pointer]:
+                - /url: /concrete-calculator
+            - listitem [ref=f7e128]:
+              - link "Fence" [ref=f7e129] [cursor=pointer]:
+                - /url: /fence-calculator
+            - listitem [ref=f7e130]:
+              - link "Paint" [ref=f7e131] [cursor=pointer]:
+                - /url: /paint-calculator
+            - listitem [ref=f7e132]:
+              - link "Flooring" [ref=f7e133] [cursor=pointer]:
+                - /url: /flooring-calculator
+            - listitem [ref=f7e134]:
+              - link "Mulch" [ref=f7e135] [cursor=pointer]:
+                - /url: /mulch-calculator
+            - listitem [ref=f7e136]:
+              - link "Gravel" [ref=f7e137] [cursor=pointer]:
+                - /url: /gravel-calculator
+            - listitem [ref=f7e138]:
+              - link "Drywall" [ref=f7e139] [cursor=pointer]:
+                - /url: /drywall-calculator
+            - listitem [ref=f7e140]:
+              - link "Tile" [ref=f7e141] [cursor=pointer]:
+                - /url: /tile-calculator
+            - listitem [ref=f7e142]:
+              - link "Deck" [ref=f7e143] [cursor=pointer]:
+                - /url: /deck-calculator
+            - listitem [ref=f7e144]:
+              - link "Sod" [ref=f7e145] [cursor=pointer]:
+                - /url: /sod-calculator
+        - navigation "Company" [ref=f7e146]:
+          - heading "ProjectKit" [level=2] [ref=f7e147]
+          - list [ref=f7e148]:
+            - listitem [ref=f7e149]:
+              - link "All projects" [ref=f7e150] [cursor=pointer]:
+                - /url: /projects
+            - listitem [ref=f7e151]:
+              - link "My projects" [ref=f7e152] [cursor=pointer]:
+                - /url: /my-projects
+            - listitem [ref=f7e153]:
+              - link "About" [ref=f7e154] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=f7e155]:
+              - link "Contact" [ref=f7e156] [cursor=pointer]:
+                - /url: /contact
+            - listitem [ref=f7e157]:
+              - link "Privacy" [ref=f7e158] [cursor=pointer]:
+                - /url: /privacy
+            - listitem [ref=f7e159]:
+              - link "Terms" [ref=f7e160] [cursor=pointer]:
+                - /url: /terms
+      - generic [ref=f7e161]:
+        - paragraph [ref=f7e162]: ProjectKit provides planning estimates only. Actual requirements, costs, installation methods, structural requirements, permits, safety requirements, and building codes vary. Verify critical specifications before purchasing materials or beginning work.
+        - paragraph [ref=f7e163]: © 2026 ProjectKit. Planning estimates only.
+  - button "Open Next.js Dev Tools" [ref=f7e434] [cursor=pointer]
+  - alert [ref=f7e438]: Your Project Pack | ProjectKit
