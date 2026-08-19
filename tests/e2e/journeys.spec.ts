@@ -84,6 +84,48 @@ test("changing an assumption recalculates immediately", async ({ page }) => {
   await expect(headline(page)).toHaveText("3.95 yd³");
 });
 
+test("the what-if steppers change the estimate in place", async ({ page }) => {
+  await page.goto("/concrete-calculator");
+  await expect(headline(page)).toHaveText("4.35 yd³");
+
+  const whatIf = page.getByRole("region", { name: "What if…" });
+  await expect(whatIf).toBeVisible();
+
+  // Waste is an advanced option, but it is the assumption that moves the
+  // number most — so it is reachable without opening the advanced panel.
+  await whatIf.getByRole("button", { name: "Increase Waste allowance" }).click();
+  await expect(headline(page)).toHaveText("4.39 yd³");
+
+  // Raising the price raises the budget.
+  const before = await whatIf.innerText();
+  await whatIf.getByRole("button", { name: "Increase Ready-mix price" }).click();
+  await whatIf.getByRole("button", { name: "Increase Ready-mix price" }).click();
+  await expect(whatIf).not.toHaveText(before);
+
+  // And the change is reflected in the form itself, not just this card.
+  await page.getByRole("button", { name: "Customize estimate" }).click();
+  await expect(field(page, "Waste allowance")).toHaveValue("11");
+});
+
+test("copy summary puts a readable plan on the clipboard", async ({
+  page,
+  context,
+  browserName,
+}) => {
+  test.skip(browserName !== "chromium", "Clipboard permissions are Chromium-only here");
+  await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+
+  await page.goto("/concrete-calculator");
+  await page.getByRole("button", { name: "Copy summary" }).click();
+
+  const text = await page.evaluate(() => navigator.clipboard.readText());
+  expect(text).toContain("Concrete — ProjectKit estimate");
+  expect(text).toContain("4.35 yd³");
+  expect(text).toContain("Ready-mix concrete (delivered)");
+  expect(text).toContain("Planning estimate only");
+  expect(text).not.toMatch(/NaN|undefined/);
+});
+
 /* ------------------------------------------ 2. natural-language routing -- */
 
 test("journey 2: a plain-English request lands on a prefilled planner", async ({ page }) => {

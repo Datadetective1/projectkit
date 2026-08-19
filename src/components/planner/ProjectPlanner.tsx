@@ -18,6 +18,7 @@ import { ResultsPanel } from "@/components/results/ResultsPanel";
 import { ShoppingList, buildShoppingList } from "@/components/results/ShoppingList";
 import { ProjectSequence } from "@/components/results/ProjectSequence";
 import { DiyOrHire } from "@/components/results/DiyOrHire";
+import { WhatIf } from "@/components/results/WhatIf";
 import { AdSlot } from "@/components/monetization/AdSlot";
 import {
   anchorsFor,
@@ -33,6 +34,7 @@ import {
 import { getProject } from "@/data/projects";
 import { track } from "@/lib/analytics";
 import { formatCurrency, toCanonical, type UnitSystem } from "@/lib/units";
+import { buildTextSummary } from "@/lib/summary";
 import { legal } from "@/config/site";
 import {
   getSavedProject,
@@ -177,9 +179,40 @@ export function ProjectPlanner({ slug }: { slug: string }) {
     track("project_saved", { slug: project.slug });
   };
 
-  const handleShare = async () => {
+  /** A link that reproduces exactly these inputs. Carries no personal data. */
+  const shareUrl = () => {
     const params = toQueryParams(project, values, system);
-    const url = `${window.location.origin}/${project.slug}${params.toString() ? `?${params}` : ""}`;
+    return `${window.location.origin}/${project.slug}${params.toString() ? `?${params}` : ""}`;
+  };
+
+  const flashCopied = () => {
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2200);
+  };
+
+  const handleCopySummary = async () => {
+    if (!evaluation?.ok) return;
+    const text = buildTextSummary({
+      projectName: project.name,
+      result: evaluation.result,
+      system,
+      url: shareUrl(),
+    });
+
+    try {
+      await navigator.clipboard.writeText(text);
+      flashCopied();
+      track("project_shared", { slug: project.slug, method: "copy_summary" });
+    } catch {
+      setStatus({
+        kind: "error",
+        message: "Your browser blocked the clipboard. Print the page or use the Project Pack instead.",
+      });
+    }
+  };
+
+  const handleShare = async () => {
+    const url = shareUrl();
     const summary = evaluation?.ok
       ? `${project.name} plan — ${evaluation.result.headline.sublabel ?? ""}\n${url}`
       : url;
@@ -196,8 +229,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
 
     try {
       await navigator.clipboard.writeText(summary);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2200);
+      flashCopied();
       track("project_shared", { slug: project.slug, method: "clipboard" });
     } catch {
       setStatus({ kind: "error", message: "Could not copy the link. You can copy it from the address bar." });
@@ -331,6 +363,14 @@ export function ProjectPlanner({ slug }: { slug: string }) {
               projectName={project.name}
             />
 
+            <WhatIf
+              def={project}
+              values={values}
+              system={system}
+              costTotal={evaluation.result.costTotal}
+              onChange={handleChange}
+            />
+
             <AdSlot placement="result-below-summary" />
 
             <section className="pk-card p-5 sm:p-6">
@@ -350,6 +390,14 @@ export function ProjectPlanner({ slug }: { slug: string }) {
                     <Share2 className="h-4 w-4" aria-hidden />
                   )}
                   {copied ? "Copied" : "Share"}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCopySummary}
+                  className="pk-btn pk-btn-secondary"
+                >
+                  <Copy className="h-4 w-4" aria-hidden />
+                  Copy summary
                 </button>
                 <button type="button" onClick={handlePackClick} className="pk-btn pk-btn-primary">
                   <FileText className="h-4 w-4" aria-hidden />
