@@ -110,6 +110,59 @@ test("a saved-project id and a Stripe session are never reported", async ({ page
   expect(redacted).not.toContain("cs_test");
 });
 
+test("each planner reports as its own route, not a shared dynamic one", async ({ page }) => {
+  // All ten planners share the dynamic app/[slug] route. The default Next.js
+  // integration reports them all as "/[slug]", which would make "which
+  // calculator gets the most traffic?" unanswerable.
+  for (const slug of ["concrete-calculator", "fence-calculator", "sod-calculator"]) {
+    await page.goto(`/${slug}`);
+    await waitForAnalytics(page);
+
+    const reported = await page.evaluate(() => {
+      const entry = (window.vaq ?? []).filter((item) => item[0] === "pageview").pop();
+      return (entry?.[1] as { route?: string; path?: string } | undefined) ?? null;
+    });
+
+    expect(reported?.route, slug).toBe(`/${slug}`);
+    expect(reported?.route, slug).not.toBe("/[slug]");
+  }
+});
+
+test("a project pack reports as its route pattern, never a saved id", async ({ page }) => {
+  await page.goto("/project-pack/9f3c1e2a-1111-2222-3333-444455556666");
+  await waitForAnalytics(page);
+
+  const reported = await page.evaluate(() => {
+    const entry = (window.vaq ?? []).filter((item) => item[0] === "pageview").pop();
+    return (entry?.[1] as { route?: string; path?: string } | undefined) ?? null;
+  });
+
+  expect(reported?.route).toBe("/project-pack/[id]");
+  expect(reported?.path).not.toContain("9f3c1e2a");
+});
+
+test("client-side navigation reports a new page view", async ({ page }) => {
+  await page.goto("/concrete-calculator");
+  await waitForAnalytics(page);
+
+  const countViews = () =>
+    page.evaluate(() => (window.vaq ?? []).filter((item) => item[0] === "pageview").length);
+
+  const before = await countViews();
+
+  // The footer nav is present at every viewport; the header nav is desktop-only.
+  await page.getByLabel("Company").getByRole("link", { name: "All projects" }).click();
+  await expect(page).toHaveURL(/\/projects$/);
+
+  await expect.poll(countViews).toBeGreaterThan(before);
+
+  const reported = await page.evaluate(() => {
+    const entry = (window.vaq ?? []).filter((item) => item[0] === "pageview").pop();
+    return (entry?.[1] as { route?: string } | undefined) ?? null;
+  });
+  expect(reported?.route).toBe("/projects");
+});
+
 test("analytics does not break navigation or the calculator", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));

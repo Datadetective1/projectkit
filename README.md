@@ -176,6 +176,15 @@ devices, browsers, and operating systems. Vercel separates production, preview,
 and local traffic on its own — nothing here hard-codes a hostname or labels
 localhost as production.
 
+### Why the `/react` entry point, not `/next`
+
+All ten planners share the dynamic `app/[slug]` route. `@vercel/analytics/next`
+derives the reported route from `useParams()`, so every calculator would land in
+the dashboard as a single `/[slug]` row — "which calculator gets the most
+traffic?" would have no answer. The wrapper reports the pathname instead, so
+`/concrete-calculator` and `/fence-calculator` stay distinct, and only
+`/project-pack/<id>` is deliberately grouped to its route pattern.
+
 ### Privacy
 
 Nearly every query parameter ProjectKit puts in a URL is something the user
