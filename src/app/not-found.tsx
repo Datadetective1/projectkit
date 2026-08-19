@@ -1,6 +1,20 @@
 import Link from "next/link";
 import { ProjectCard } from "@/components/ProjectCard";
 import { projects } from "@/data/projects";
+import { pageMetadata } from "@/lib/seo";
+
+/*
+ * Without this the 404 inherits the root layout's title, so a missing page
+ * announced itself in the browser tab and in shared links as the homepage.
+ * Not indexed, for the obvious reason.
+ */
+export const metadata = pageMetadata({
+  title: "Page not found",
+  description:
+    "That ProjectKit page does not exist. Every project planner is listed here so you can pick up where you meant to.",
+  path: "/404",
+  index: false,
+});
 
 export default function NotFound() {
   return (

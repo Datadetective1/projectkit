@@ -294,3 +294,90 @@ describe("the Google Analytics pipeline", () => {
     }
   });
 });
+
+/* ------------------------------------------- the full attribution contract -- */
+
+/**
+ * The exact allowlist, asserted as a whole rather than a sample.
+ *
+ * Both halves matter and they fail in opposite directions: dropping an
+ * attribution parameter quietly breaks campaign reporting, and keeping one too
+ * many leaks user input. Listing every case here makes a future edit to
+ * ALLOWED_PARAMS visible as a test change.
+ */
+describe("the attribution allowlist", () => {
+  const KEPT = [
+    "utm_source",
+    "utm_medium",
+    "utm_campaign",
+    "utm_content",
+    "utm_term",
+    "ref",
+    "gclid",
+    "fbclid",
+  ];
+
+  it("keeps every campaign parameter, including the less common ones", () => {
+    for (const key of KEPT) {
+      const redacted = redactUrl(`${ORIGIN}/concrete-calculator?${key}=abc123`);
+      expect(redacted, key).toContain(`${key}=abc123`);
+    }
+  });
+
+  it("drops everything a planner puts in the URL", () => {
+    // Every parameter the planners actually emit, plus the ones that identify a
+    // person's record or a payment.
+    const dropped = [
+      "length",
+      "width",
+      "thickness",
+      "height",
+      "depth",
+      "waste",
+      "rooms",
+      "coats",
+      "area",
+      "runLength",
+      "gateCount",
+      "tileLength",
+      "sqFtPerBox",
+      "concretePrice",
+      "pricePerSqFt",
+      "coverage",
+      "units",
+      "q",
+      "saved",
+      "session_id",
+      "notes",
+      "email",
+    ];
+
+    for (const key of dropped) {
+      const redacted = redactUrl(`${ORIGIN}/concrete-calculator?${key}=sensitive-value`);
+      expect(redacted, key).toBe(`${ORIGIN}/concrete-calculator`);
+    }
+  });
+
+  it("keeps attribution while dropping user input from the same URL", () => {
+    const redacted = redactUrl(
+      `${ORIGIN}/concrete-calculator?utm_source=reddit&length=20&width=16&utm_term=patio&session_id=cs_test_abc&saved=9f3c1b7e`,
+    );
+
+    expect(redacted).toContain("utm_source=reddit");
+    expect(redacted).toContain("utm_term=patio");
+    for (const leaked of ["length", "width", "20", "16", "cs_test_abc", "9f3c1b7e"]) {
+      expect(redacted, leaked).not.toContain(leaked);
+    }
+  });
+
+  it("holds for the two real URL shapes the router produces", () => {
+    // The natural-language entry point and a fully prefilled planner.
+    expect(
+      redactUrl(`${ORIGIN}/plan?q=${encodeURIComponent("I want a 20 by 16 concrete patio")}`),
+    ).toBe(`${ORIGIN}/plan`);
+
+    expect(
+      redactUrl(`${ORIGIN}/concrete-calculator?length=20&width=16&thickness=6&from=nl`),
+    ).toBe(`${ORIGIN}/concrete-calculator?from=nl`);
+  });
+});

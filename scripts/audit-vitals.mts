@@ -90,7 +90,18 @@ async function measure(viewport: { width: number; height: number }, label: strin
   await browser.close();
 }
 
-await measure({ width: 1440, height: 900 }, "desktop");
-await measure({ width: 1280, height: 1600 }, "desktop tall");
-await measure(devices["iPhone 13"].viewport!, "mobile 390");
-await measure({ width: 375, height: 667 }, "mobile 375");
+// The viewports the finalization pass named, plus the tall one that exposed
+// the shifts a single-height check had missed.
+for (const [width, height, label] of [
+  [1280, 720, "desktop 1280"],
+  [1366, 768, "desktop 1366"],
+  [1440, 900, "desktop 1440"],
+  [1512, 860, "desktop 1512"],
+  [1920, 1080, "desktop 1920"],
+  [1280, 1600, "desktop tall"],
+  [390, 844, "mobile 390"],
+  [430, 932, "mobile 430"],
+  [375, 667, "mobile 375"],
+] as [number, number, string][]) {
+  await measure({ width, height }, label);
+}
