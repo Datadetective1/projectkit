@@ -268,6 +268,26 @@ estimate labelling — then adds cross-cutting safety guarantees that apply to a
 ten at once. A new planner added tomorrow inherits every one of them without
 writing a line of test code.
 
+## Metric narrative
+
+Every user-facing string a calculation produces reads in the reader's own
+system — explanations, material notes, assumption rows, formula expressions,
+scenario names, warnings, effort notes, and the help text under each field.
+`src/lib/calc/describe.ts` is the only place a unit name may be written, and
+`tests/support/imperialUnits.ts` holds the rule that gates it.
+
+Two conversions in there are not the obvious one, and both were wrong before:
+
+- **Coverage inverts.** 350 sq ft per US gallon is 8.59 m² per litre. Convert
+  the area and leave the gallon alone and you get 32.5 — four times too
+  generous, on the field that decides how much paint to buy.
+- **A price per unit rescales.** $165 per cubic yard is $215.81 per cubic
+  metre, not $165.
+
+Product specifications deliberately stay imperial: a 50 lb bag of thinset, a
+4 × 8 ft sheet, a 1/4 × 3/8 in trowel, a 250 ft roll of tape. Those are how you
+find the thing on a shelf — "22.68 kg bag" appears on no packaging anywhere.
+
 ## Known limitations
 
 - **Prices are planning ballparks, not live retail.** Stated on the results
@@ -277,8 +297,11 @@ writing a line of test code.
   and warned about; the volume figure is the reliable one.
 - **Compound quantity depends heavily on finishing level.** The result says so
   and suggests buying the first bucket and judging from there.
-- **Explanation prose still mixes unit systems.** Material quantities, unit
-  prices, summary rows, and notes are all correct in metric, but the narrative
-  paragraphs and formula expressions still read "A 111 m² bed at 3 in deep needs
-  8.50 m³". Roughly sixty strings across ten calculators; inventoried by
-  `scripts/audit-metric-prose.mts` and tracked in `PRELAUNCH_AUDIT.md`.
+- **Metric defaults carry conversion precision.** The concrete planner opens at
+  6.096 × 4.8768 m, because its defaults are declared in feet and converted
+  exactly. Rounding them would read better but would break the exact metric
+  parity above: 4.88 m is not 16 ft. Tracked in `PRELAUNCH_AUDIT.md`.
+- **Gravel's custom-density override stays in lb/cu ft.** A compound
+  mass-per-volume unit has no measure in the engine. It is an advanced field
+  defaulting to 0, meaning "use the density of the material selected above", so
+  most users never touch it.

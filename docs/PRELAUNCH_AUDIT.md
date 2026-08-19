@@ -1,41 +1,48 @@
 # Pre-Launch Audit
 
 Branch: `prelaunch-hardening`. Conducted 2026-08-18/19 against the production
-build, not the dev server.
+build, not the dev server, in two passes: a pre-launch hardening audit and a
+beta-readiness finalization pass.
 
 No new project categories were added. No paid service was enabled, no plan
 upgraded, and nothing was purchased. Stripe remains test-mode only.
 
+Companions: `CALCULATION_AUDIT.md` for every formula and where its constants
+came from, `BETA_LAUNCH_CHECKLIST.md` for what to do next.
+
 ---
 
-## Verdict: **BETA READY**
+## Verdict: **BETA READY AND SAFE TO INVITE TESTERS**
 
-Ship it to real users, with the caveats below understood. Not yet
-`PUBLIC LAUNCH READY`, for two reasons that are both about the paid product and
-neither of which is a correctness problem in the calculators.
+Provided one configuration item is set first: the contact address is still the
+reserved placeholder `hello@projectkit.example`, which cannot receive mail, and
+every feedback path points at it. That is a five-minute environment variable,
+not a code change, and it is item one of the checklist.
 
-**What justifies BETA READY.** The calculations are now verified against
-external sources rather than against themselves. Four material-accuracy defects
-were found and fixed, one of them safety-critical. Metric parity is exact.
-Layout shift is zero at every viewport tested. Accessibility passes WCAG 2.1 AA
-across eighteen checks including error, empty, metric, and 404 states. 350 unit
-tests and 143 E2E tests pass, and the ones added here verifiably fail against
-the code they were written for.
+**What justifies it.** The calculations are verified against external sources
+rather than against themselves. Four material-accuracy defects were found and
+fixed, one safety-critical. Metric is now complete rather than partial — the
+first pass fixed the numbers, the second fixed the sentences around them and the
+form fields that feed them. Layout shift is 0.0000 across nine viewports.
+Accessibility passes WCAG 2.1 AA across eighteen checks. Monetization fails
+closed. Both analytics pipelines redact. 377 unit tests and 143 E2E tests pass,
+and the ones added here verifiably fail against the code they were written for.
 
-**What holds it back from PUBLIC LAUNCH READY.**
+Testers can also now tell us when a number looks wrong, which they could not
+before, and every report identifies the build it came from.
+
+**What still holds it back from PUBLIC LAUNCH READY.** Both are about charging
+money, neither is a correctness problem in the calculators:
 
 1. **The Project Pack unlock is client-side.** Payment is verified server-side
    against Stripe, but the resulting entitlement lives in `localStorage`, so a
-   determined user can unlock the pack for free by editing it. This is a
-   deliberate accountless-product tradeoff, not an oversight — and the pack's
-   content is already visible on screen before purchase, so the loss is bounded.
-   It needs a decision, not a fix.
+   determined user can unlock the pack by editing it. Analysed in full below —
+   it needs a decision, not a fix, and it does not matter at all while the pack
+   is free during beta.
 2. **Legal pages have not had a lawyer's eye.** `/privacy` and `/terms` are
-   marked inline where review is needed. Charging money in multiple
-   jurisdictions without that review is a business risk, not an engineering one.
-
-Neither blocks a beta with real users. Both should be settled before paid
-acquisition.
+   factually accurate about what the system does — that was checked and two
+   inaccuracies were corrected — but accuracy is not legal sufficiency. Both
+   carry inline notices saying so.
 
 ---
 
@@ -46,21 +53,24 @@ acquisition.
 | **Calculation accuracy** | A | Four defects found and fixed; constants traced to manufacturers and suppliers. See `CALCULATION_AUDIT.md` |
 | **Calculation safety** | A | Deck no longer fabricates structural quantities; cross-cutting test blocks code-compliance language |
 | **Unit handling (numbers)** | A | Metric parity exact to 0.0000%; round-trip lossless; purchase increments market-correct |
-| **Unit handling (prose)** | C | Quantities, prices, and notes correct; narrative paragraphs still mix systems. ~60 strings, inventoried |
+| **Unit handling (prose)** | A | Was C. All ~60 strings converted; explanations, formulas, assumptions, scenarios, warnings, and field help all read in the reader's system. Gated by a shared rule |
+| **Unit handling (rates)** | A | New in the second pass. Prices per unit and paint coverage now convert as rates, both halves together |
 | **Purchase rounding** | A | Always up, never fractional, never below requirement — enforced across all ten planners |
 | **Shopping list quality** | A | Fastener counts converted to purchasable boxes; unit grammar fixed |
 | **Cost transparency** | A | Tax, delivery, and rental now named as excluded; prices editable and labelled as planning figures |
 | **Natural-language router** | A | 59/60 on a varied sweep; every ambiguous, off-topic, and injection-shaped prompt correctly declines |
-| **Core Web Vitals** | A | CLS 0.0000 at 375, 390, 1280×1600, 1440×900. Two shifts found and fixed |
+| **Core Web Vitals** | A | CLS 0.0000 at nine viewports (1280×720 through 1920×1080, plus 1280×1600, 375, 390, 430). One 0.0055 residual, 18× under budget |
 | **Accessibility** | A | Eighteen axe checks at WCAG 2.1 AA, plus keyboard reachability and focus visibility. Nothing needed fixing |
 | **SEO — technical** | A | All 17 routes: one h1, canonical, OG, Twitter card, BreadcrumbList + WebApplication + FAQPage on planners |
 | **SEO — metadata** | A | Six over-length titles fixed; limits now enforced by test with the suffix counted |
 | **Analytics privacy** | A | A real leak found and closed in the Google path; both pipelines now redacted and tested |
-| **Monetization safety** | A | Dev unlock flipped to fail-closed and refused outright in production |
+| **Monetization safety** | A | Dev unlock fails closed and is refused in production; free-during-beta is a separate explicit flag; malformed price can no longer reach Stripe |
 | **Stripe safety** | A | Test-mode only; live keys refused unless explicitly enabled; webhook signature verified |
 | **Secret hygiene** | A | No secrets in the repo; `.env*` ignored with only `.env.example` committed |
-| **Entitlement enforcement** | C | Payment verified server-side, entitlement stored client-side. Accepted tradeoff — see verdict |
+| **Entitlement enforcement** | C | Payment verified server-side, entitlement stored client-side. Analysed below; irrelevant while the pack is free |
+| **Legal accuracy** | A | New in the second pass. Two factual inaccuracies corrected; pages now describe the system that exists |
 | **Legal review** | Incomplete | Marked inline; needs a lawyer before paid acquisition |
+| **Beta feedback** | A | New in the second pass. Report link under every result, carrying build id and route but no user input |
 
 ---
 
@@ -202,34 +212,159 @@ paid tier. `isVercelCustomEventsEnabled()` gates the path so nothing is sent
 into a pipeline that would silently drop it — the alternative would be faking
 collection.
 
-**Explanation prose was not half-converted.** Roughly sixty strings across ten
-calculators mix unit systems in narrative text. Fixing a third of them would be
-worse than fixing none: the inconsistency would look arbitrary rather than
-systematic. Inventoried by `scripts/audit-metric-prose.mts` and listed below.
+**Explanation prose was not half-converted — in the first pass.** It is now
+fully converted; see the second-pass section below.
 
 **Nothing was merged to `main`.** The branch is left ready for review.
 
 ---
 
+## Second pass: beta-readiness finalization
+
+### Metric narrative, finished
+
+The first pass left quantities, prices, and notes correct while the sentences
+around them still mixed systems: "a 111 m² bed at 3 in deep needs 8.50 m³". The
+reason there were sixty of those is that every calculator interpolated
+`roundTo(value, n)` next to a unit word typed by hand.
+
+`src/lib/calc/describe.ts` is now the only place a unit name may be written.
+`describeFor(system)` binds a set of formatters to one system so a call site
+cannot forget it. Two of them exist because the naive conversion is wrong:
+
+- **Coverage inverts.** 350 sq ft per US gallon is 8.59 m² per litre, not the
+  32.5 you get by converting the area and leaving the gallon alone. Four times
+  too generous, on the field that decides how much paint to buy.
+- **Prices are per canonical unit.** `$165 per yd³` is `$215.81 per m³`. Left
+  raw, the metric user was asked for a per-m³ price against a per-yd³ number.
+
+Paint also needed a new measure entirely. It rode on `count` with a hardcoded
+"gallons", so a metric reader was told to buy gallons — unusable outside the US.
+`volumeLiquid` now flows through the headline, summary, materials, scenarios,
+and unit price.
+
+Formulas are system-aware where the arithmetic differs. The ÷ 12, ÷ 27, and
+÷ 144 in concrete, mulch, gravel, tile, and deck exist only to reconcile inches,
+feet, and yards; showing them to a metric reader is noise that does not match
+their numbers.
+
+Field help text was the last holdout and the most direct contradiction the form
+could produce: "4 in is typical for patios" sat under a field showing
+centimetres. `help` now takes a function of the unit system. US keeps
+sixteenths for grout joints and metric gets millimetres, because "0.19 in" is
+how neither trade talks.
+
+Also found and fixed on the way: two fence scenarios both rounded to "2 m post
+spacing" and offered the reader the same option twice; mulch compared bulk and
+bagged cost with no currency symbol; unit names used US spelling against the
+site's British copy; two tool sizes (a sash brush, taping knives) stayed in
+inches when they are sold in millimetres everywhere else.
+
+### Rates, as a concept
+
+`perMeasure` on a number input says "this field is a quantity *per* another
+quantity". Eighteen inputs across nine planners declare it. Both halves convert
+together and the denominator moves the value the other way. Per-package prices
+("$ / bag", "$ / sheet") deliberately do not, because a bag means the same thing
+in both systems.
+
+Verified: every rate round-trips exactly, headline quantities stay identical
+between systems to 0.0000%, and costs stay within the known
+bulk-purchase-increment variance.
+
+### Beta infrastructure
+
+**Free-during-beta is a separate flag from the dev unlock.**
+`NEXT_PUBLIC_PROJECT_PACK_FREE` states the pack is free as a product decision
+and is honoured in production; the dev unlock stays a local convenience the
+server refuses there. Keeping them apart means "free during beta" never has to
+be expressed by leaving a development flag switched on — which is precisely how
+the paid product got given away by accident in the first place.
+
+**A build identifier** in the footer, from Vercel's commit SHA, so "the fence
+numbers look wrong" can be tied to a deployment.
+
+**Report a problem** under every result, because that is where someone realises
+a number looks wrong. It carries the planner, unit system, build id, and route
+— the same closed set analytics is allowed — and never the dimensions, notes, or
+free text. No database: a link that reaches a human beats a ticketing system
+nobody reads.
+
+**A malformed price could reach Stripe.** `Number("abc")` is `NaN` and
+`Number("")` is 0; both used to travel into the checkout line item.
+
+### Project Pack entitlement — the analysis
+
+Payment is verified server-side against Stripe. The resulting unlock is a record
+in `localStorage`, which a determined user can write by hand.
+
+| Option | Complexity | Friction | Restores after clearing data | Verdict |
+| --- | --- | --- | --- | --- |
+| **A. Keep local unlock** | none | none | no | Right for beta |
+| **B. Server-signed entitlement token** | low — one HMAC secret, one signed string in `localStorage` | none | no | **Recommended for launch** |
+| **C. Short-lived signed download URL** | medium — the PDF must move server-side | small | no | Only if the PDF becomes the product |
+| **D. Re-verify the Stripe session on every download** | low, but a Stripe call per download | none | yes, if they keep the link | Good complement to B |
+
+**Recommendation: B plus D, and not before charging starts.**
+
+B closes the edit-your-own-unlock hole for the cost of one secret and a
+signature check — the browser holds a token it cannot forge rather than a
+boolean it can flip. D gives the honest answer to "I cleared my browser and lost
+my pack", which is the support email this design otherwise guarantees: the
+success URL already carries the Stripe session id, so re-verifying it restores
+access without an account.
+
+Neither is worth building now. The pack is free during beta, so there is nothing
+to protect, and the content is visible on screen before purchase, which bounds
+the loss even when charging. **This should not become an authentication
+project** — accounts would cost more than the leakage they prevent.
+
+### Server rendering — the investigation
+
+The planner is a client component because it reads `useSearchParams()` for URL
+prefill and `localStorage` for saved projects. Under Suspense that makes Next
+bail out of prerendering the subtree, which is why a skeleton exists at all.
+
+Moving `searchParams` to the server would make all ten planner pages dynamic,
+losing static generation — a real cost for pages whose whole value is being
+cheap to serve and easy to crawl.
+
+**Not done, and not needed.** CLS is already 0.0000 across nine viewports, LCP
+is 100–200ms locally and 300–650ms on the preview deployment, and every planner
+page ships complete SEO content — heading, intro, FAQ, related projects, and
+structured data — in static HTML regardless of the planner. The remaining
+benefit is first-paint *form* content, which is a refinement rather than a fix.
+
+The honest version for a future pass: render the planner shell statically with
+default values and apply URL prefill during hydration. That trades a brief flash
+of defaults on `/plan` redirects for static form markup, and the flash is the
+thing the current design was built to avoid.
+
+---
+
 ## Open items, in priority order
 
-1. **Decide on entitlement enforcement.** Client-side unlock is defensible for
-   an accountless product whose content is visible before purchase. It is a
-   product decision, not a bug. Options: accept it, add accounts, or
-   watermark/gate the PDF server-side.
-2. **Legal review of `/privacy` and `/terms`.** Both marked inline.
-3. **Convert explanation prose to the reader's unit system.** ~60 strings; the
-   `fmt` helper is already hoisted above the materials array in seven of the ten
-   calculators, so the mechanism is in place. Run
-   `scripts/audit-metric-prose.mts` for the current inventory. Product
-   specifications should stay imperial — a 4 × 8 ft sheet and a 60 lb bag are
-   what is printed on the packaging.
-4. **Currency-measure input labels** still read "$ / sq ft" in metric mode.
-   `formatQuantity` returns early for the currency measure before the label is
-   localised. Small and self-contained.
-5. **Reconsider `sqFtPerBox` defaults per material.** Flooring defaults to
-   24 sq ft/box and tile to 15; both are plausible but vary widely by product.
-   They are editable and labelled, so this is polish rather than correctness.
+1. **Set a real contact address.** `hello@projectkit.example` is a reserved
+   placeholder domain that cannot receive mail, and every feedback path points
+   at it. Configuration, not code, but it blocks beta feedback entirely.
+2. **Decide on entitlement enforcement** before charging. Analysis and
+   recommendation above.
+3. **Legal review of `/privacy` and `/terms`.** Both are now factually accurate
+   about the system; that is not the same as legally sufficient.
+4. **Metric default dimensions carry conversion precision.** The concrete
+   planner opens at 6.096 × 4.8768 m because the defaults are declared in feet
+   and converted exactly. Rounding them would read better but would break the
+   exact metric parity the audit relies on, since 4.88 m is not 16 ft. The right
+   fix is per-system defaults (`metricDefault` on the input) plus a parity test
+   that converts rather than compares defaults — a contained change, but one
+   that changes what that test proves, so it wants its own pass.
+5. **Gravel's custom-density field** is `lb / cu ft` in both systems. It is an
+   advanced override defaulting to 0 (meaning "use the selected material"), and
+   a compound mass-per-volume unit has no measure in the engine. Low impact,
+   documented rather than fixed.
+6. **Reconsider `sqFtPerBox` defaults per material.** Flooring defaults to
+   24 sq ft/box and tile to 15; both plausible, both vary widely by product.
+   Editable and labelled, so polish rather than correctness.
 
 ---
 
@@ -244,10 +379,11 @@ npx tsx scripts/audit-drywall-tape.mts     # seam-length derivation
 npx tsx scripts/audit-formulas.mts         # every formula and assumption
 npx tsx scripts/audit-router.mts           # 60-prompt routing sweep
 npx tsx scripts/audit-metric-prose.mts     # imperial units in metric output
-npx tsx scripts/audit-vitals.mts           # CLS/LCP across four viewports
+npx tsx scripts/audit-vitals.mts           # CLS/LCP across nine viewports
 npx tsx scripts/audit-seo.mts              # metadata and structured data
 npx tsx scripts/audit-pack.mts             # 30 pack renders + screenshots
 ```
 
 Gate: `npm run lint`, `npx tsc --noEmit`, `npx vitest run`,
-`npx playwright test`, `npm run build`. All green as of this document.
+`npx playwright test`, `npm run build`. All green as of this document —
+377 unit tests, 143 E2E across Chromium and WebKit.
