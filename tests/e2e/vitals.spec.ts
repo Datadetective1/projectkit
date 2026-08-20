@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { projects } from "../../src/data/projects";
+import { answerPaths } from "../../src/data/answers";
 
 /**
  * Cumulative Layout Shift, guarded rather than measured once.
@@ -49,7 +50,7 @@ test.describe("layout stability", () => {
     });
   }
 
-  for (const path of ["/", "/projects", "/my-projects", "/about"]) {
+  for (const path of ["/", "/projects", "/my-projects", "/about", ...answerPaths()]) {
     test(`${path} settles without shifting`, async ({ page }) => {
       const cls = await measureCls(page, path);
       expect(cls, `${path} CLS`).toBeLessThan(CLS_BUDGET);

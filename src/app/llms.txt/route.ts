@@ -1,4 +1,5 @@
 import { projects } from "@/data/projects";
+import { answerPages } from "@/data/answers";
 import { isProductionSite, site } from "@/config/site";
 import { absoluteUrl } from "@/lib/seo";
 
@@ -29,6 +30,15 @@ export function GET() {
 
   const planners = projects
     .map((project) => `- [${project.name}](${absoluteUrl(`/${project.slug}`)}): ${project.tagline}`)
+    .join("\n");
+
+  /*
+   * Answer pages, grouped under the planner they belong to. Listed by the
+   * question they answer rather than by title, since that is the form a model
+   * is matching against when it decides whether this page is relevant.
+   */
+  const answers = answerPages
+    .map((page) => `- [${page.h1}](${absoluteUrl(`/${page.planner}/${page.slug}`)})`)
     .join("\n");
 
   const body = `# ${site.name}
@@ -79,10 +89,18 @@ calculation.
 
 ${planners}
 
+## Specific questions answered
+
+Each of these gives the worked answer for one common project, computed by the
+same engine, and hands off to the full planner.
+
+${answers}
+
 ## Pages
 
 - [All planners](${absoluteUrl("/projects")}): every planner, grouped by category
 - [About](${absoluteUrl("/about")}): what ${site.name} does and does not do
+- [Contact](${absoluteUrl("/contact")}): how to reach a human about an estimate
 - [Privacy](${absoluteUrl("/privacy")}): no accounts; projects are stored in the browser
 - [Terms](${absoluteUrl("/terms")}): planning estimates only
 
