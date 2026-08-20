@@ -30,7 +30,7 @@ export function SavedProjectList() {
       <div className="pk-card p-6">
         <h2 className="text-lg font-semibold text-ink">Saved projects need local storage</h2>
         <p className="pk-prose mt-2 text-sm">
-          Your browser is blocking local storage, which is where ProjectKit keeps saved projects.
+          Your browser is blocking local storage, which is where Cubitora keeps saved projects.
           Private browsing windows usually do this. Everything else still works — you just cannot
           save between visits.
         </p>

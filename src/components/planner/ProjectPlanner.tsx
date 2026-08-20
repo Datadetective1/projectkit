@@ -21,6 +21,7 @@ import { DiyOrHire } from "@/components/results/DiyOrHire";
 import { WhatIf } from "@/components/results/WhatIf";
 import { AdSlot } from "@/components/monetization/AdSlot";
 import { ReportProblem } from "@/components/ReportProblem";
+import { StickyCalculate } from "./StickyCalculate";
 import {
   anchorsFor,
   applyPrefill,
@@ -66,6 +67,8 @@ export function ProjectPlanner({ slug }: { slug: string }) {
   const [contractorQuote, setContractorQuote] = useState<number | "">(initial.contractorQuote);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [copied, setCopied] = useState(false);
+  // Bumped by Calculate so the headline replays its settle after the scroll.
+  const [revealKey, setRevealKey] = useState(0);
 
   const prefilled = initial.prefilled;
   const fromNaturalLanguage = initial.fromNaturalLanguage;
@@ -155,6 +158,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
       system,
     });
     track("result_viewed", { projectType: project.slug });
+    setRevealKey((current) => current + 1);
     resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
@@ -363,7 +367,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
       </form>
 
       {/* -------------------------------------------------------- results -- */}
-      <div ref={resultsRef} className="flex flex-col gap-6 scroll-mt-24">
+      <div ref={resultsRef} className="flex flex-col gap-6 scroll-mt-24 pb-20 sm:pb-0">
         {evaluation?.ok ? (
           <>
             <ResultsPanel
@@ -371,6 +375,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
               system={system}
               projectName={project.name}
               projectType={project.slug}
+              revealKey={revealKey}
             />
 
             <WhatIf
@@ -498,6 +503,12 @@ export function ProjectPlanner({ slug }: { slug: string }) {
           </div>
         )}
       </div>
+
+      <StickyCalculate
+        onCalculate={handleCalculate}
+        resultsRef={resultsRef}
+        disabled={hasErrors}
+      />
     </div>
   );
 }

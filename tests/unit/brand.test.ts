@@ -1,0 +1,133 @@
+import { describe, expect, it } from "vitest";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
+import { projects } from "@/data/projects";
+import { site } from "@/config/site";
+
+/**
+ * The old public brand must not come back.
+ *
+ * A rename is easy to do and easy to half-undo — one copied component, one
+ * merged branch, one AI-assisted edit that reaches for the name it saw most in
+ * the history. This walks the actual source rather than trusting that the sweep
+ * caught everything.
+ *
+ * Scope is deliberately `src/` only. `docs/` holds the pre-launch audit and its
+ * findings, where "ProjectKit" is the historical record of what was true at the
+ * time; rewriting it there would destroy the thing that makes it useful.
+ */
+
+const LEGACY_BRAND = /ProjectKit|Project Kit/;
+
+/**
+ * Places the old lowercase identifier is still correct, because it names
+ * something that genuinely was called that and still is.
+ */
+const ALLOWED_LEGACY_IDENTIFIERS = [
+  // The migration has to know the key it is reading *from*.
+  "projectkit.projects.v1",
+  "projectkit.unlocks.v1",
+  // Comments explaining the above.
+  "ProjectKit → Cubitora rename",
+];
+
+function sourceFiles(dir: string): string[] {
+  const out: string[] = [];
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry);
+    if (statSync(full).isDirectory()) out.push(...sourceFiles(full));
+    else if (/\.(ts|tsx|css)$/.test(entry)) out.push(full);
+  }
+  return out;
+}
+
+describe("brand identity", () => {
+  it("is Cubitora everywhere the configuration is read", () => {
+    expect(site.name).toBe("Cubitora");
+    // The canonical host is www; the apex 308-redirects to it.
+    expect(site.domain).toBe("www.cubitora.com");
+    expect(site.tagline).toBe("Plan the project. Know what you need.");
+  });
+
+  it("never ships the old brand name in source", () => {
+    const offenders: string[] = [];
+
+    for (const file of sourceFiles("src")) {
+      const contents = readFileSync(file, "utf8");
+      let scrubbed = contents;
+      for (const allowed of ALLOWED_LEGACY_IDENTIFIERS) {
+        scrubbed = scrubbed.split(allowed).join("");
+      }
+      if (LEGACY_BRAND.test(scrubbed)) {
+        const line = scrubbed.split("\n").find((text) => LEGACY_BRAND.test(text));
+        offenders.push(`${file}: ${line?.trim().slice(0, 90)}`);
+      }
+    }
+
+    expect(offenders.join("\n")).toBe("");
+  });
+
+  it("keeps the legacy storage keys, which must stay spelled the old way", () => {
+    // The counterpart to the test above: these two strings are load-bearing.
+    // A brand sweep that "fixed" them would silently orphan every beta tester's
+    // saved projects, which is exactly what happened once during this rename.
+    const saved = readFileSync("src/lib/storage/savedProjects.ts", "utf8");
+    const unlocks = readFileSync("src/lib/storage/entitlements.ts", "utf8");
+
+    expect(saved).toContain('"projectkit.projects.v1"');
+    expect(saved).toContain('"cubitora.projects.v1"');
+    expect(unlocks).toContain('"projectkit.unlocks.v1"');
+    expect(unlocks).toContain('"cubitora.unlocks.v1"');
+  });
+
+  it("describes every planner without naming the old brand", () => {
+    for (const project of projects) {
+      const prose = [
+        project.intro,
+        project.tagline,
+        project.h1,
+        project.seo.title,
+        project.seo.description,
+        ...project.steps,
+        ...project.faq.flatMap((entry) => [entry.question, entry.answer]),
+        ...(project.disclaimers ?? []),
+      ].join(" ");
+
+      expect(LEGACY_BRAND.test(prose), `${project.slug}`).toBe(false);
+    }
+  });
+});
+
+describe("brand surfaces that carry no brand text", () => {
+  /**
+   * The social card carried a hardcoded "P" for ProjectKit and the previous
+   * tagline. Neither contains the string "ProjectKit", so a text sweep walked
+   * straight past them — it took looking at the rendered image to find them.
+   *
+   * These assert the card is derived from configuration rather than typed out,
+   * which is the only thing that makes it survive the next rename.
+   */
+  const source = readFileSync("src/app/opengraph-image.tsx", "utf8");
+
+  it("derives the social card's mark from the brand name", () => {
+    expect(source).toContain("site.name.charAt(0)");
+    // A bare initial in JSX is what went wrong; make its return obvious.
+    expect(source).not.toMatch(/\n\s{10,}P\n/);
+  });
+
+  it("derives the social card's copy from the configured positioning", () => {
+    expect(source).toContain("site.supportingLine");
+    expect(source).toContain("Plan the project.");
+    expect(source).toContain("Know what you need.");
+  });
+
+  it("carries no retired tagline anywhere in the app", () => {
+    // The previous positioning, in both the forms it appeared in.
+    for (const retired of ["figure out the rest", "figure out everything you need"]) {
+      const offenders = sourceFiles("src").filter((file) =>
+        readFileSync(file, "utf8").includes(retired),
+      );
+      expect(offenders.join("\n"), retired).toBe("");
+    }
+  });
+});

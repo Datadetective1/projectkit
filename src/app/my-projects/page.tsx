@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/seo";
 export const metadata = pageMetadata({
   title: "My Projects",
   description:
-    "Every project you have saved in ProjectKit — quantities, budget, shopping list, and notes. Stored in this browser, no account needed.",
+    "Every project you have saved in Cubitora — quantities, budget, shopping list, and notes. Stored in this browser, no account needed.",
   path: "/my-projects",
   index: false,
 });

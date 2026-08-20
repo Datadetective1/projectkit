@@ -96,7 +96,7 @@ const RESPONSE_SCHEMA = {
     project: {
       type: "string",
       enum: [...projectSlugs(), "unknown"],
-      description: "The ProjectKit planner that best matches the request.",
+      description: "The Cubitora planner that best matches the request.",
     },
     confidence: {
       type: "string",
@@ -123,7 +123,7 @@ const RESPONSE_SCHEMA = {
 const SYSTEM_PROMPT = `You extract structured planning parameters from a homeowner's description of a home-improvement project.
 
 Rules:
-- Choose the single ProjectKit planner that best matches the request. If nothing fits, use "unknown".
+- Choose the single Cubitora planner that best matches the request. If nothing fits, use "unknown".
 - Only report numbers the person actually stated. Never estimate, infer, or fill in a typical value — a missing parameter is far better than a wrong one.
 - Lengths and widths are in feet. Thickness and depth are in inches. Area is in square feet. Counts are whole numbers.
 - "20 by 16" means length 20 and width 16.

@@ -9,7 +9,7 @@ export const fenceProject: ProjectDefinition = {
   category: "Outdoor & Structural",
   tagline: "Posts, rails, pickets, gates, and post-hole concrete.",
   intro:
-    "Plan a fence from either the yard dimensions or a total run length. ProjectKit works out sections, posts, rails, pickets, gate hardware, and how much concrete the post holes will swallow.",
+    "Plan a fence from either the yard dimensions or a total run length. Cubitora works out sections, posts, rails, pickets, gate hardware, and how much concrete the post holes will swallow.",
   icon: "Fence",
   accent: "amber",
   keywords: ["fence", "fencing", "privacy fence", "picket", "gate", "backyard fence"],
@@ -305,7 +305,7 @@ export const fenceProject: ProjectDefinition = {
     {
       question: "Do I need a permit to build a fence?",
       answer:
-        "Often yes, and height limits and setback rules are extremely common — front-yard fences in particular. ProjectKit cannot tell you your local rules, so check with your municipality and HOA before you buy material.",
+        "Often yes, and height limits and setback rules are extremely common — front-yard fences in particular. Cubitora cannot tell you your local rules, so check with your municipality and HOA before you buy material.",
     },
   ],
 

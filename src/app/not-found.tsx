@@ -11,7 +11,7 @@ import { pageMetadata } from "@/lib/seo";
 export const metadata = pageMetadata({
   title: "Page not found",
   description:
-    "That ProjectKit page does not exist. Every project planner is listed here so you can pick up where you meant to.",
+    "That Cubitora page does not exist. Every project planner is listed here so you can pick up where you meant to.",
   path: "/404",
   index: false,
 });
@@ -25,7 +25,7 @@ export default function NotFound() {
           That page isn&apos;t here
         </h1>
         <p className="pk-prose mx-auto mt-3 max-w-md">
-          The link may be out of date, or the planner may have moved. Everything ProjectKit can
+          The link may be out of date, or the planner may have moved. Everything Cubitora can
           plan is below.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">

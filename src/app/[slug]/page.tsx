@@ -9,6 +9,7 @@ import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 import { FaqSection } from "@/components/ui/FaqSection";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { AdSlot } from "@/components/monetization/AdSlot";
+import { PlannerMethod } from "@/components/PlannerMethod";
 import { getProject, projectSlugs, relatedProjects } from "@/data/projects";
 import { breadcrumbJsonLd, faqJsonLd, pageMetadata, webApplicationJsonLd } from "@/lib/seo";
 import { legal } from "@/config/site";
@@ -97,6 +98,14 @@ export default async function ProjectPage({
         <div className="mt-12">
           <AdSlot placement="content-mid" />
         </div>
+
+        {/*
+          The method, as static HTML. The planner above is a client component,
+          so without this a crawler sees the heading, the disclaimer, and the
+          FAQ — and none of the formulas or assumptions that are the substance
+          of the page.
+        */}
+        <PlannerMethod project={project} />
 
         {/* Marketing and browsing sections are not worth the paper. */}
         <div className="pk-no-print mt-12 max-w-3xl">

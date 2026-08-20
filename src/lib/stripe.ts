@@ -5,7 +5,7 @@ import Stripe from "stripe";
 /**
  * Stripe is entirely optional.
  *
- * Nothing in ProjectKit requires it — the planners, the shopping list, and the
+ * Nothing in Cubitora requires it — the planners, the shopping list, and the
  * Project Pack preview all work without a key. When a key is absent the
  * checkout endpoints say so plainly instead of failing in a confusing way.
  *

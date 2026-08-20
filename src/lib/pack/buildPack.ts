@@ -125,7 +125,7 @@ export function buildPack(saved: SavedProject): ProjectPack | undefined {
 
     costTotal: formatCurrency(result.costTotal),
     budgetNote:
-      "Costs use ProjectKit planning prices or the prices entered by the project owner. They are not live retail prices.",
+      "Costs use Cubitora planning prices or the prices entered by the project owner. They are not live retail prices.",
 
     assumptions: result.assumptions.map((item) => ({
       label: item.label,
@@ -162,7 +162,7 @@ export function buildPack(saved: SavedProject): ProjectPack | undefined {
     warnings: [...new Set([...result.warnings, ...(project.disclaimers ?? [])])],
     notes: saved.notes,
     disclaimer:
-      "ProjectKit provides planning estimates only. Costs cover materials at the prices shown — sales tax, delivery, and equipment rental are excluded. Actual requirements, costs, installation methods, structural requirements, permits, safety requirements, and building codes vary. Verify critical specifications before purchasing materials or beginning work.",
+      "Cubitora provides planning estimates only. Costs cover materials at the prices shown — sales tax, delivery, and equipment rental are excluded. Actual requirements, costs, installation methods, structural requirements, permits, safety requirements, and building codes vary. Verify critical specifications before purchasing materials or beginning work.",
     effort: {
       difficulty: result.effort.difficulty,
       timeCategory: result.effort.timeCategory,
@@ -181,5 +181,5 @@ export function packFileName(pack: ProjectPack): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 60);
-  return `projectkit-${base || "project"}.pdf`;
+  return `cubitora-${base || "project"}.pdf`;
 }

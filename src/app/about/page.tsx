@@ -4,9 +4,9 @@ import { pageMetadata } from "@/lib/seo";
 import { features, site } from "@/config/site";
 
 export const metadata = pageMetadata({
-  title: "About ProjectKit",
+  title: "About Cubitora",
   description:
-    "Why ProjectKit exists, how the calculations work, and what the estimates can and cannot tell you.",
+    "Why Cubitora exists, how the calculations work, and what the estimates can and cannot tell you.",
   path: "/about",
 });
 
@@ -29,7 +29,7 @@ export default function AboutPage() {
           that the form stakes and the expansion joint are the things you will forget.
         </p>
         <p>
-          ProjectKit starts from the project rather than the equation. You describe what you are
+          Cubitora starts from the project rather than the equation. You describe what you are
           building, and it works out quantities with a waste allowance, rounds them to what you can
           actually purchase, prices them, builds a shopping list, and lays out the order of
           operations. Then it hands you a document you can print or take to the store.
@@ -47,7 +47,7 @@ export default function AboutPage() {
           Where the answer depends on a convention rather than a measurement — a waste percentage, a
           bag yield, a coverage rate — that assumption is shown to you and can be changed. Prices
           are national ballpark planning figures you can overwrite with your own; they are not live
-          retail prices and ProjectKit does not claim they are.
+          retail prices and Cubitora does not claim they are.
         </p>
         <p>
           AI is used in one place only: reading your plain-English description and proposing which
@@ -57,7 +57,7 @@ export default function AboutPage() {
       </section>
 
       <section>
-        <h2>What ProjectKit is not</h2>
+        <h2>What Cubitora is not</h2>
         <ul>
           <li>It is not structural engineering. Spans, footings, loads, and code compliance are outside what a material estimator can responsibly answer.</li>
           <li>It is not a quote. Material costs vary by region, supplier, season, and grade.</li>
@@ -68,7 +68,7 @@ export default function AboutPage() {
 
       {features.beta ? (
         <section>
-          <h2>ProjectKit is in beta</h2>
+          <h2>Cubitora is in beta</h2>
           <p>
             The site works and the estimates are tested, but the planning assumptions behind them —
             coverage rates, waste allowances, package sizes — are still being checked against real

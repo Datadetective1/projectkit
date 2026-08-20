@@ -19,7 +19,7 @@ export default function RouteError({
 }) {
   useEffect(() => {
     // Server-side details stay on the server; the digest is the shared handle.
-    console.error("[projectkit] route error", error.digest ?? error.message);
+    console.error("[cubitora] route error", error.digest ?? error.message);
   }, [error]);
 
   return (

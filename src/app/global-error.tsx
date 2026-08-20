@@ -28,7 +28,7 @@ export default function GlobalError({
         }}
       >
         <main style={{ maxWidth: "32rem" }}>
-          <p style={{ margin: 0, fontWeight: 600, color: "#0F5F52" }}>ProjectKit</p>
+          <p style={{ margin: 0, fontWeight: 600, color: "#0F5F52" }}>Cubitora</p>
           <h1 style={{ margin: "0.5rem 0 0", fontSize: "1.75rem", lineHeight: 1.2 }}>
             The app failed to load
           </h1>

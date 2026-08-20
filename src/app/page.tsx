@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowRight, ClipboardList, Receipt, Ruler, Search, Wrench } from "lucide-react";
 import { ProjectCard } from "@/components/ProjectCard";
+import { HeroPreview } from "@/components/home/HeroPreview";
+import { PackPreview } from "@/components/home/PackPreview";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { projects } from "@/data/projects";
 import { pageMetadata, webApplicationJsonLd } from "@/lib/seo";
@@ -33,66 +35,93 @@ export default function HomePage() {
       />
 
       {/* ------------------------------------------------------------ hero */}
+      {/*
+        Two columns, deliberately asymmetric: the ask on the left, the payoff on
+        the right. The old hero was a centred headline over an empty search box,
+        which described the product without ever showing it — a first-time
+        visitor had to imagine what came out. Now they can read it.
+
+        Order matters on mobile. The input comes first in the DOM and stays
+        first visually, because on a phone the only thing that matters is being
+        able to type; the preview follows as supporting evidence.
+      */}
       <section className="border-b border-line bg-surface">
-        <div className="mx-auto max-w-4xl px-4 py-14 text-center sm:px-6 sm:py-20">
-          <h1 className="text-[2.25rem] font-semibold leading-[1.1] tracking-tight text-ink sm:text-6xl">
-            What are you trying to build?
-          </h1>
-          <p className="pk-prose mx-auto mt-4 max-w-xl text-base sm:text-lg">
-            Describe your project in plain English. ProjectKit works out the quantities, the cost,
-            the shopping list, and the plan.
-          </p>
+        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.15fr_1fr] lg:items-center lg:gap-14 lg:py-20">
+          <div>
+            <h1 className="text-[2.125rem] font-semibold leading-[1.08] tracking-tight text-ink sm:text-5xl lg:text-[3.5rem]">
+              Plan the project.
+              <span className="block text-brand">Know what you need.</span>
+            </h1>
+            <p className="pk-prose mt-4 max-w-lg text-base sm:text-lg">
+              {site.supportingLine}
+            </p>
 
-          <form
-            id="plan"
-            action="/plan"
-            method="get"
-            className="mx-auto mt-8 flex max-w-2xl flex-col gap-3 sm:flex-row"
-          >
-            <div className="relative flex-1">
-              <Search
-                aria-hidden
-                className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-subtle"
-              />
-              <label htmlFor="project-description" className="sr-only">
-                Describe your project
+            <form
+              id="plan"
+              action="/plan"
+              method="get"
+              className="mt-8 max-w-xl"
+            >
+              <label
+                htmlFor="project-description"
+                className="block text-sm font-medium text-ink"
+              >
+                {site.prompt}
               </label>
-              <input
-                id="project-description"
-                name="q"
-                type="text"
-                required
-                maxLength={300}
-                autoComplete="off"
-                placeholder="I want to build a 20 × 16 concrete patio"
-                className="pk-field h-[3.25rem] pl-11 text-base"
-              />
-            </div>
-            <button type="submit" className="pk-btn pk-btn-primary h-[3.25rem] px-6 text-base">
-              Plan my project
-              <ArrowRight className="h-4 w-4" aria-hidden />
-            </button>
-          </form>
+              <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+                <div className="relative flex-1">
+                  <Search
+                    aria-hidden
+                    className="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-subtle"
+                  />
+                  <input
+                    id="project-description"
+                    name="q"
+                    type="text"
+                    required
+                    maxLength={300}
+                    autoComplete="off"
+                    placeholder="A 20 × 16 concrete patio"
+                    className="pk-field h-[3.25rem] pl-11 text-base"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="pk-btn pk-btn-primary h-[3.25rem] shrink-0 px-6 text-base"
+                >
+                  Plan my project
+                  <ArrowRight className="h-4 w-4" aria-hidden />
+                </button>
+              </div>
+            </form>
 
-          <div className="mt-5">
-            <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">Try</p>
-            <ul className="mt-2 flex flex-wrap justify-center gap-2">
-              {EXAMPLE_PROMPTS.map((prompt) => (
-                <li key={prompt}>
-                  <Link
-                    href={`/plan?q=${encodeURIComponent(prompt)}`}
-                    className="inline-block rounded-full border border-line-strong bg-surface px-3 py-1.5 text-sm text-ink-muted transition-colors hover:border-brand/40 hover:bg-brand-soft hover:text-brand-ink"
-                  >
-                    {prompt}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+            <div className="mt-5">
+              <p className="text-xs font-medium uppercase tracking-wide text-ink-subtle">Try</p>
+              <ul className="mt-2 flex flex-wrap gap-2">
+                {EXAMPLE_PROMPTS.map((prompt) => (
+                  <li key={prompt}>
+                    <Link
+                      href={`/plan?q=${encodeURIComponent(prompt)}`}
+                      className="inline-block rounded-full border border-line-strong bg-surface px-3 py-1.5 text-sm text-ink-muted transition-colors hover:border-brand/40 hover:bg-brand-soft hover:text-brand-ink"
+                    >
+                      {prompt}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <p className="mt-6 text-sm text-ink-subtle">
+              No account. No sign-up. Free while we are in beta.
+            </p>
           </div>
 
-          <p className="mt-6 text-sm text-ink-subtle">
-            No account. No sign-up. Free to use.
-          </p>
+          {/* Supporting evidence, not decoration. Hidden from assistive tech
+              would be wrong — the numbers are the argument — so it stays in the
+              accessibility tree with a caption explaining what it is. */}
+          <div className="lg:pl-4">
+            <HeroPreview />
+          </div>
         </div>
       </section>
 
@@ -163,10 +192,10 @@ export default function HomePage() {
         <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
           <div>
             <h2 id="example-result" className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-              Not just a number
+              Leave with a plan, not a number
             </h2>
             <p className="pk-prose mt-3 max-w-prose">
-              A calculator tells you the volume. ProjectKit tells you what to order, what it costs,
+              A calculator tells you the volume. Cubitora tells you what to order, what it costs,
               what else you need, and what order to do it in — then hands you a document you can
               take to the store.
             </p>
@@ -184,12 +213,12 @@ export default function HomePage() {
               ))}
             </ul>
             <Link href="/concrete-calculator" className="pk-btn pk-btn-primary mt-7">
-              Try the concrete planner
+              Create my Project Pack
               <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
           </div>
 
-          <ExampleResultCard />
+          <PackPreview />
         </div>
       </section>
 
@@ -228,35 +257,4 @@ export default function HomePage() {
   );
 }
 
-/** A static, honest sample of real ProjectKit output for a 20 × 16 patio. */
-function ExampleResultCard() {
-  return (
-    <div className="pk-card overflow-hidden">
-      <div className="border-b border-line bg-brand-soft p-5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand-ink/70">
-          You need approximately
-        </p>
-        <p className="mt-1 text-4xl font-semibold tracking-tight text-brand-ink">4.35 yd³</p>
-        <p className="mt-1 text-sm text-brand-ink/80">
-          Recommended purchase: 4.5 yd³ including 10% waste
-        </p>
-      </div>
-      <dl className="divide-y divide-line px-5">
-        {[
-          ["Project area", "320 sq ft"],
-          ["Calculated volume", "3.95 yd³"],
-          ["Base gravel", "4.5 yd³"],
-          ["Estimated materials", "$990"],
-        ].map(([label, value]) => (
-          <div key={label} className="flex justify-between py-3 text-sm">
-            <dt className="text-ink-muted">{label}</dt>
-            <dd className="font-medium tabular-nums text-ink">{value}</dd>
-          </div>
-        ))}
-      </dl>
-      <p className="border-t border-line px-5 py-3 text-xs text-ink-subtle">
-        Example output for a 20 × 16 ft patio at 4 in thick, using ProjectKit planning prices.
-      </p>
-    </div>
-  );
-}
+/** A static, honest sample of real Cubitora output for a 20 × 16 patio. */

@@ -8,7 +8,13 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
-  workers: process.env.CI ? 2 : undefined,
+  /*
+   * Capped locally as well as on CI. The accessibility specs run a full axe
+   * scan per page, which is heavy enough that one worker per core starves the
+   * others and they time out — producing a different set of "failures" on every
+   * run, all of which pass in isolation. Three is comfortably fast and stable.
+   */
+  workers: process.env.CI ? 2 : 3,
   reporter: process.env.CI ? "line" : [["list"]],
 
   use: {

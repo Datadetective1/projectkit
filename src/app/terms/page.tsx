@@ -6,7 +6,7 @@ import { features, formatPackPrice, legal, site } from "@/config/site";
 export const metadata = pageMetadata({
   title: "Terms of Use",
   description:
-    "The terms covering ProjectKit's planning estimates, Project Pack purchases, and limits of liability.",
+    "The terms covering Cubitora's planning estimates, Project Pack purchases, and limits of liability.",
   path: "/terms",
 });
 
@@ -14,7 +14,7 @@ export default function TermsPage() {
   return (
     <ProsePage
       title="Terms of use"
-      intro="ProjectKit gives you planning estimates. You decide what to build and what to buy."
+      intro="Cubitora gives you planning estimates. You decide what to build and what to buy."
       updated={legal.lastUpdated}
       crumbs={[
         { name: "Home", path: "/" },
@@ -31,16 +31,16 @@ export default function TermsPage() {
         <h2>1. Estimates, not specifications</h2>
         <p>{legal.planningDisclaimer}</p>
         <p>
-          Every quantity, cost, and material list ProjectKit produces is a planning estimate derived
+          Every quantity, cost, and material list Cubitora produces is a planning estimate derived
           from the values you enter and the assumptions shown on the page. Actual requirements
-          depend on site conditions, materials, workmanship, local code, and factors ProjectKit
+          depend on site conditions, materials, workmanship, local code, and factors Cubitora
           cannot observe.
         </p>
       </section>
 
       <section>
         <h2>2. What we do not claim</h2>
-        <p>ProjectKit does not represent that any output is:</p>
+        <p>Cubitora does not represent that any output is:</p>
         <ul>
           <li>a guaranteed material quantity;</li>
           <li>a guaranteed or quoted price;</li>
@@ -70,7 +70,7 @@ export default function TermsPage() {
         <p>
           Default prices are national ballpark planning figures, not live retail prices, and they
           are editable. Cost totals are calculated from whichever prices are in the form at the
-          time. ProjectKit does not track, quote, or guarantee any retailer&apos;s pricing or
+          time. Cubitora does not track, quote, or guarantee any retailer&apos;s pricing or
           availability.
         </p>
       </section>
@@ -126,7 +126,7 @@ export default function TermsPage() {
       <section>
         <h2>7. Acceptable use</h2>
         <p>
-          Use ProjectKit for planning your own projects, or projects you are working on for others.
+          Use Cubitora for planning your own projects, or projects you are working on for others.
           Do not attempt to disrupt the service, scrape it at scale, or present its output as a
           professional certification, engineered design, or formal quotation.
         </p>
@@ -135,7 +135,7 @@ export default function TermsPage() {
       <section>
         <h2>8. Advertising and affiliate links</h2>
         <p>
-          ProjectKit may display advertising and may earn a commission on purchases made through
+          Cubitora may display advertising and may earn a commission on purchases made through
           links marked as affiliate links. This does not change what the calculators tell you, and
           no retailer pays for placement in a result.
         </p>
@@ -144,8 +144,8 @@ export default function TermsPage() {
       <section>
         <h2>9. Limitation of liability</h2>
         <p>
-          ProjectKit is provided &ldquo;as is&rdquo;, without warranties of any kind to the fullest
-          extent permitted by law. To that same extent, ProjectKit is not liable for any loss or
+          Cubitora is provided &ldquo;as is&rdquo;, without warranties of any kind to the fullest
+          extent permitted by law. To that same extent, Cubitora is not liable for any loss or
           damage arising from use of the service — including over-ordering, under-ordering, cost
           overruns, project delays, rework, property damage, or injury. You are responsible for the
           decisions you make and the work you carry out.
@@ -160,7 +160,7 @@ export default function TermsPage() {
         <h2>10. Changes</h2>
         <p>
           These terms may change as the product develops. The date at the top of this page shows
-          when they were last updated; continuing to use ProjectKit means the current terms apply.
+          when they were last updated; continuing to use Cubitora means the current terms apply.
         </p>
       </section>
 

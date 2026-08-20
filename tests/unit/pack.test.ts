@@ -110,14 +110,14 @@ describe("pack filenames", () => {
     const pack = buildPack(saved({ title: "Concrete — 20 × 16 ft / patio?" }));
     if (!pack) throw new Error("no pack");
     const name = packFileName(pack);
-    expect(name).toMatch(/^projectkit-[a-z0-9-]+\.pdf$/);
+    expect(name).toMatch(/^cubitora-[a-z0-9-]+\.pdf$/);
     expect(name).not.toMatch(/[/\\?%*:|"<>]/);
   });
 
   it("falls back rather than producing a bare extension", () => {
     const pack = buildPack(saved({ title: "×××" }));
     if (!pack) throw new Error("no pack");
-    expect(packFileName(pack)).toBe("projectkit-project.pdf");
+    expect(packFileName(pack)).toBe("cubitora-project.pdf");
   });
 });
 
@@ -137,7 +137,7 @@ describe("text summary", () => {
 
   it("reads as something you could paste into a message", () => {
     const text = summaryFor("concrete-calculator");
-    expect(text).toContain("Concrete — ProjectKit estimate");
+    expect(text).toContain("Concrete — Cubitora estimate");
     expect(text).toContain("4.35 yd³");
     expect(text).toContain("Ready-mix concrete (delivered)");
     expect(text).toContain("Estimated material total");

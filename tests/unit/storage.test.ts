@@ -55,7 +55,7 @@ const {
   saveProject,
 } = await import("@/lib/storage/savedProjects");
 
-const KEY = "projectkit.projects.v1";
+const KEY = "cubitora.projects.v1";
 
 function draft(overrides: Record<string, unknown> = {}) {
   return {
@@ -113,7 +113,7 @@ describe("saving", () => {
 
   it("notifies listeners so open lists refresh", () => {
     saveProject(draft());
-    expect(events).toContain("projectkit:projects-changed");
+    expect(events).toContain("cubitora:projects-changed");
   });
 
   it("returns undefined instead of throwing when storage is full", () => {

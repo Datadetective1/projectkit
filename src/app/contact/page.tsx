@@ -5,7 +5,7 @@ import { site } from "@/config/site";
 
 export const metadata = pageMetadata({
   title: "Contact",
-  description: "How to reach ProjectKit about a calculation, a bug, or a project request.",
+  description: "How to reach Cubitora about a calculation, a bug, or a project request.",
   path: "/contact",
 });
 
@@ -39,7 +39,7 @@ export default function ContactPage() {
         <ul>
           <li>Which planner you were using.</li>
           <li>The exact inputs, including the unit system and any assumptions you changed.</li>
-          <li>The number ProjectKit gave you, and the number you expected.</li>
+          <li>The number Cubitora gave you, and the number you expected.</li>
           <li>Where your expected figure comes from — a supplier, a span table, a product spec sheet.</li>
         </ul>
         <p>
@@ -64,7 +64,7 @@ export default function ContactPage() {
           <li>Product-specific installation support. The manufacturer&apos;s instructions govern.</li>
         </ul>
         <p>
-          See <Link href="/about">about ProjectKit</Link> for where the boundary sits and why.
+          See <Link href="/about">about Cubitora</Link> for where the boundary sits and why.
         </p>
       </section>
     </ProsePage>
