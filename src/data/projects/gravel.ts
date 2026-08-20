@@ -11,7 +11,7 @@ export const gravelProject: ProjectDefinition = {
   intro:
     "Driveways, paths, drainage, and paver base. Enter the area and depth, pick a material, and get volume, approximate weight, and cost priced both by the yard and by the ton.",
   icon: "Mountain",
-  accent: "sky",
+  accent: "slate",
   keywords: ["gravel", "stone", "aggregate", "pea gravel", "crushed stone", "driveway", "road base"],
 
   inputs: [

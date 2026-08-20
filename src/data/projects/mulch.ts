@@ -11,7 +11,7 @@ export const mulchProject: ProjectDefinition = {
   intro:
     "Work out how much mulch a bed needs from its dimensions or a square-footage figure you already have, then see whether bags or a bulk delivery actually costs less.",
   icon: "Trees",
-  accent: "orange",
+  accent: "bark",
   keywords: ["mulch", "bark", "flower bed", "garden bed", "landscape", "wood chips"],
 
   inputs: [

@@ -11,7 +11,7 @@ export const sodProject: ProjectDefinition = {
   intro:
     "Add up multiple lawn sections, including curved areas, and get the sod you need by area, by roll, and by pallet — priced both ways so you can compare a garden centre against a sod farm.",
   icon: "Sprout",
-  accent: "indigo",
+  accent: "grass",
   keywords: ["sod", "turf", "lawn", "grass", "new lawn", "pallet"],
 
   inputs: [

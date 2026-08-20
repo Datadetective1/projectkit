@@ -12,6 +12,12 @@
   --color-surface: #ffffff;
   --color-surface-sunken: #f2f1ec;
   /*
+   * A warmer band, one step down from paper. The page used to be white
+   * rectangles on near-white, which reads as flat however good the type is;
+   * alternating paper → tint → deep green gives the scroll an actual rhythm.
+   */
+  --color-paper-tint: #f4f2ea;
+  /*
    * Every text colour below clears WCAG AA (4.5:1) against every surface it is
    * used on — paper, white, sunken, and the three soft tints. Verified by the
    * axe checks in tests/e2e/accessibility.spec.ts; changing a value here
@@ -28,11 +34,47 @@
   --color-brand-soft: #e3f0ec;
   --color-brand-ink: #073a32;
 
+  /*
+   * The deep end of the green. Used for one full-bleed band — the Project Pack
+   * — so the page has a single dark moment to land on rather than an unbroken
+   * field of white cards. Text on it is white or --color-brand-mist.
+   */
+  --color-brand-deep: #06302a;
+  --color-brand-deeper: #041f1b;
+  /* AA on --color-brand-deep at 8.4:1. Do not lighten the background under it. */
+  --color-brand-mist: #a7cec3;
+
   --color-accent: #a8540c;
   --color-accent-soft: #fdf1e3;
+  /* The accent, legible on the deep band, where --color-accent is not. */
+  --color-accent-warm: #e8c193;
 
   --color-danger: #b3261e;
   --color-danger-soft: #fdeceb;
+
+  /*
+   * Material accents.
+   *
+   * These were Tailwind's stock hues — violet, rose, lime, sky — picked to make
+   * ten cards distinguishable. Ten arbitrary hues on one screen reads as a
+   * template, and none of them said anything about the project.
+   *
+   * Each one is now taken from the material itself: cedar is cedar, bark is
+   * bark, chalk is joint compound. They are all muted and all earth, stone, or
+   * vegetation, so they sit inside the paper-and-green world rather than
+   * fighting it — ten identities, one family. Every value clears 3:1 on paper
+   * and on sunken, which is the threshold for a meaningful graphic.
+   */
+  --color-mat-stone: #6c6e65; /* concrete */
+  --color-mat-cedar: #92603a; /* fence */
+  --color-mat-oak: #976c2f; /* flooring */
+  --color-mat-bark: #6a4829; /* mulch */
+  --color-mat-slate: #5f6b78; /* gravel */
+  --color-mat-chalk: #837e6f; /* drywall */
+  --color-mat-ceramic: #397470; /* tile */
+  --color-mat-timber: #9a6238; /* deck */
+  --color-mat-grass: #557f38; /* sod */
+  --color-mat-pigment: #5a5fa6; /* paint */
 
   --font-sans:
     var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -136,6 +178,218 @@
     border-radius: var(--radius-card);
   }
 
+  /* ------------------------------------------------------- brand motif -- */
+
+  /*
+   * The Cubitora motif: drafting marks on warm paper.
+   *
+   * Three pieces — a measuring grid, a dimension line, and corner registration
+   * marks. They are the visual form of what the product actually does (measure
+   * a real thing, then plan it), which is why the motif is this and not a
+   * gradient. Seen out of context, the ruled grid plus a tick-ended dimension
+   * line should read as Cubitora.
+   *
+   * All of it is CSS gradients and inline SVG: no image requests, nothing to
+   * lay out late, nothing to shift.
+   */
+
+  /* Graph paper. A 6px fine rule inside a 48px major rule, warm not blue. */
+  .pk-rule-grid {
+    background-image:
+      linear-gradient(to right, rgb(15 95 82 / 0.10) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(15 95 82 / 0.10) 1px, transparent 1px),
+      linear-gradient(to right, rgb(15 95 82 / 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(15 95 82 / 0.045) 1px, transparent 1px);
+    background-size: 48px 48px, 48px 48px, 8px 8px, 8px 8px;
+  }
+
+  /* The same grid on the deep band, where it has to be light to be seen. */
+  .pk-rule-grid-dark {
+    background-image:
+      linear-gradient(to right, rgb(167 206 195 / 0.09) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(167 206 195 / 0.09) 1px, transparent 1px);
+    background-size: 48px 48px, 48px 48px;
+  }
+
+  /*
+   * A grid that fades out at the edges, so it reads as a drafting surface
+   * rather than a tiled background that someone forgot to stop.
+   */
+  .pk-rule-fade {
+    -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 40%, #000 35%, transparent 100%);
+    mask-image: radial-gradient(ellipse 90% 70% at 50% 40%, #000 35%, transparent 100%);
+  }
+
+  /*
+   * Corner registration marks, as on a drawing sheet.
+   *
+   * Inset rather than flush to the border: these cards clip their overflow, so
+   * marks hung outside the edge are simply invisible. Sitting just inside also
+   * reads more like a printed sheet than a decorative outline.
+   */
+  .pk-marks {
+    position: relative;
+  }
+  .pk-marks::before,
+  .pk-marks::after {
+    content: "";
+    position: absolute;
+    z-index: 1;
+    width: 0.625rem;
+    height: 0.625rem;
+    border-color: var(--color-brand);
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .pk-marks::before {
+    top: 0.4375rem;
+    left: 0.4375rem;
+    border-top: 1.5px solid;
+    border-left: 1.5px solid;
+  }
+  .pk-marks::after {
+    bottom: 0.4375rem;
+    right: 0.4375rem;
+    border-bottom: 1.5px solid;
+    border-right: 1.5px solid;
+  }
+
+  /* --------------------------------------------------------- motion -- */
+
+  /*
+   * Scroll reveal.
+   *
+   * The element is laid out at full size from the first paint and only opacity
+   * and transform change, so nothing here can move the page — this is a CLS
+   * budget the site has already paid for once and is not spending again.
+   *
+   * `data-revealed` is set by an IntersectionObserver; if the script never runs
+   * the `no-js` fallback below leaves everything visible, so content is never
+   * hostage to JavaScript.
+   */
+  .pk-reveal {
+    opacity: 0;
+    transform: translateY(0.75rem);
+    transition:
+      opacity 520ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--pk-delay, 0ms);
+    will-change: opacity, transform;
+  }
+  .pk-reveal[data-revealed="true"] {
+    opacity: 1;
+    transform: none;
+  }
+
+  /*
+   * A child that waits for its ancestor to be revealed, then follows it in.
+   *
+   * Separate from .pk-reveal because that one owns its own observer; this is
+   * for the common case of one observed section whose rows arrive in sequence
+   * — a list, a set of steps, the pages of the Project Pack. Set --pk-delay per
+   * item to space them.
+   */
+  .pk-stagger-item {
+    opacity: 0;
+    transform: translateY(0.625rem);
+    transition:
+      opacity 460ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 460ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--pk-delay, 0ms);
+  }
+  [data-revealed="true"] .pk-stagger-item {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* A drafting line drawing itself. */
+  @keyframes pk-draw {
+    from {
+      stroke-dashoffset: var(--pk-draw-length, 100);
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  .pk-draw {
+    stroke-dasharray: var(--pk-draw-length, 100);
+    stroke-dashoffset: var(--pk-draw-length, 100);
+  }
+  /*
+   * A line draws when its section is revealed — or immediately, inside a
+   * `.pk-drawn` ancestor, for the ones above the fold that are on screen
+   * before there is anything to scroll to. Without the second selector the
+   * hero diagram sat at full dash offset, which is to say invisible.
+   *
+   * The duration is a variable because the two uses want different speeds: a
+   * section rule drawing itself as you scroll can take its time, but the hero
+   * redraws on a click and has to keep up with the person doing the clicking.
+   */
+  [data-revealed="true"] .pk-draw,
+  .pk-drawn .pk-draw {
+    animation: pk-draw var(--pk-draw-duration, 900ms) cubic-bezier(0.65, 0, 0.35, 1)
+      var(--pk-delay, 0ms) forwards;
+  }
+
+  /*
+   * A figure being recalculated.
+   *
+   * Used when the hero switches project: every value that changed slides up
+   * into place, staggered so the panel reads as an instrument working through
+   * a calculation rather than a card being swapped out. Short and flat — the
+   * whole sequence lands inside ~700ms, because anything slower stops feeling
+   * like arithmetic and starts feeling like a transition.
+   */
+  @keyframes pk-swap {
+    from {
+      opacity: 0;
+      transform: translateY(0.3125rem);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .pk-swap {
+    animation: pk-swap 380ms cubic-bezier(0.22, 1, 0.36, 1) var(--pk-delay, 0ms) both;
+  }
+
+  /*
+   * Opacity only, for SVG text.
+   *
+   * `.pk-swap` translates by a rem value, which inside a viewBox is resolved in
+   * user units and scales with the drawing — a 5px nudge in CSS becomes a large
+   * jump in a 200-unit-wide diagram. The dimension labels just fade in behind
+   * the line that measures them.
+   */
+  @keyframes pk-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  .pk-fade-in {
+    animation: pk-fade 300ms ease-out var(--pk-delay, 0ms) both;
+  }
+
+  /*
+   * Reduced motion gets the finished state, not a missing one. The global rule
+   * in the base layer clamps duration to 0.01ms, which would otherwise leave a
+   * dashed line stuck at full offset — i.e. invisible.
+   */
+  @media (prefers-reduced-motion: reduce) {
+    .pk-reveal,
+    .pk-stagger-item {
+      opacity: 1;
+      transform: none;
+    }
+    .pk-draw {
+      stroke-dashoffset: 0;
+    }
+  }
+
   .pk-field {
     width: 100%;
     border-radius: 0.625rem;
@@ -173,20 +427,43 @@
     line-height: 1.25rem;
     padding: 0.6875rem 1.125rem;
     min-height: 2.75rem;
-    transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+    transition:
+      background-color 120ms ease,
+      color 120ms ease,
+      border-color 120ms ease,
+      transform 90ms ease,
+      box-shadow 120ms ease;
     cursor: pointer;
   }
   .pk-btn:disabled {
     opacity: 0.55;
     cursor: not-allowed;
   }
+  /*
+   * A press that actually presses. 1px is enough to feel deliberate on a mouse
+   * and, more importantly, gives a touch user feedback in the moment before
+   * navigation — the gap where a flat button feels broken.
+   */
+  .pk-btn:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pk-btn:active:not(:disabled) {
+      transform: none;
+    }
+  }
 
   .pk-btn-primary {
     background-color: var(--color-brand);
     color: #ffffff;
+    box-shadow: 0 1px 2px rgb(6 48 42 / 0.16);
   }
   .pk-btn-primary:hover:not(:disabled) {
     background-color: var(--color-brand-strong);
+    box-shadow: 0 4px 12px -3px rgb(6 48 42 / 0.32);
+  }
+  .pk-btn-primary:active:not(:disabled) {
+    box-shadow: 0 1px 1px rgb(6 48 42 / 0.2);
   }
 
   .pk-btn-secondary {

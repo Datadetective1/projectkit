@@ -11,7 +11,7 @@ export const paintProject: ProjectDefinition = {
   intro:
     "Enter a room and get the paintable wall area with doors and windows taken out, how much paint your chosen number of coats needs, and a shopping list that includes the bits people forget.",
   icon: "PaintRoller",
-  accent: "violet",
+  accent: "pigment",
   keywords: ["paint", "painting", "repaint", "bedroom", "wall", "primer", "gallons"],
 
   inputs: [

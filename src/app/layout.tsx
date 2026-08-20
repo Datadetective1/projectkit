@@ -39,6 +39,15 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} h-full`}>
       <body className="flex min-h-full flex-col">
+        {/*
+          Scroll-revealed sections start at opacity 0 and are shown by an
+          IntersectionObserver. With JavaScript off nobody sets that flag, so
+          without this the page would render as a series of blank bands. Content
+          is never allowed to be hostage to a decorative effect.
+        */}
+        <noscript>
+          <style>{`.pk-reveal,.pk-stagger-item{opacity:1!important;transform:none!important}.pk-draw{stroke-dashoffset:0!important}`}</style>
+        </noscript>
         <script
           type="application/ld+json"
           // Static, developer-authored JSON-LD — no user input reaches this.

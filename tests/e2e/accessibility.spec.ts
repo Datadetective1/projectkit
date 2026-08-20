@@ -29,12 +29,38 @@ function audit(page: Page) {
   ]);
 }
 
+/**
+ * Scan the page once it has stopped moving.
+ *
+ * The results panel fades its lines in over ~320ms. axe computes contrast from
+ * the element's *current* opacity, so scanning mid-fade measures a frame that
+ * is on its way to being legible and reports it as a contrast failure — which
+ * is why this failed only on the slower project, and only sometimes. WCAG
+ * applies to the state the page settles in, so wait for it.
+ *
+ * This waits for animations to finish, not for a fixed delay: a real
+ * regression — a colour that is genuinely too light — still fails, because the
+ * finished state is exactly what gets measured.
+ */
+async function scan(page: Page) {
+  await page
+    .waitForFunction(
+      () => document.getAnimations().every((animation) => animation.playState === "finished"),
+      undefined,
+      { timeout: 2_000 },
+    )
+    .catch(() => {
+      // A page with a genuinely infinite animation should still be audited.
+    });
+  return audit(page).analyze();
+}
+
 for (const target of PAGES) {
   test(`${target.name} has no automatically detectable accessibility violations`, async ({
     page,
   }) => {
     await page.goto(target.path);
-    const results = await audit(page).analyze();
+    const results = await scan(page);
 
     // Surface the rule and the offending markup, not just a count.
     const summary = results.violations.map((violation) => ({
@@ -53,7 +79,7 @@ test("the expanded planner options are accessible", async ({ page }) => {
   await page.getByRole("button", { name: "Customize estimate" }).click();
   await page.getByRole("button", { name: "How this was calculated" }).click();
 
-  const results = await audit(page).analyze();
+  const results = await scan(page);
   expect(results.violations.map((violation) => violation.id)).toEqual([]);
 });
 
@@ -62,7 +88,7 @@ test("the project pack is accessible", async ({ page }) => {
   await page.getByRole("button", { name: "Preview Project Pack" }).first().click();
   await expect(page).toHaveURL(/project-pack\//);
 
-  const results = await audit(page).analyze();
+  const results = await scan(page);
   expect(results.violations.map((violation) => violation.id)).toEqual([]);
 });
 
@@ -109,7 +135,7 @@ test("a planner in its error state is accessible", async ({ page }) => {
   // The error has to actually be showing, or this proves nothing.
   await expect(page.getByText(/must be|enter a/i).first()).toBeVisible();
 
-  const results = await audit(page).analyze();
+  const results = await scan(page);
   expect(results.violations.map((violation) => violation.id)).toEqual([]);
 });
 
@@ -117,7 +143,7 @@ test("the empty saved-projects state is accessible", async ({ page }) => {
   await page.goto("/my-projects");
   await expect(page.getByText(/no saved projects yet/i)).toBeVisible();
 
-  const results = await audit(page).analyze();
+  const results = await scan(page);
   expect(results.violations.map((violation) => violation.id)).toEqual([]);
 });
 
@@ -125,14 +151,14 @@ test("metric mode is accessible", async ({ page }) => {
   await page.goto("/concrete-calculator?units=metric");
   await page.getByRole("button", { name: "Customize estimate" }).click();
 
-  const results = await audit(page).analyze();
+  const results = await scan(page);
   expect(results.violations.map((violation) => violation.id)).toEqual([]);
 });
 
 test("the 404 page is accessible", async ({ page }) => {
   await page.goto("/no-such-page");
 
-  const results = await audit(page).analyze();
+  const results = await scan(page);
   expect(results.violations.map((violation) => violation.id)).toEqual([]);
 });
 

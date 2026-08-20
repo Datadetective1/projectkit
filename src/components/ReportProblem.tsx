@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { Flag } from "lucide-react";
 import { build, feedback, site } from "@/config/site";
 import { redactPathname } from "@/lib/analytics/redact";
@@ -32,14 +33,21 @@ export function ReportProblem({
   className?: string;
 }) {
   const [copied, setCopied] = useState(false);
+  /*
+   * `usePathname`, not `window.location`.
+   *
+   * Reading `window` during render made the server emit a mailto body without
+   * the page line and the client emit one with it, so React found mismatched
+   * hrefs and gave up hydrating this subtree — the first case its own hydration
+   * error lists. The router's pathname is identical on both sides.
+   */
+  const pathname = usePathname();
 
   const context = [
     projectType ? `Planner: ${projectType}` : undefined,
     system ? `Units: ${system === "us" ? "US customary" : "Metric"}` : undefined,
     `Build: ${build.id}`,
-    typeof window !== "undefined"
-      ? `Page: ${site.url}${redactPathname(window.location.pathname)}`
-      : undefined,
+    pathname ? `Page: ${site.url}${redactPathname(pathname)}` : undefined,
   ]
     .filter(Boolean)
     .join("\n");

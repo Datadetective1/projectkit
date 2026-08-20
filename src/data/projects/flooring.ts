@@ -31,7 +31,7 @@ export const flooringProject: ProjectDefinition = {
   intro:
     "Measure up to three areas at once and get the number of boxes to buy, how much will be left over, and what the job costs at your price. Waste allowance is adjustable because a diagonal layout is not a straight one.",
   icon: "Grid2x2",
-  accent: "emerald",
+  accent: "oak",
   keywords: ["flooring", "floor", "laminate", "vinyl", "lvp", "hardwood", "plank"],
 
   inputs: [

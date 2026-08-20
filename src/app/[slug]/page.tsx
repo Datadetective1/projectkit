@@ -10,6 +10,7 @@ import { FaqSection } from "@/components/ui/FaqSection";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { AdSlot } from "@/components/monetization/AdSlot";
 import { PlannerMethod } from "@/components/PlannerMethod";
+import { MaterialSwatch } from "@/components/brand/MaterialSwatch";
 import { getProject, projectSlugs, relatedProjects } from "@/data/projects";
 import { breadcrumbJsonLd, faqJsonLd, pageMetadata, webApplicationJsonLd } from "@/lib/seo";
 import { legal } from "@/config/site";
@@ -64,22 +65,45 @@ export default async function ProjectPage({
         ]}
       />
 
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-        <Breadcrumbs crumbs={crumbs} />
+      {/*
+        The planner's header, on drafting paper.
 
-        <header className="mt-5 max-w-3xl">
-          <p className="text-sm font-medium text-brand">{project.category}</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
-            {project.h1}
-          </h1>
-          <p className="pk-prose mt-3 text-base">{project.intro}</p>
-        </header>
+        The tool itself is deliberately left plain — it is where someone is
+        concentrating on numbers, and texture behind a form is noise. But
+        arriving from a homepage of ruled paper onto an unruled white page
+        breaks the thread, so the motif carries as far as the header and stops
+        at the form. A band of the project's own material sits under the
+        breadcrumbs, which is also the fastest way to know which planner you
+        are on.
+      */}
+      <div className="relative overflow-hidden border-b border-line bg-surface">
+        <div className="pk-rule-grid pk-rule-fade absolute inset-0" aria-hidden />
+        <MaterialSwatch
+          accent={project.accent}
+          id={`header-${project.slug}`}
+          scale={26}
+          className="absolute inset-x-0 top-0 h-1.5 w-full opacity-60"
+        />
 
-        <div className="mt-8">
-          <Suspense fallback={<PlannerSkeleton />}>
-            <ProjectPlanner slug={project.slug} />
-          </Suspense>
+        <div className="relative mx-auto max-w-6xl px-4 pb-9 pt-7 sm:px-6 sm:pb-11 sm:pt-8">
+          <Breadcrumbs crumbs={crumbs} />
+
+          <header className="mt-5 max-w-3xl">
+            <p className="font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-brand">
+              {project.category}
+            </p>
+            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+              {project.h1}
+            </h1>
+            <p className="pk-prose mt-3 text-base">{project.intro}</p>
+          </header>
         </div>
+      </div>
+
+      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+        <Suspense fallback={<PlannerSkeleton />}>
+          <ProjectPlanner slug={project.slug} />
+        </Suspense>
 
         {project.disclaimers?.length ? (
           <div className="mt-10 flex gap-3 rounded-[var(--radius-card)] border border-accent/25 bg-accent-soft p-5">
