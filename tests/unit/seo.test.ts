@@ -247,3 +247,67 @@ describe("crawler policy", () => {
     expect(robots.sitemap).toBe("https://www.cubitora.com/sitemap.xml");
   });
 });
+
+describe("preview deployments cannot claim to be production", () => {
+  const BASE = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...BASE };
+    vi.resetModules();
+  });
+
+  async function site(env: Record<string, string | undefined>) {
+    vi.resetModules();
+    process.env = { ...BASE, ...env };
+    return import("@/config/site");
+  }
+
+  it("trusts the deployment over the configured URL", async () => {
+    /*
+     * The regression this exists for: NEXT_PUBLIC_SITE_URL is set to the
+     * canonical www host and applies to every environment unless scoped in
+     * Vercel. A preview therefore reads its own site URL as production and, on
+     * host alone, served an open robots.txt — a crawlable duplicate of the real
+     * site. VERCEL_ENV comes from the deployment, so it cannot be talked out of.
+     */
+    const preview = await site({
+      NEXT_PUBLIC_SITE_URL: "https://www.cubitora.com",
+      NEXT_PUBLIC_VERCEL_ENV: "preview",
+    });
+    expect(preview.isProductionSite).toBe(false);
+
+    const dev = await site({
+      NEXT_PUBLIC_SITE_URL: "https://www.cubitora.com",
+      NEXT_PUBLIC_VERCEL_ENV: "development",
+    });
+    expect(dev.isProductionSite).toBe(false);
+  });
+
+  it("still recognises the real production deployment", async () => {
+    const production = await site({
+      NEXT_PUBLIC_SITE_URL: "https://www.cubitora.com",
+      NEXT_PUBLIC_VERCEL_ENV: "production",
+    });
+    expect(production.isProductionSite).toBe(true);
+  });
+
+  it("falls back to the host check off Vercel, where VERCEL_ENV does not exist", async () => {
+    const selfHosted = await site({
+      NEXT_PUBLIC_SITE_URL: "https://www.cubitora.com",
+      NEXT_PUBLIC_VERCEL_ENV: undefined,
+    });
+    expect(selfHosted.isProductionSite).toBe(true);
+  });
+
+  it("closes robots on a preview even when the URL says production", async () => {
+    vi.resetModules();
+    process.env = {
+      ...BASE,
+      NEXT_PUBLIC_SITE_URL: "https://www.cubitora.com",
+      NEXT_PUBLIC_VERCEL_ENV: "preview",
+    };
+    const robots = (await import("@/app/robots")).default();
+    expect(robots.rules).toEqual([{ userAgent: "*", disallow: "/" }]);
+    expect(robots.sitemap).toBeUndefined();
+  });
+});

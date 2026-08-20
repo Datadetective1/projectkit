@@ -88,6 +88,22 @@ export const site = {
  * robots "Disallow: /" and a noindex on every page.
  */
 export const isProductionSite = (() => {
+  /*
+   * The platform is authoritative when it is talking.
+   *
+   * NEXT_PUBLIC_SITE_URL is set to the canonical www host and applies to every
+   * environment unless it is scoped per-environment in Vercel — so a preview
+   * build reads its own site URL as production and, on host alone, concludes it
+   * *is* production. It then serves an open robots.txt: a byte-identical copy
+   * of the site, crawlable, pointing at the real one.
+   *
+   * VERCEL_ENV comes from the deployment rather than from configuration, so a
+   * preview cannot claim otherwise. Falls through to the host check off Vercel,
+   * where that variable does not exist.
+   */
+  const deployment = process.env.NEXT_PUBLIC_VERCEL_ENV?.trim();
+  if (deployment && deployment !== "production") return false;
+
   try {
     return PRODUCTION_HOSTS.includes(new URL(rawSiteUrl).host);
   } catch {
