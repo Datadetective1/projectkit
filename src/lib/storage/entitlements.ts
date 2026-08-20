@@ -1,4 +1,5 @@
 import { features } from "@/config/site";
+import { migrateStorageKey } from "@/lib/storage/migrateKey";
 
 /**
  * Project Pack entitlements.
@@ -9,7 +10,9 @@ import { features } from "@/config/site";
  * this module only remembers the answer.
  */
 
-const STORAGE_KEY = "projectkit.unlocks.v1";
+const STORAGE_KEY = "cubitora.unlocks.v1";
+/** Carried forward so a beta purchase is not lost to the rename. */
+const LEGACY_STORAGE_KEY = "projectkit.unlocks.v1";
 
 interface UnlockRecord {
   projectId: string;
@@ -20,6 +23,7 @@ interface UnlockRecord {
 function readAll(): UnlockRecord[] {
   try {
     if (typeof window === "undefined") return [];
+    migrateStorageKey(LEGACY_STORAGE_KEY, STORAGE_KEY);
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);

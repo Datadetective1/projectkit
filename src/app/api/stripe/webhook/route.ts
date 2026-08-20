@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 /**
  * Stripe webhook receiver.
  *
- * ProjectKit has no accounts and no server-side order table, so this endpoint
+ * Cubitora has no accounts and no server-side order table, so this endpoint
  * exists to verify signatures and log fulfilment — the actual unlock is granted
  * in the browser after `/api/checkout/verify` confirms the session with Stripe.
  * The extension point is here for when accounts arrive.

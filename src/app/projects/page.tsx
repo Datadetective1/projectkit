@@ -7,7 +7,7 @@ import { breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 export const metadata = pageMetadata({
   title: "All Project Planners",
   description:
-    "Every ProjectKit planner: concrete, fence, paint, flooring, mulch, gravel, drywall, tile, deck, and sod. Quantities, costs, and shopping lists.",
+    "Every Cubitora planner: concrete, fence, paint, flooring, mulch, gravel, drywall, tile, deck, and sod. Quantities, costs, and shopping lists.",
   path: "/projects",
 });
 

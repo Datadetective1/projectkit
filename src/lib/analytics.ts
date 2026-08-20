@@ -156,7 +156,7 @@ export function trackPageView(path: string): void {
      * Google. Passing a redacted absolute URL overrides that.
      *
      * `page_referrer` is left alone. It is the previous *site*, not our own
-     * URL, so it carries no ProjectKit user input.
+     * URL, so it carries no Cubitora user input.
      */
     gtag("event", "page_view", {
       page_path: redactPathname(path),

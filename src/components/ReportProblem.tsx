@@ -58,7 +58,7 @@ export function ReportProblem({
   const href = feedback.url
     ? feedback.url
     : `mailto:${feedback.email}?subject=${encodeURIComponent(
-        `ProjectKit estimate report${projectType ? ` — ${projectType}` : ""}`,
+        `Cubitora estimate report${projectType ? ` — ${projectType}` : ""}`,
       )}&body=${encodeURIComponent(body)}`;
 
   async function copyContext() {

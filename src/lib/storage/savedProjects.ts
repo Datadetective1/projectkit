@@ -1,3 +1,4 @@
+import { migrateStorageKey } from "@/lib/storage/migrateKey";
 import type { UnitSystem } from "@/lib/units";
 import type { InputValues } from "@/types/project";
 
@@ -9,7 +10,15 @@ import type { InputValues } from "@/types/project";
  * throws; a storage failure degrades to "no saved projects".
  */
 
-const STORAGE_KEY = "projectkit.projects.v1";
+const STORAGE_KEY = "cubitora.projects.v1";
+/**
+ * The Cubitora-era key. Beta testers have real work under it, so it is copied
+ * forward on first read rather than abandoned. See storage/migrateKey.ts.
+ */
+const LEGACY_STORAGE_KEY = "projectkit.projects.v1";
+
+/** Fired after any write, so open tabs and the list component stay in sync. */
+export const PROJECTS_CHANGED_EVENT = "cubitora:projects-changed";
 
 export interface SavedProject {
   id: string;
@@ -69,6 +78,7 @@ function normalise(project: SavedProject): SavedProject {
 export function listProjects(): SavedProject[] {
   try {
     if (!isStorageAvailable()) return [];
+    migrateStorageKey(LEGACY_STORAGE_KEY, STORAGE_KEY);
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return [];
     const parsed: unknown = JSON.parse(raw);
@@ -86,7 +96,7 @@ function writeAll(projects: SavedProject[]): boolean {
   try {
     if (!isStorageAvailable()) return false;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
-    window.dispatchEvent(new CustomEvent("projectkit:projects-changed"));
+    window.dispatchEvent(new CustomEvent(PROJECTS_CHANGED_EVENT));
     return true;
   } catch {
     return false;

@@ -39,7 +39,7 @@ export default function HomePage() {
             What are you trying to build?
           </h1>
           <p className="pk-prose mx-auto mt-4 max-w-xl text-base sm:text-lg">
-            Describe your project in plain English. ProjectKit works out the quantities, the cost,
+            Describe your project in plain English. Cubitora works out the quantities, the cost,
             the shopping list, and the plan.
           </p>
 
@@ -166,7 +166,7 @@ export default function HomePage() {
               Not just a number
             </h2>
             <p className="pk-prose mt-3 max-w-prose">
-              A calculator tells you the volume. ProjectKit tells you what to order, what it costs,
+              A calculator tells you the volume. Cubitora tells you what to order, what it costs,
               what else you need, and what order to do it in — then hands you a document you can
               take to the store.
             </p>
@@ -228,7 +228,7 @@ export default function HomePage() {
   );
 }
 
-/** A static, honest sample of real ProjectKit output for a 20 × 16 patio. */
+/** A static, honest sample of real Cubitora output for a 20 × 16 patio. */
 function ExampleResultCard() {
   return (
     <div className="pk-card overflow-hidden">
@@ -255,7 +255,7 @@ function ExampleResultCard() {
         ))}
       </dl>
       <p className="border-t border-line px-5 py-3 text-xs text-ink-subtle">
-        Example output for a 20 × 16 ft patio at 4 in thick, using ProjectKit planning prices.
+        Example output for a 20 × 16 ft patio at 4 in thick, using Cubitora planning prices.
       </p>
     </div>
   );

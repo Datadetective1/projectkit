@@ -9,7 +9,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata = pageMetadata({
   title: "Plan your project",
-  description: "Describe your project and ProjectKit routes you to the right planner.",
+  description: "Describe your project and Cubitora routes you to the right planner.",
   path: "/plan",
   index: false,
 });

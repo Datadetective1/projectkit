@@ -1,7 +1,7 @@
 /**
  * URL redaction for analytics.
  *
- * Almost every query parameter ProjectKit puts in a URL is something the user
+ * Almost every query parameter Cubitora puts in a URL is something the user
  * typed — slab dimensions, room counts, prices, a natural-language description,
  * a saved-project id, a Stripe session id. None of it belongs in an analytics
  * pipeline: it is user data, it tells us nothing a route name doesn't, and it
@@ -20,7 +20,7 @@
  *
  * - `utm_*`, `ref`, `gclid`, `fbclid` — campaign attribution, set by the
  *   referring site rather than by the user.
- * - `from` — ProjectKit's own marker for "arrived via the natural-language
+ * - `from` — Cubitora's own marker for "arrived via the natural-language
  *   router". A fixed token (`nl`), not user input, and genuinely useful.
  */
 const ALLOWED_PARAMS = new Set(["ref", "gclid", "fbclid", "from"]);

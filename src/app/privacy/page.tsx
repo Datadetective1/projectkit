@@ -5,7 +5,7 @@ import { legal, site } from "@/config/site";
 
 export const metadata = pageMetadata({
   title: "Privacy Policy",
-  description: "What ProjectKit stores, what it does not, and where your project data lives.",
+  description: "What Cubitora stores, what it does not, and where your project data lives.",
   path: "/privacy",
 });
 
@@ -13,7 +13,7 @@ export default function PrivacyPage() {
   return (
     <ProsePage
       title="Privacy policy"
-      intro="ProjectKit has no accounts and keeps your projects in your own browser."
+      intro="Cubitora has no accounts and keeps your projects in your own browser."
       updated={legal.lastUpdated}
       crumbs={[
         { name: "Home", path: "/" },
@@ -65,7 +65,7 @@ export default function PrivacyPage() {
         <h3>Payments</h3>
         <p>
           If you purchase a Project Pack, payment is handled entirely by Stripe. Card details are
-          entered on Stripe&apos;s systems and never reach ProjectKit — we never see, receive, or
+          entered on Stripe&apos;s systems and never reach Cubitora — we never see, receive, or
           store a card number. We receive only a session reference confirming whether a payment
           succeeded. Stripe&apos;s own privacy policy governs the data they collect.
         </p>
@@ -90,7 +90,7 @@ export default function PrivacyPage() {
           none is set, no Google script is loaded at all.
         </p>
         <p>
-          Whichever is running, the page address is stripped before it is sent. ProjectKit puts your
+          Whichever is running, the page address is stripped before it is sent. Cubitora puts your
           measurements, prices, natural-language description, saved-project identifier, and Stripe
           session identifier in the URL, and none of those leave your browser: only the route and a
           short list of campaign parameters survive. A saved project is reported as
@@ -114,7 +114,7 @@ export default function PrivacyPage() {
       <section>
         <h2>Advertising and affiliate links</h2>
         <p>
-          ProjectKit may display advertising and may earn a commission when you follow a link to a
+          Cubitora may display advertising and may earn a commission when you follow a link to a
           retailer and make a purchase. Affiliate links are marked. Advertising and affiliate
           partners set their own cookies and are governed by their own privacy policies. Where
           advertising is not configured on a deployment, no advertising code is loaded.
@@ -124,7 +124,7 @@ export default function PrivacyPage() {
       <section>
         <h2>Cookies and local storage</h2>
         <p>
-          ProjectKit itself does not set tracking cookies. It uses browser local storage for your
+          Cubitora itself does not set tracking cookies. It uses browser local storage for your
           saved projects and to remember that a Project Pack has been unlocked. Third-party
           analytics or advertising, where enabled, may set their own cookies.
         </p>
@@ -133,7 +133,7 @@ export default function PrivacyPage() {
       <section>
         <h2>Children</h2>
         <p>
-          ProjectKit is intended for adults planning home improvement work and is not directed at
+          Cubitora is intended for adults planning home improvement work and is not directed at
           children.
         </p>
       </section>
@@ -142,7 +142,7 @@ export default function PrivacyPage() {
         <h2>Your choices</h2>
         <ul>
           <li>Delete saved projects individually from My projects, or clear your browser&apos;s site data to remove all of them.</li>
-          <li>Use ProjectKit without ever typing a description into the natural-language box — every planner works directly.</li>
+          <li>Use Cubitora without ever typing a description into the natural-language box — every planner works directly.</li>
           <li>Use browser or extension-level controls to block analytics and advertising.</li>
         </ul>
       </section>

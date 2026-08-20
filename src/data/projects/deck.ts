@@ -228,7 +228,7 @@ export const deckProject: ProjectDefinition = {
         "Usually yes, particularly for anything raised or attached to the house. Permits exist because deck collapses are almost always a ledger or footing failure. Check with your local building department before buying material.",
     },
     {
-      question: "Can ProjectKit design my deck structure?",
+      question: "Can Cubitora design my deck structure?",
       answer:
         "No, and it should not try to. Joist spans, beam sizes, post spacing, and footing depth depend on load, lumber species, soil, and frost line. This planner estimates material quantities for budgeting — the structural design needs a span table, a designer, or your building department.",
     },

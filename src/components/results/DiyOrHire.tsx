@@ -126,9 +126,9 @@ export function DiyOrHire({
       </ul>
 
       <p className="mt-4 text-xs text-ink-subtle">
-        ProjectKit does not estimate labour rates. Comparison uses only the quote you enter and the
+        Cubitora does not estimate labour rates. Comparison uses only the quote you enter and the
         material cost above.
-        {features.contractorLeads ? "" : " Contractor matching is not part of ProjectKit today."}
+        {features.contractorLeads ? "" : " Contractor matching is not part of Cubitora today."}
       </p>
     </section>
   );

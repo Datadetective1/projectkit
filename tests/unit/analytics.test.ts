@@ -5,7 +5,7 @@ import {
   redactUrl,
 } from "@/lib/analytics/redact";
 
-const ORIGIN = "https://projectkit-beta.vercel.app";
+const ORIGIN = "https://cubitora.com";
 
 /**
  * These are privacy tests, not formatting tests. Every case below is a real URL

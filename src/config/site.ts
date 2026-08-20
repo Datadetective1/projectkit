@@ -5,23 +5,41 @@
  * here so it never has to be hunted down across the component tree.
  */
 
+/** The permanent public domain. Canonical URLs resolve here in production. */
+const CANONICAL_DOMAIN = "cubitora.com";
+
 /**
  * The site's own origin, used for canonical URLs, Open Graph tags, the sitemap,
  * and Stripe redirects.
  *
- * Resolution order:
- *   1. NEXT_PUBLIC_SITE_URL — set this once a real domain is attached.
- *   2. Vercel's own production domain, exposed automatically on every build, so
- *      a fresh deployment has correct canonicals with nothing to configure.
- *   3. localhost, for development.
+ * Environment-aware on purpose. Hardcoding the production domain would make
+ * every preview deployment claim to be cubitora.com — which breaks preview
+ * testing and, worse, invites search engines to index a preview as the real
+ * thing. Resolution order:
+ *
+ *   1. NEXT_PUBLIC_SITE_URL — an explicit override always wins.
+ *   2. Production on Vercel → the canonical domain, so production is correct
+ *      with nothing configured.
+ *   3. A preview deployment → its own URL, so previews are self-consistent and
+ *      never claim to be production.
+ *   4. localhost, for development.
  */
 function resolveSiteUrl(): string {
   const explicit = process.env.NEXT_PUBLIC_SITE_URL?.trim();
   if (explicit) return explicit.replace(/\/+$/, "");
 
-  // Vercel supplies this without a scheme (e.g. "projectkit.vercel.app").
-  const vercelDomain = process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL?.trim();
-  if (vercelDomain) return `https://${vercelDomain.replace(/\/+$/, "")}`;
+  if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {
+    return `https://${CANONICAL_DOMAIN}`;
+  }
+
+  // Vercel supplies these without a scheme (e.g. "cubitora-abc123.vercel.app").
+  const previewDomain =
+    process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL?.trim() ||
+    process.env.NEXT_PUBLIC_VERCEL_URL?.trim();
+  if (previewDomain) return `https://${previewDomain.replace(/\/+$/, "")}`;
+
+  const productionDomain = process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL?.trim();
+  if (productionDomain) return `https://${productionDomain.replace(/\/+$/, "")}`;
 
   return "http://localhost:3000";
 }
@@ -29,16 +47,26 @@ function resolveSiteUrl(): string {
 const rawSiteUrl = resolveSiteUrl();
 
 export const site = {
-  name: "ProjectKit",
-  tagline: "Tell us what you're building. We'll figure out everything you need.",
+  name: "Cubitora",
+  domain: CANONICAL_DOMAIN,
+  /** The headline promise. Short enough to sit under the wordmark. */
+  tagline: "Plan the project. Know what you need.",
+  /** The invitation, used where the product asks for input. */
+  prompt: "Tell us what you're building.",
   supportingLine:
-    "Calculate materials, estimate costs, create a shopping list, and plan your project in minutes.",
+    "Calculate materials, estimate costs, build a shopping list, and create a complete project plan.",
   description:
-    "ProjectKit turns a home project into material quantities, estimated costs, a shopping list, and a printable project plan.",
+    "Cubitora turns a home project into material quantities, estimated costs, a shopping list, and a printable project plan.",
   url: rawSiteUrl,
   locale: "en_US",
-  contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "hello@projectkit.example",
+  contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL || "hello@cubitora.com",
 } as const;
+
+/**
+ * True when this build is serving the real domain rather than a preview.
+ * Used to keep previews out of the index.
+ */
+export const isProductionSite = rawSiteUrl === `https://${CANONICAL_DOMAIN}`;
 
 /**
  * The build this page was rendered from.
@@ -78,7 +106,7 @@ function resolvePriceCents(): number {
 export const projectPack = {
   priceCents: resolvePriceCents(),
   currency: (process.env.NEXT_PUBLIC_PROJECT_PACK_CURRENCY || "usd").toLowerCase(),
-  name: "ProjectKit Project Pack",
+  name: "Cubitora Project Pack",
 } as const;
 
 export function formatPackPrice(): string {
@@ -173,12 +201,12 @@ export const adsConfig = {
 } as const;
 
 /**
- * Affiliate destinations. These are configurable placeholders — ProjectKit does
+ * Affiliate destinations. These are configurable placeholders — Cubitora does
  * not claim or imply any retailer relationship until a real ID is supplied.
  */
 export const affiliateConfig = {
   enabled: features.affiliate,
-  /** e.g. "https://www.example-retailer.com/search?q={query}&tag=projectkit-20" */
+  /** e.g. "https://www.example-retailer.com/search?q={query}&tag=cubitora-20" */
   searchUrlTemplate:
     process.env.NEXT_PUBLIC_AFFILIATE_SEARCH_URL ||
     "https://www.google.com/search?q={query}",
@@ -194,7 +222,7 @@ export function affiliateSearchUrl(query: string): string {
 
 export const legal = {
   planningDisclaimer:
-    "ProjectKit provides planning estimates only. Actual requirements, costs, installation methods, structural requirements, permits, safety requirements, and building codes vary. Verify critical specifications before purchasing materials or beginning work.",
+    "Cubitora provides planning estimates only. Actual requirements, costs, installation methods, structural requirements, permits, safety requirements, and building codes vary. Verify critical specifications before purchasing materials or beginning work.",
   shortDisclaimer:
     "Planning estimate only — verify quantities and local requirements before you buy.",
   lastUpdated: "2026-08-18",

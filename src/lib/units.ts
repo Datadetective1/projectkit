@@ -1,7 +1,7 @@
 /**
  * Unit engine.
  *
- * ProjectKit runs every calculation in a single canonical system (US customary:
+ * Cubitora runs every calculation in a single canonical system (US customary:
  * feet, inches, square feet, cubic feet/yards, short tons). Metric values are
  * converted to canonical on the way in and back to metric on the way out, so a
  * formula is only ever written once and only ever tested once.

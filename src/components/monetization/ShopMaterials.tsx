@@ -43,7 +43,7 @@ export function ShopMaterials({
       </a>
       {affiliateConfig.partnerLabel ? (
         <p className="mt-2 text-xs text-ink-subtle">
-          {affiliateConfig.partnerLabel} — ProjectKit may earn a commission from purchases made
+          {affiliateConfig.partnerLabel} — Cubitora may earn a commission from purchases made
           through this link.
         </p>
       ) : null}

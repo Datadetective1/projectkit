@@ -373,7 +373,7 @@ function HowCalculatedCard({ result }: { result: CalculationResult }) {
           </dl>
 
           <p className="mt-5 text-xs text-ink-subtle">
-            Prices are your own entries or ProjectKit planning defaults, not live retail prices.
+            Prices are your own entries or Cubitora planning defaults, not live retail prices.
           </p>
         </div>
       ) : null}

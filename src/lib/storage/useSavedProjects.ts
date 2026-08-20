@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { listProjects, type SavedProject } from "./savedProjects";
+import { listProjects, PROJECTS_CHANGED_EVENT, type SavedProject } from "./savedProjects";
 
 /**
  * localStorage as a React external store.
@@ -26,11 +26,11 @@ function subscribe(onChange: () => void): () => void {
     invalidate();
     onChange();
   };
-  window.addEventListener("projectkit:projects-changed", handler);
+  window.addEventListener(PROJECTS_CHANGED_EVENT, handler);
   // Keeps other tabs in step.
   window.addEventListener("storage", handler);
   return () => {
-    window.removeEventListener("projectkit:projects-changed", handler);
+    window.removeEventListener(PROJECTS_CHANGED_EVENT, handler);
     window.removeEventListener("storage", handler);
   };
 }
