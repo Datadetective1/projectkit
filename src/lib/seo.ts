@@ -110,6 +110,32 @@ export function webApplicationJsonLd(input: {
   };
 }
 
+/**
+ * The `WebSite` entity, emitted once on the homepage.
+ *
+ * This is the documented mechanism by which Google decides what to *call* a
+ * site in a result — the bold name above the URL. It matters here more than it
+ * normally would: the domain changed, and until something states the name,
+ * search engines have nothing to go on but a hostname they have never seen.
+ *
+ * Deliberately no `SearchAction`. The sitelinks search box needs a URL that
+ * returns results for a query, and the only thing resembling one here is
+ * `/plan?q=…`, which is a person's typed description and is disallowed in
+ * robots.txt. Declaring it would advertise a route we have asked crawlers not
+ * to visit.
+ */
+export function webSiteJsonLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: site.name,
+    url: site.url,
+    description: site.description,
+    inLanguage: "en-US",
+    publisher: { "@type": "Organization", name: site.name, url: site.url },
+  };
+}
+
 export function organizationJsonLd() {
   return {
     "@context": "https://schema.org",

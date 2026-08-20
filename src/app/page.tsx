@@ -5,7 +5,7 @@ import { HeroPreview } from "@/components/home/HeroPreview";
 import { PackPreview } from "@/components/home/PackPreview";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { projects } from "@/data/projects";
-import { pageMetadata, webApplicationJsonLd } from "@/lib/seo";
+import { pageMetadata, webApplicationJsonLd, webSiteJsonLd } from "@/lib/seo";
 import { site } from "@/config/site";
 
 export const metadata = pageMetadata({
@@ -27,11 +27,14 @@ export default function HomePage() {
   return (
     <>
       <JsonLd
-        data={webApplicationJsonLd({
-          name: site.name,
-          description: site.description,
-          path: "/",
-        })}
+        data={[
+          webSiteJsonLd(),
+          webApplicationJsonLd({
+            name: site.name,
+            description: site.description,
+            path: "/",
+          }),
+        ]}
       />
 
       {/* ------------------------------------------------------------ hero */}

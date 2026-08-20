@@ -311,3 +311,85 @@ describe("preview deployments cannot claim to be production", () => {
     expect(robots.sitemap).toBeUndefined();
   });
 });
+
+describe("llms.txt", () => {
+  const BASE = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...BASE };
+    vi.resetModules();
+  });
+
+  async function llmsTxt(env: Record<string, string | undefined> = {}) {
+    vi.resetModules();
+    process.env = { ...BASE, NEXT_PUBLIC_SITE_URL: "https://www.cubitora.com", ...env };
+    const { GET } = await import("@/app/llms.txt/route");
+    const response = GET();
+    return { response, body: await response.text() };
+  }
+
+  /** Every URL in the file, with sentence punctuation trimmed off the end. */
+  function urlsIn(body: string) {
+    return (body.match(/https?:\/\/[^\s)]+/g) ?? []).map((url) => url.replace(/[.,;:]+$/, ""));
+  }
+
+  it("lists every planner that actually exists", async () => {
+    // Generated from the project definitions rather than written out. A
+    // hand-maintained list starts lying the first time a planner is renamed.
+    const { body } = await llmsTxt();
+    const { projects } = await import("@/data/projects");
+
+    for (const project of projects) {
+      expect(body, project.slug).toContain(`https://www.cubitora.com/${project.slug}`);
+      expect(body, project.name).toContain(project.name);
+    }
+  });
+
+  it("points only at the canonical www host", async () => {
+    const { body } = await llmsTxt();
+    const urls = urlsIn(body);
+
+    expect(urls.length).toBeGreaterThan(10);
+    for (const url of urls) {
+      expect(new URL(url).host, url).toBe("www.cubitora.com");
+    }
+  });
+
+  it("names no user-specific route as a destination", async () => {
+    /*
+     * /plan, /my-projects and /project-pack/<id> are excluded from crawling.
+     * The one mention of them here is the sentence saying so — they must never
+     * appear as a linked URL.
+     */
+    const { body } = await llmsTxt();
+
+    for (const url of urlsIn(body)) {
+      const path = new URL(url).pathname;
+      for (const prefix of ["/api/", "/project-pack/", "/my-projects", "/plan"]) {
+        expect(path.startsWith(prefix), `${path} is not crawlable`).toBe(false);
+      }
+    }
+  });
+
+  it("states that the calculations are arithmetic, not model output", async () => {
+    // The whole reason to publish this file: an answer engine reading it should
+    // not describe the numbers as AI-generated, because they are not.
+    const { body } = await llmsTxt();
+    expect(body).toMatch(/deterministic/i);
+    // Line-wrapped prose, so match across the wrap rather than on one line.
+    expect(body.replace(/\s+/g, " ")).toMatch(/never performs a calculation/i);
+  });
+
+  it("is plain text, and says so", async () => {
+    const { response } = await llmsTxt();
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toMatch(/^text\/plain/);
+  });
+
+  it("does not exist on a preview deployment", async () => {
+    // A preview advertising itself as the canonical description of the product
+    // is exactly the duplicate the noindex rules exist to prevent.
+    const { response } = await llmsTxt({ NEXT_PUBLIC_VERCEL_ENV: "preview" });
+    expect(response.status).toBe(404);
+  });
+});
