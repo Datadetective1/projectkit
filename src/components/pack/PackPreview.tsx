@@ -23,7 +23,7 @@ export function PackPreview({ id }: { id: string }) {
   const unlocked = purchased || isPackUnlocked(id);
 
   useEffect(() => {
-    if (slug) track("project_pack_previewed", { projectType: slug });
+    if (slug) track("project_pack_opened", { projectType: slug });
   }, [slug]);
 
   // Returning from Stripe checkout: verify the session before unlocking.

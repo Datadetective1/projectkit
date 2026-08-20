@@ -34,7 +34,7 @@ export function ShopMaterials({
         href={affiliateSearchUrl(query)}
         target="_blank"
         rel="noopener noreferrer sponsored"
-        onClick={() => track("affiliate_clicked", { projectType, placement })}
+        onClick={() => track("retailer_click", { projectType, placement })}
         className={`pk-btn ${variant === "primary" ? "pk-btn-primary" : "pk-btn-secondary"}`}
       >
         {label}
