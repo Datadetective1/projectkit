@@ -2,12 +2,16 @@ import { ClipboardList, Hammer, Lightbulb, Ruler, ShoppingCart } from "lucide-re
 import { Reveal } from "@/components/motion/Reveal";
 
 /**
- * Idea → Measure → Plan → Buy → Build.
+ * Describe → Measure → Calculate → Buy → Build.
  *
  * The five words the whole product is organised around, stated once, as a
  * measured drawing. This replaced three identical "How it works" cards — which
  * said the same thing but looked like every other three-card feature row, and
  * so read as boilerplate to be skipped.
+ *
+ * Compare is the sixth step in the story and deliberately not a sixth tick
+ * here: it is the section immediately below, where the ready-mix-versus-bags
+ * figures make the argument far better than a word in a row of five could.
  *
  * Drawn as a dimension line with the stages ticked along it, because that is
  * the site's motif and because the sequence genuinely is a progression: the
@@ -17,33 +21,32 @@ import { Reveal } from "@/components/motion/Reveal";
  * the strip scrolls into view; each stage follows it in.
  */
 
+/**
+ * Five words and five fragments.
+ *
+ * They were full sentences, which is one sentence more than a stage in a
+ * five-across strip can hold before it stops being scannable — the whole point
+ * of this section is that you get the shape of the product without reading it.
+ * The label carries the meaning; the fragment underneath only has to stop the
+ * label being ambiguous.
+ */
 const STAGES = [
-  {
-    icon: Lightbulb,
-    label: "Idea",
-    body: "Describe the project in a sentence, or pick a planner.",
-  },
-  {
-    icon: Ruler,
-    label: "Measure",
-    body: "Enter the dimensions you can take with a tape.",
-  },
-  {
-    icon: ClipboardList,
-    label: "Plan",
-    body: "Quantities with waste, rounded to what is actually sold.",
-  },
-  {
-    icon: ShoppingCart,
-    label: "Buy",
-    body: "A costed shopping list, including the bits people forget.",
-  },
-  {
-    icon: Hammer,
-    label: "Build",
-    body: "A sequence to work through, on paper or on your phone.",
-  },
+  { icon: Lightbulb, label: "Describe", body: "A sentence, or pick a planner." },
+  { icon: Ruler, label: "Measure", body: "Dimensions you can take with a tape." },
+  { icon: ClipboardList, label: "Calculate", body: "Waste and purchase rounding applied." },
+  { icon: ShoppingCart, label: "Buy", body: "A costed list, including what people forget." },
+  { icon: Hammer, label: "Build", body: "The order to work through." },
 ];
+
+/**
+ * The rule draws across the strip, and each stage arrives as the line reaches
+ * it — so the sequence is legible as a sequence rather than as five things
+ * fading in near each other. These delays are the line's arrival times at each
+ * stage, which is why they are spaced by the draw duration and not by taste.
+ */
+const LINE_DELAY = 120;
+const LINE_MS = 900;
+const stageDelay = (index: number) => LINE_DELAY + (LINE_MS / (STAGES.length - 1)) * index * 0.9;
 
 export function ProcessStrip() {
   return (
@@ -92,7 +95,7 @@ export function ProcessStrip() {
                 >
                   <line
                     className="pk-draw"
-                    style={{ "--pk-draw-length": 1000, "--pk-delay": "120ms" } as React.CSSProperties}
+                    style={{ "--pk-draw-length": 1000, "--pk-delay": `${LINE_DELAY}ms` } as React.CSSProperties}
                     x1="0"
                     y1="1"
                     x2="1000"
@@ -109,7 +112,7 @@ export function ProcessStrip() {
                 <li
                   key={stage.label}
                   className="pk-stagger-item relative"
-                  style={{ "--pk-delay": `${160 + index * 90}ms` } as React.CSSProperties}
+                  style={{ "--pk-delay": `${Math.round(stageDelay(index))}ms` } as React.CSSProperties}
                 >
                   <span className="relative grid h-11 w-11 place-items-center rounded-xl border border-brand/20 bg-surface text-brand shadow-sm">
                     <stage.icon className="h-5 w-5" aria-hidden />

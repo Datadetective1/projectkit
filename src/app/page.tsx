@@ -75,7 +75,7 @@ export default function HomePage() {
       <section className="relative border-b border-line bg-surface">
         <div className="pk-rule-grid pk-rule-fade absolute inset-0" aria-hidden />
 
-        <div className="relative mx-auto grid max-w-6xl gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-14 lg:py-20">
+        <div className="relative mx-auto grid max-w-6xl gap-8 px-4 py-9 sm:gap-10 sm:px-6 sm:py-16 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-14 lg:py-20">
           <div>
             {/*
               Balance is switched off here. The two lines are already written to
@@ -124,9 +124,17 @@ export default function HomePage() {
               <p className="font-mono text-[0.625rem] uppercase tracking-[0.16em] text-ink-subtle">
                 Try
               </p>
+              {/*
+                Four examples on a wide screen, two on a phone.
+
+                Each one wraps to its own line at 390px, and four of them pushed
+                the demonstration panel — the whole reason the hero works — a
+                full screen further down. The other two stay in the markup for
+                crawlers and are shown as soon as there is room.
+              */}
               <ul className="mt-2 flex flex-wrap gap-2">
-                {EXAMPLE_PROMPTS.map((prompt) => (
-                  <li key={prompt}>
+                {EXAMPLE_PROMPTS.map((prompt, index) => (
+                  <li key={prompt} className={index > 1 ? "hidden sm:block" : undefined}>
                     <Link
                       href={`/plan?q=${encodeURIComponent(prompt)}`}
                       className="inline-block rounded-full border border-line-strong bg-surface px-3 py-1.5 text-sm text-ink-muted transition-colors hover:border-brand/40 hover:bg-brand-soft hover:text-brand-ink"

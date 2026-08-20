@@ -35,6 +35,26 @@ import type { HeroProject } from "@/lib/home/heroData";
  * illustrative, because a planning tool that fakes its own numbers has nothing
  * left to sell.
  */
+/**
+ * The recalculation, as one budget.
+ *
+ * Switching project should read as an instrument working through a
+ * calculation, not as a card being swapped: the footprint is drawn, the
+ * measurements come off it, the quantity resolves, and the price lands last —
+ * which is the order the arithmetic actually happens in.
+ *
+ * Everything finishes inside ~700ms. That ceiling is doing real work: below
+ * about 400ms the sequence is a flicker and reads as a glitch, and past 700ms
+ * a person who clicked "Deck" is waiting for a website to finish being
+ * decorative. The stages overlap rather than queue, so the whole thing is
+ * quicker than the sum of its parts.
+ */
+const DIAGRAM_MS = 480;
+const STAGE_DELAY = 90;
+const HEADLINE_DELAY = 150;
+const DECIDE_DELAY = 230;
+const COUNT_MS = 460;
+
 export function HeroShowcase({ projects }: { projects: HeroProject[] }) {
   const [activeSlug, setActiveSlug] = useState(projects[0]?.slug);
   const active = projects.find((project) => project.slug === activeSlug) ?? projects[0];
@@ -59,7 +79,13 @@ export function HeroShowcase({ projects }: { projects: HeroProject[] }) {
               aria-selected={selected}
               aria-controls="hero-panel"
               onClick={() => setActiveSlug(project.slug)}
-              className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
+              /*
+                44px tall on a phone. At 32 it cleared the WCAG minimum and
+                still missed under a thumb, which is the standard this actually
+                has to meet — it is the first thing anyone touches on the page.
+                Back to a compact chip once there is a pointer.
+              */
+              className={`min-h-11 rounded-full px-4 text-sm font-medium transition-colors sm:min-h-0 sm:px-3.5 sm:py-1.5 ${
                 selected
                   ? "bg-brand text-white"
                   : "text-ink-muted hover:bg-brand-soft hover:text-brand-ink"
@@ -75,6 +101,7 @@ export function HeroShowcase({ projects }: { projects: HeroProject[] }) {
         id="hero-panel"
         role="tabpanel"
         aria-label={`${active.name} example`}
+        style={{ "--pk-draw-duration": `${DIAGRAM_MS}ms` } as React.CSSProperties}
         className="pk-marks pk-drawn overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface shadow-[0_18px_44px_-28px_rgb(6_48_42_/_0.45)]"
       >
         {/* ------------------------------------------------------- idea */}
@@ -83,7 +110,10 @@ export function HeroShowcase({ projects }: { projects: HeroProject[] }) {
             You type
           </p>
           {/* Fixed height so switching projects does not nudge the layout. */}
-          <p className="mt-1 line-clamp-2 min-h-[2.75rem] text-[0.9375rem] leading-snug text-ink">
+          <p
+            key={`idea-${active.slug}`}
+            className="pk-swap mt-1 line-clamp-2 min-h-[2.75rem] text-[0.9375rem] leading-snug text-ink"
+          >
             &ldquo;{active.idea}&rdquo;
           </p>
         </div>
@@ -91,8 +121,15 @@ export function HeroShowcase({ projects }: { projects: HeroProject[] }) {
         {/* --------------------------------------------- measure + result */}
         <div className="grid grid-cols-[auto_1fr] items-center gap-4 px-5 pb-4 pt-4 sm:gap-5">
           {active.plan ? (
+            /*
+             * Keyed on the slug so the element is replaced rather than
+             * updated, which is what replays the stroke-dashoffset animation:
+             * the footprint is re-drawn line by line, and the two dimension
+             * annotations follow it in. It is the same drawing you would make
+             * on the back of an envelope, made again for the new project.
+             */
             <PlanDiagram
-              key={active.slug}
+              key={`plan-${active.slug}`}
               width={active.plan.width}
               depth={active.plan.depth}
               className="h-[6.25rem] w-[9.5rem] shrink-0 text-brand"
@@ -102,9 +139,9 @@ export function HeroShowcase({ projects }: { projects: HeroProject[] }) {
           <dl className="min-w-0">
             {active.stages.map((stage, index) => (
               <div
-                key={stage.label}
-                className="flex items-baseline justify-between gap-3 border-b border-line/70 py-1.5 last:border-0"
-                style={{ "--pk-delay": `${index * 60}ms` } as React.CSSProperties}
+                key={`${active.slug}-${stage.label}`}
+                className="pk-swap flex items-baseline justify-between gap-3 border-b border-line/70 py-1.5 last:border-0"
+                style={{ "--pk-delay": `${STAGE_DELAY + index * 55}ms` } as React.CSSProperties}
               >
                 <dt className="truncate text-[0.8125rem] text-ink-muted">{stage.label}</dt>
                 <dd className="shrink-0 font-mono text-[0.8125rem] font-medium tabular-nums text-ink">
@@ -123,33 +160,72 @@ export function HeroShowcase({ projects }: { projects: HeroProject[] }) {
           <p className="mt-1 flex items-baseline gap-1.5 text-[2.5rem] font-semibold leading-none tracking-tight text-brand-ink">
             {/* Keyed on the slug so switching replays the count. */}
             <CountUp
-              key={active.slug}
+              key={`headline-${active.slug}`}
               to={active.headline.value}
               decimals={active.headline.decimals}
-              duration={850}
+              duration={COUNT_MS}
+              delay={HEADLINE_DELAY}
             />
-            <span className="text-lg font-medium">{active.headline.unit}</span>
+            <span
+              key={`unit-${active.slug}`}
+              className="pk-swap text-lg font-medium"
+              style={{ "--pk-delay": `${HEADLINE_DELAY}ms` } as React.CSSProperties}
+            >
+              {active.headline.unit}
+            </span>
           </p>
-          <p className="mt-1.5 line-clamp-2 min-h-[2.5rem] text-sm leading-snug text-brand-ink/80">
+          <p
+            key={`sub-${active.slug}`}
+            className="pk-swap mt-1.5 line-clamp-2 min-h-[2.5rem] text-sm leading-snug text-brand-ink/80"
+            style={{ "--pk-delay": `${HEADLINE_DELAY + 60}ms` } as React.CSSProperties}
+          >
             {active.headline.label}
           </p>
         </div>
 
         {/* ------------------------------------------------------- decide */}
+        {/*
+          The three figures someone actually decides on. They arrive last and
+          together, which is the order the calculation happens in: measure,
+          work out, then price.
+        */}
         <div className="grid grid-cols-3 divide-x divide-line">
           <div className="px-4 py-3">
             <p className="text-lg font-semibold tabular-nums text-ink">
-              <CountUp key={`cost-${active.slug}`} to={active.cost} prefix="$" duration={850} />
+              <CountUp
+                key={`cost-${active.slug}`}
+                to={active.cost}
+                prefix="$"
+                duration={COUNT_MS}
+                delay={DECIDE_DELAY}
+              />
             </p>
             <p className="mt-0.5 text-[0.6875rem] leading-tight text-ink-muted">Materials</p>
           </div>
           <div className="px-4 py-3">
-            <p className="text-lg font-semibold tabular-nums text-ink">{active.materialCount}</p>
+            <p className="text-lg font-semibold tabular-nums text-ink">
+              <CountUp
+                key={`count-${active.slug}`}
+                to={active.materialCount}
+                duration={COUNT_MS}
+                delay={DECIDE_DELAY}
+              />
+            </p>
             <p className="mt-0.5 text-[0.6875rem] leading-tight text-ink-muted">Things to buy</p>
           </div>
           <div className="px-4 py-3">
-            <p className="truncate text-lg font-semibold text-ink">{active.difficulty}</p>
-            <p className="mt-0.5 truncate text-[0.6875rem] leading-tight text-ink-muted">
+            <p
+              key={`difficulty-${active.slug}`}
+              className="pk-swap truncate text-lg font-semibold text-ink"
+              style={{ "--pk-delay": `${DECIDE_DELAY}ms` } as React.CSSProperties}
+            >
+              {active.difficulty}
+            </p>
+            <p
+              key={`time-${active.slug}`}
+              className="pk-swap mt-0.5 truncate text-[0.6875rem] leading-tight text-ink-muted"
+              style={{ "--pk-delay": `${DECIDE_DELAY + 50}ms` } as React.CSSProperties}
+            >
               {active.time}
             </p>
           </div>

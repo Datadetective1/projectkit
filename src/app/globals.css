@@ -320,10 +320,58 @@
    * `.pk-drawn` ancestor, for the ones above the fold that are on screen
    * before there is anything to scroll to. Without the second selector the
    * hero diagram sat at full dash offset, which is to say invisible.
+   *
+   * The duration is a variable because the two uses want different speeds: a
+   * section rule drawing itself as you scroll can take its time, but the hero
+   * redraws on a click and has to keep up with the person doing the clicking.
    */
   [data-revealed="true"] .pk-draw,
   .pk-drawn .pk-draw {
-    animation: pk-draw 900ms cubic-bezier(0.65, 0, 0.35, 1) var(--pk-delay, 0ms) forwards;
+    animation: pk-draw var(--pk-draw-duration, 900ms) cubic-bezier(0.65, 0, 0.35, 1)
+      var(--pk-delay, 0ms) forwards;
+  }
+
+  /*
+   * A figure being recalculated.
+   *
+   * Used when the hero switches project: every value that changed slides up
+   * into place, staggered so the panel reads as an instrument working through
+   * a calculation rather than a card being swapped out. Short and flat — the
+   * whole sequence lands inside ~700ms, because anything slower stops feeling
+   * like arithmetic and starts feeling like a transition.
+   */
+  @keyframes pk-swap {
+    from {
+      opacity: 0;
+      transform: translateY(0.3125rem);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  .pk-swap {
+    animation: pk-swap 380ms cubic-bezier(0.22, 1, 0.36, 1) var(--pk-delay, 0ms) both;
+  }
+
+  /*
+   * Opacity only, for SVG text.
+   *
+   * `.pk-swap` translates by a rem value, which inside a viewBox is resolved in
+   * user units and scales with the drawing — a 5px nudge in CSS becomes a large
+   * jump in a 200-unit-wide diagram. The dimension labels just fade in behind
+   * the line that measures them.
+   */
+  @keyframes pk-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  .pk-fade-in {
+    animation: pk-fade 300ms ease-out var(--pk-delay, 0ms) both;
   }
 
   /*

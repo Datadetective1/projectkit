@@ -25,6 +25,19 @@ import { DimensionLine } from "@/components/brand/DimensionLine";
  * pretend otherwise.
  */
 
+/**
+ * The pack assembling itself.
+ *
+ * The sections arrive one at a time and the actions arrive last, once there is
+ * something to print — so the sequence reads as a document being put together
+ * rather than a list fading in. The cadence is deliberately slower than the
+ * hero's: the hero is answering a click and has to keep up, this is happening
+ * while someone scrolls past and can afford to be watched.
+ */
+const HEAD_DELAY = 200;
+const ROW_STEP = 95;
+const rowDelay = (index: number) => HEAD_DELAY + index * ROW_STEP;
+
 const SECTIONS: { name: string; detail: string }[] = [
   { name: "Project summary", detail: "What you are building, and the numbers behind it" },
   { name: "Materials", detail: "Every quantity, with waste and purchase rounding" },
@@ -52,10 +65,14 @@ export function PackShowcase() {
           >
             Leave with a Project Pack, not a number
           </h2>
+          {/*
+            The document beside this lists its seven sections by name as they
+            assemble. Repeating them in the paragraph was the copy describing
+            the picture the reader is already looking at.
+          */}
           <p className="mt-4 max-w-lg text-[0.9375rem] leading-relaxed text-brand-mist">
-            A calculator gives you a volume and stops. The pack is the document you actually use:
-            what to buy, what it costs, what else you need, and what order to do it in — on your
-            phone in the aisle, or printed and folded in a pocket.
+            A calculator gives you a volume and stops. This is the document you actually use — on
+            your phone in the aisle, or printed and folded in a pocket.
           </p>
 
           <ul className="mt-7 space-y-3">
@@ -117,7 +134,11 @@ export function PackShowcase() {
               <p className="mt-0.5 text-xs text-ink-subtle">
                 Outdoor &amp; Structural · Challenging · A full weekend with help
               </p>
-              <DimensionLine label="7 sections" className="mt-3 text-brand" delay={300} />
+              <DimensionLine
+                label={`${SECTIONS.length} sections`}
+                className="mt-3 text-brand"
+                delay={HEAD_DELAY - 120}
+              />
             </div>
 
             <ul className="mt-3 divide-y divide-line border-t border-line">
@@ -125,7 +146,7 @@ export function PackShowcase() {
                 <li
                   key={section.name}
                   className="pk-stagger-item flex items-baseline gap-3 px-5 py-2.5"
-                  style={{ "--pk-delay": `${240 + index * 70}ms` } as React.CSSProperties}
+                  style={{ "--pk-delay": `${rowDelay(index)}ms` } as React.CSSProperties}
                 >
                   <span className="w-5 shrink-0 font-mono text-[0.625rem] text-ink-subtle">
                     {String(index + 1).padStart(2, "0")}
@@ -146,7 +167,11 @@ export function PackShowcase() {
               ))}
             </ul>
 
-            <div className="flex flex-wrap gap-2 border-t border-line bg-surface-sunken/60 px-5 py-3.5">
+            {/* Last to arrive: there is now a finished pack to do something with. */}
+            <div
+              className="pk-stagger-item flex flex-wrap gap-2 border-t border-line bg-surface-sunken/60 px-5 py-3.5"
+              style={{ "--pk-delay": `${rowDelay(SECTIONS.length) + 60}ms` } as React.CSSProperties}
+            >
               <span className="inline-flex items-center gap-1.5 rounded-lg border border-line-strong bg-surface px-3 py-1.5 text-xs font-medium text-ink-muted">
                 <Printer className="h-3.5 w-3.5" aria-hidden />
                 Print

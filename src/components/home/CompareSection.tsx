@@ -37,10 +37,14 @@ export function CompareSection({ comparison }: { comparison: Comparison | null }
             >
               Compare your options before you spend money
             </h2>
+            {/*
+              Two sentences, not four. The two priced cards and the figure
+              below already say "we costed both options" — spelling it out in
+              prose as well was the paragraph arguing with the evidence.
+            */}
             <p className="pk-prose mt-4 max-w-md">
               The same {comparison.project.toLowerCase()} patio, two ways of buying it. Most people
-              pick one by guessing. Cubitora prices both, at your numbers, before you leave the
-              house.
+              choose by guessing.
             </p>
 
             <p className="mt-8 font-mono text-[0.6875rem] uppercase tracking-[0.16em] text-ink-subtle">

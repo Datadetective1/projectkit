@@ -143,7 +143,7 @@ export function PlanDiagram({
         <line x1="174" y1="114" x2="174" y2="122" />
         <line
           className="pk-draw"
-          style={{ "--pk-draw-length": 148, "--pk-delay": "260ms" } as React.CSSProperties}
+          style={{ "--pk-draw-length": 148, "--pk-delay": "150ms" } as React.CSSProperties}
           x1="26"
           y1="118"
           x2="174"
@@ -154,7 +154,7 @@ export function PlanDiagram({
         <line x1="10" y1="106" x2="18" y2="106" />
         <line
           className="pk-draw"
-          style={{ "--pk-draw-length": 82, "--pk-delay": "380ms" } as React.CSSProperties}
+          style={{ "--pk-draw-length": 82, "--pk-delay": "225ms" } as React.CSSProperties}
           x1="14"
           y1="24"
           x2="14"
@@ -162,7 +162,14 @@ export function PlanDiagram({
         />
       </g>
 
-      <text x="100" y="130" textAnchor="middle" className="fill-current font-mono text-[10px]" opacity="1">
+      {/* Each label fades in behind the line that measures it. */}
+      <text
+        x="100"
+        y="130"
+        textAnchor="middle"
+        className="pk-fade-in fill-current font-mono text-[10px]"
+        style={{ "--pk-delay": "260ms" } as React.CSSProperties}
+      >
         {width}
       </text>
       <text
@@ -170,8 +177,8 @@ export function PlanDiagram({
         y="65"
         textAnchor="middle"
         transform="rotate(-90 14 65)"
-        className="fill-current font-mono text-[10px]"
-        opacity="1"
+        className="pk-fade-in fill-current font-mono text-[10px]"
+        style={{ "--pk-delay": "330ms" } as React.CSSProperties}
       >
         {depth}
       </text>

@@ -67,7 +67,17 @@ export function CountUp({
     const run = () => {
       const start = performance.now();
       const tick = (now: number) => {
-        const t = Math.min((now - start) / duration, 1);
+        /*
+         * Clamped at both ends, and the lower end is the one that matters.
+         *
+         * A requestAnimationFrame callback is handed the frame's start time,
+         * which can be *earlier* than a performance.now() read taken moments
+         * before it — so the first frame could compute a negative progress,
+         * and easing a negative t overshoots backwards past zero. The counter
+         * flashed "-2" on its way to 449. Caught by sampling the values
+         * mid-transition rather than by watching it.
+         */
+        const t = Math.min(Math.max((now - start) / duration, 0), 1);
         // Ease-out cubic: fast enough to feel responsive, slow enough at the
         // end that the final digits are readable as they land.
         const eased = 1 - Math.pow(1 - t, 3);
