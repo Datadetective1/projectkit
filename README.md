@@ -1,10 +1,10 @@
-# ProjectKit
+# Cubitora
 
-**Tell us what you're building. We'll figure out everything you need.**
+**Plan the project. Know what you need.**
 
-**Live:** <https://projectkit-beta.vercel.app>
+**Live:** <https://www.cubitora.com>
 
-ProjectKit turns a home improvement project into material quantities, an
+Cubitora turns a home improvement project into material quantities, an
 estimated budget, a shopping list, an order of operations, and a printable
 Project Pack. It is a project-completion utility, not a calculator directory.
 
@@ -187,7 +187,7 @@ traffic?" would have no answer. The wrapper reports the pathname instead, so
 
 ### Privacy
 
-Nearly every query parameter ProjectKit puts in a URL is something the user
+Nearly every query parameter Cubitora puts in a URL is something the user
 typed — slab dimensions, room counts, prices, a natural-language description, a
 saved-project id, a Stripe session id. A `beforeSend` hook
 (`src/lib/analytics/redact.ts`) strips all of it before anything leaves the
@@ -242,9 +242,9 @@ stated reason — never the other way round.
 
 ---
 
-## What ProjectKit will not claim
+## What Cubitora will not claim
 
-Quantities are planning estimates. ProjectKit does not claim guaranteed
+Quantities are planning estimates. Cubitora does not claim guaranteed
 quantities, guaranteed prices, structural adequacy, or code compliance, and it
 will not try to design a deck frame. Where an answer depends on a convention
 rather than a measurement, that assumption is shown on the page and can be

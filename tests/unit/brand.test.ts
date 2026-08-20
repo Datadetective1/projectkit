@@ -44,7 +44,8 @@ function sourceFiles(dir: string): string[] {
 describe("brand identity", () => {
   it("is Cubitora everywhere the configuration is read", () => {
     expect(site.name).toBe("Cubitora");
-    expect(site.domain).toBe("cubitora.com");
+    // The canonical host is www; the apex 308-redirects to it.
+    expect(site.domain).toBe("www.cubitora.com");
     expect(site.tagline).toBe("Plan the project. Know what you need.");
   });
 

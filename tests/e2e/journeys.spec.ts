@@ -344,16 +344,32 @@ test("an unknown route shows the 404 page rather than an error", async ({ page }
   await expect(page.getByRole("heading", { name: "That page isn't here" })).toBeVisible();
 });
 
-test("robots and sitemap are served", async ({ page }) => {
+test("robots closes this build, and the sitemap still lists every planner", async ({
+  page,
+}) => {
+  /*
+   * The suite runs against a local build, which is not the canonical host — so
+   * robots.txt should be shut, and that is the assertion. It is the same
+   * protection that keeps Vercel previews out of the index: a byte-identical
+   * copy of the site on another host is how you split your own ranking.
+   *
+   * The production side of this — the crawler allowances, the private-path
+   * disallows, and the www sitemap declaration — is covered in
+   * tests/unit/seo.test.ts, where the site URL can be varied per case.
+   */
   const robots = await page.request.get("/robots.txt");
   expect(robots.status()).toBe(200);
-  expect(await robots.text()).toContain("Sitemap:");
+  const text = await robots.text();
+  expect(text).toContain("Disallow: /");
+  expect(text, "a non-production build must not advertise a sitemap").not.toContain("Sitemap:");
 
+  // The sitemap itself is still generated and complete; robots simply does not
+  // point crawlers at it from here.
   const sitemap = await page.request.get("/sitemap.xml");
   expect(sitemap.status()).toBe(200);
   const xml = await sitemap.text();
   for (const slug of PLANNER_SLUGS) {
-    expect(xml).toContain(slug);
+    expect(xml, slug).toContain(slug);
   }
 });
 

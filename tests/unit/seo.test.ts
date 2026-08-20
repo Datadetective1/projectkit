@@ -88,23 +88,55 @@ describe("deployment indexability", () => {
     return import("@/config/site");
   }
 
-  it("recognises the real domain as production", async () => {
+  it("recognises the canonical www host as production", async () => {
+    /*
+     * www is the canonical host. Vercel 308s the apex to it, and Search Console
+     * and Bing have both accepted https://www.cubitora.com/sitemap.xml.
+     *
+     * This test previously asserted the opposite — that www was *not*
+     * production — which is exactly the bug it now guards: production would
+     * have shipped robots "Disallow: /" and a noindex on every page, quietly
+     * removing a site the search engines had already taken.
+     */
+    const { isProductionSite } = await siteWith({
+      NEXT_PUBLIC_SITE_URL: "https://www.cubitora.com",
+    });
+    expect(isProductionSite).toBe(true);
+  });
+
+  it("also treats the apex as production, because the safe failure is inclusive", async () => {
+    // The apex only ever redirects, but if a build served it we want an
+    // indexable page whose canonical points at www — a duplicate that
+    // self-corrects — rather than a deindexed one.
     const { isProductionSite } = await siteWith({
       NEXT_PUBLIC_SITE_URL: "https://cubitora.com",
     });
     expect(isProductionSite).toBe(true);
   });
 
-  it("does not mistake a preview for production", async () => {
+  it("does not mistake a preview or a local build for production", async () => {
     for (const url of [
       "https://projectkit-git-cubitora-design-x.vercel.app",
       "http://localhost:3000",
-      // The www host is a redirect source, not the canonical.
-      "https://www.cubitora.com",
+      "https://cubitora.com.evil.example",
+      "not a url",
     ]) {
       const { isProductionSite } = await siteWith({ NEXT_PUBLIC_SITE_URL: url });
       expect(isProductionSite, url).toBe(false);
     }
+  });
+
+  it("emits canonical URLs on the www host", async () => {
+    vi.resetModules();
+    process.env = { ...ORIGINAL, NEXT_PUBLIC_SITE_URL: "https://www.cubitora.com" };
+    const { absoluteUrl, pageMetadata } = await import("@/lib/seo");
+
+    expect(absoluteUrl("/concrete-calculator")).toBe(
+      "https://www.cubitora.com/concrete-calculator",
+    );
+    const meta = pageMetadata({ title: "T", description: "D", path: "/concrete-calculator" });
+    expect(meta.alternates?.canonical).toBe("https://www.cubitora.com/concrete-calculator");
+    expect(meta.openGraph?.url).toBe("https://www.cubitora.com/concrete-calculator");
   });
 
   it("closes robots.txt entirely off production", async () => {
@@ -118,14 +150,17 @@ describe("deployment indexability", () => {
 
   it("opens robots.txt on production, minus the private routes", async () => {
     vi.resetModules();
-    process.env = { ...ORIGINAL, NEXT_PUBLIC_SITE_URL: "https://cubitora.com" };
+    process.env = { ...ORIGINAL, NEXT_PUBLIC_SITE_URL: "https://www.cubitora.com" };
     const robots = (await import("@/app/robots")).default();
-    const rule = Array.isArray(robots.rules) ? robots.rules[0] : robots.rules;
+    const rules = Array.isArray(robots.rules) ? robots.rules : [robots.rules];
+    const wildcard = rules.find((rule) => rule?.userAgent === "*");
 
-    expect(rule?.allow).toBe("/");
-    expect(rule?.disallow).toContain("/api/");
-    expect(rule?.disallow).toContain("/my-projects");
-    expect(robots.sitemap).toBe("https://cubitora.com/sitemap.xml");
+    expect(wildcard?.allow).toBe("/");
+    for (const path of ["/api/", "/project-pack/", "/my-projects", "/plan"]) {
+      expect(wildcard?.disallow, path).toContain(path);
+    }
+    // The declaration search engines have already accepted.
+    expect(robots.sitemap).toBe("https://www.cubitora.com/sitemap.xml");
   });
 
   it("marks every page noindex off production", async () => {
@@ -135,5 +170,80 @@ describe("deployment indexability", () => {
 
     const meta = pageMetadata({ title: "T", description: "D", path: "/" });
     expect(meta.robots).toEqual({ index: false, follow: true });
+  });
+});
+
+describe("crawler policy", () => {
+  const ORIGINAL_ENV = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...ORIGINAL_ENV };
+    vi.resetModules();
+  });
+
+  async function productionRobots() {
+    vi.resetModules();
+    process.env = { ...ORIGINAL_ENV, NEXT_PUBLIC_SITE_URL: "https://www.cubitora.com" };
+    const robots = (await import("@/app/robots")).default();
+    const rules = Array.isArray(robots.rules) ? robots.rules : [robots.rules];
+    return {
+      robots,
+      for: (agent: string) => rules.find((rule) => rule?.userAgent === agent),
+    };
+  }
+
+  it("keeps every user-specific route out of every crawler's reach", async () => {
+    const { for: ruleFor } = await productionRobots();
+
+    // /plan carries the description someone typed and /project-pack/<id>
+    // identifies one person's saved work. Neither is a crawler's business,
+    // whichever crawler is asking.
+    for (const agent of [
+      "*",
+      "OAI-SearchBot",
+      "Claude-SearchBot",
+      "PerplexityBot",
+      "Claude-User",
+      "Perplexity-User",
+    ]) {
+      const rule = ruleFor(agent);
+      expect(rule, agent).toBeDefined();
+      for (const path of ["/api/", "/project-pack/", "/my-projects", "/plan"]) {
+        expect(rule?.disallow, `${agent} → ${path}`).toContain(path);
+      }
+    }
+  });
+
+  it("lets search and answer engines reach the public planners", async () => {
+    const { for: ruleFor } = await productionRobots();
+
+    for (const agent of ["OAI-SearchBot", "Claude-SearchBot", "PerplexityBot"]) {
+      expect(ruleFor(agent)?.allow, agent).toBe("/");
+    }
+  });
+
+  it("declines model-training crawlers, which is the deliberate call", async () => {
+    const { for: ruleFor } = await productionRobots();
+
+    for (const agent of ["GPTBot", "ClaudeBot"]) {
+      expect(ruleFor(agent)?.disallow, agent).toBe("/");
+      expect(ruleFor(agent)?.allow, agent).toBeUndefined();
+    }
+  });
+
+  it("does not confuse a training crawler with its search sibling", async () => {
+    // ClaudeBot trains, Claude-SearchBot surfaces. Blocking the wrong one costs
+    // referrals; allowing the wrong one gives away the thing we declined.
+    const { for: ruleFor } = await productionRobots();
+
+    expect(ruleFor("ClaudeBot")?.disallow).toBe("/");
+    expect(ruleFor("Claude-SearchBot")?.allow).toBe("/");
+    expect(ruleFor("GPTBot")?.disallow).toBe("/");
+    expect(ruleFor("OAI-SearchBot")?.allow).toBe("/");
+  });
+
+  it("declares the sitemap on the canonical www host", async () => {
+    const { robots } = await productionRobots();
+    expect(robots.sitemap).toBe("https://www.cubitora.com/sitemap.xml");
   });
 });

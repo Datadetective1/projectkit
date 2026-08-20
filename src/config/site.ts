@@ -5,8 +5,25 @@
  * here so it never has to be hunted down across the component tree.
  */
 
-/** The permanent public domain. Canonical URLs resolve here in production. */
-const CANONICAL_DOMAIN = "cubitora.com";
+/**
+ * The canonical public host. Every absolute URL the site emits resolves here.
+ *
+ * It is the www host, deliberately: Vercel 308-redirects the apex to www, and
+ * Google Search Console and Bing have both already accepted
+ * https://www.cubitora.com/sitemap.xml. Changing this would orphan that.
+ */
+const CANONICAL_HOST = "www.cubitora.com";
+
+/**
+ * Hosts that count as "the real site" for indexability.
+ *
+ * Both, on purpose. The apex only ever redirects, but if a build somehow serves
+ * it we want the page indexable with a canonical pointing at www — a duplicate
+ * that self-corrects. The failure in the other direction is far worse: an
+ * over-strict check marks production noindex and quietly removes a site that
+ * search engines have already accepted.
+ */
+const PRODUCTION_HOSTS = ["www.cubitora.com", "cubitora.com"];
 
 /**
  * The site's own origin, used for canonical URLs, Open Graph tags, the sitemap,
@@ -29,7 +46,7 @@ function resolveSiteUrl(): string {
   if (explicit) return explicit.replace(/\/+$/, "");
 
   if (process.env.NEXT_PUBLIC_VERCEL_ENV === "production") {
-    return `https://${CANONICAL_DOMAIN}`;
+    return `https://${CANONICAL_HOST}`;
   }
 
   // Vercel supplies these without a scheme (e.g. "cubitora-abc123.vercel.app").
@@ -48,7 +65,7 @@ const rawSiteUrl = resolveSiteUrl();
 
 export const site = {
   name: "Cubitora",
-  domain: CANONICAL_DOMAIN,
+  domain: CANONICAL_HOST,
   /** The headline promise. Short enough to sit under the wordmark. */
   tagline: "Plan the project. Know what you need.",
   /** The invitation, used where the product asks for input. */
@@ -63,10 +80,20 @@ export const site = {
 } as const;
 
 /**
- * True when this build is serving the real domain rather than a preview.
- * Used to keep previews out of the index.
+ * True when this build is serving the real site rather than a preview.
+ *
+ * Compared by host rather than by whole URL. An exact string match against a
+ * single canonical URL is how this went wrong once already: production serves
+ * www, the constant named the apex, and the live site would have shipped
+ * robots "Disallow: /" and a noindex on every page.
  */
-export const isProductionSite = rawSiteUrl === `https://${CANONICAL_DOMAIN}`;
+export const isProductionSite = (() => {
+  try {
+    return PRODUCTION_HOSTS.includes(new URL(rawSiteUrl).host);
+  } catch {
+    return false;
+  }
+})();
 
 /**
  * The build this page was rendered from.
