@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, ArrowLeft, Check, Download, Loader2, Printer } from "lucide-react";
 import { UnlockPanel } from "./UnlockPanel";
 import { buildPack, packFileName, type ProjectPack } from "@/lib/pack/buildPack";
 import { useSavedProject, useStorageReady } from "@/lib/storage/useSavedProjects";
 import { isPackUnlocked, recordUnlock } from "@/lib/storage/entitlements";
-import { track } from "@/lib/analytics";
+import { sourceFromPath, track } from "@/lib/analytics";
 import { site } from "@/config/site";
 
 type DownloadState = "idle" | "working" | "error";
@@ -17,6 +18,7 @@ export function PackPreview({ id }: { id: string }) {
   const saved = useSavedProject(id);
   const pack = useMemo(() => (saved ? buildPack(saved) : undefined), [saved]);
   const slug = saved?.slug;
+  const pathname = usePathname();
 
   const [purchased, setPurchased] = useState(false);
   const [download, setDownload] = useState<DownloadState>("idle");
@@ -80,7 +82,10 @@ export function PackPreview({ id }: { id: string }) {
       anchor.remove();
       URL.revokeObjectURL(url);
       setDownload("idle");
-      track("project_pack_downloaded", { projectType: slug });
+      track("project_pack_downloaded", {
+        projectType: slug,
+        source: sourceFromPath(pathname ?? "/"),
+      });
     } catch {
       setDownload("error");
     }

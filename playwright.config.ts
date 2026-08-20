@@ -5,6 +5,13 @@ const baseURL = `http://127.0.0.1:${PORT}`;
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  /*
+   * The GA4 spec needs a build with a measurement ID in it, which this suite
+   * must not have — it asserts no Google script loads, and an external request
+   * on every page would slow the axe scans and perturb the vitals numbers.
+   * See playwright.analytics.config.ts.
+   */
+  testIgnore: /analytics\.spec\.ts/,
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,

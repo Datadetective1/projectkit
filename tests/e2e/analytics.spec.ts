@@ -1,183 +1,276 @@
 import { expect, test, type Page } from "@playwright/test";
 
 /**
- * Vercel Web Analytics integration.
+ * GA4, end to end, against a build carrying a test measurement ID.
  *
- * The unit tests cover the redaction function in isolation; these check the
- * wiring — that the script is actually injected once, that the hook is
- * registered before the first page view is queued, and that a real URL full of
- * user input comes out clean on the other side.
+ * Runs under playwright.analytics.config.ts and nowhere else — see that file
+ * for why this needs a build of its own. `dataLayer` is the assertion surface:
+ * the stub pushes every call into it during HTML parse, so reading it proves
+ * what GA4 *would* receive without anything leaving the browser.
+ *
+ * Google's own library is blocked below, so no request reaches googletagmanager
+ * during these tests. The queue is what is being tested, and the queue is the
+ * thing that was broken.
  */
 
-/* `va`, `vaq`, and `vam` are declared globally by @vercel/analytics. */
+/** One entry as gtag pushes it: ["event", name, params]. */
+type Call = [string, string, Record<string, unknown>?];
 
-/** Waits for the client component to inject the script and register the hook. */
-async function waitForAnalytics(page: Page): Promise<void> {
-  await expect(page.locator('script[src*="/_vercel/insights"]')).toHaveCount(1);
+async function dataLayer(page: Page): Promise<Call[]> {
+  return page.evaluate(() => {
+    const layer = (window as unknown as { dataLayer?: IArguments[] }).dataLayer ?? [];
+    return layer.map((entry) => Array.from(entry) as Call);
+  });
+}
+
+async function events(page: Page, name?: string) {
+  const calls = await dataLayer(page);
+  return calls
+    .filter((call) => call[0] === "event" && (!name || call[1] === name))
+    .map((call) => ({ name: call[1], params: call[2] ?? {} }));
+}
+
+test.beforeEach(async ({ page }) => {
+  // Never call Google, even from a test. The stub queues regardless.
+  await page.route("https://www.googletagmanager.com/**", (route) => route.abort());
+});
+
+/* ------------------------------------------------------- the entry page -- */
+
+test("the first page view is captured, not lost to lazy loading", async ({ page }) => {
+  /*
+   * The regression this suite exists for. Both scripts used to load with
+   * `lazyOnload`, which runs after the effect that sends the page view — so
+   * `window.gtag` did not exist yet and the entry page of every session was
+   * silently dropped. GA4 would have recorded only client-side navigation.
+   */
+  await page.goto("/concrete-calculator/10x10-slab");
+
+  /*
+   * Polled rather than read after `load`. The page view is sent from an effect,
+   * so it lands at hydration — which can be after the load event, making a
+   * single read a race. Polling asserts the event *arrives*, which is the
+   * actual claim; before the fix it never arrived at all and this still fails.
+   */
   await expect
-    .poll(() =>
-      page.evaluate(() => (window.vaq ?? []).some((item) => item[0] === 'beforeSend')),
-    )
-    .toBe(true);
-}
+    .poll(async () => (await events(page, "page_view")).length, {
+      message: "no page_view queued for the entry page",
+      timeout: 10_000,
+    })
+    .toBeGreaterThan(0);
 
-/** Runs the page's own registered beforeSend hook over a URL. */
-async function redactViaPage(page: Page, url: string): Promise<string | null> {
-  return page.evaluate((target) => {
-    const queue = window.vaq ?? [];
-    const entry = queue.find((item) => item[0] === "beforeSend");
-    const hook = entry?.[1] as
-      | ((event: { type: string; url: string }) => { url: string } | null)
-      | undefined;
-    if (typeof hook !== "function") return null;
-    return hook({ type: "pageview", url: target })?.url ?? null;
-  }, url);
-}
-
-test("the analytics script is injected exactly once", async ({ page }) => {
-  await page.goto("/concrete-calculator");
-
-  // Exactly one — a duplicate integration would double-count every page view.
-  await expect(page.locator('script[src*="/_vercel/insights"]')).toHaveCount(1);
-  await expect.poll(() => page.evaluate(() => typeof window.va)).toBe("function");
+  const views = await events(page, "page_view");
+  expect(views[0].params.page_path).toBe("/concrete-calculator/10x10-slab");
 });
 
-test("it is present on every page, from one root integration", async ({ page }) => {
-  for (const path of ["/", "/fence-calculator", "/projects", "/about", "/my-projects"]) {
-    await page.goto(path);
-    await expect(page.locator('script[src*="/_vercel/insights"]'), path).toHaveCount(1);
-  }
-});
-
-test("redaction is registered before the first page view is queued", async ({ page }) => {
-  await page.goto("/concrete-calculator");
-  await waitForAnalytics(page);
-
-  const order = await page.evaluate(() =>
-    (window.vaq ?? []).map((item) => item[0]),
-  );
-
-  expect(order[0]).toBe("beforeSend");
-  expect(order).toContain("pageview");
-});
-
-test("user input is stripped from the URL that would be reported", async ({ page }) => {
-  // A planner opened from the natural-language router, dimensions and all.
-  await page.goto("/concrete-calculator?length=20&width=16&thickness=6&from=nl");
-
-  await waitForAnalytics(page);
-
-  const redacted = await redactViaPage(page, page.url());
-  expect(redacted).not.toBeNull();
-
-  // The route and the "came via natural language" marker survive.
-  expect(redacted).toContain("/concrete-calculator");
-  expect(redacted).toContain("from=nl");
-
-  // Nothing the user typed does.
-  expect(redacted).not.toContain("length");
-  expect(redacted).not.toContain("width");
-  expect(redacted).not.toContain("thickness");
-  // No leftover numeric input in the query string.
-  expect(new URL(redacted!).search).toBe("?from=nl");
-});
-
-test("a natural-language description is never reported", async ({ page }) => {
-  await page.goto("/concrete-calculator");
-  await waitForAnalytics(page);
-
-  const redacted = await redactViaPage(
-    page,
-    `${new URL(page.url()).origin}/plan?q=${encodeURIComponent("I want a 20 by 16 concrete patio")}`,
-  );
-
-  expect(redacted).toBe(`${new URL(page.url()).origin}/plan`);
-  expect(redacted).not.toContain("concrete");
-});
-
-test("a saved-project id and a Stripe session are never reported", async ({ page }) => {
-  await page.goto("/concrete-calculator");
-  await waitForAnalytics(page);
-  const origin = new URL(page.url()).origin;
-
-  const redacted = await redactViaPage(
-    page,
-    `${origin}/project-pack/9f3c1e2a-1111-2222-3333-444455556666?session_id=cs_test_a1B2c3`,
-  );
-
-  expect(redacted).toBe(`${origin}/project-pack/[id]`);
-  expect(redacted).not.toContain("9f3c1e2a");
-  expect(redacted).not.toContain("cs_test");
-});
-
-test("each planner reports as its own route, not a shared dynamic one", async ({ page }) => {
-  // All ten planners share the dynamic app/[slug] route. The default Next.js
-  // integration reports them all as "/[slug]", which would make "which
-  // calculator gets the most traffic?" unanswerable.
-  for (const slug of ["concrete-calculator", "fence-calculator", "sod-calculator"]) {
-    await page.goto(`/${slug}`);
-    await waitForAnalytics(page);
-
-    const reported = await page.evaluate(() => {
-      const entry = (window.vaq ?? []).filter((item) => item[0] === "pageview").pop();
-      return (entry?.[1] as { route?: string; path?: string } | undefined) ?? null;
-    });
-
-    expect(reported?.route, slug).toBe(`/${slug}`);
-    expect(reported?.route, slug).not.toBe("/[slug]");
-  }
-});
-
-test("a project pack reports as its route pattern, never a saved id", async ({ page }) => {
-  await page.goto("/project-pack/9f3c1e2a-1111-2222-3333-444455556666");
-  await waitForAnalytics(page);
-
-  const reported = await page.evaluate(() => {
-    const entry = (window.vaq ?? []).filter((item) => item[0] === "pageview").pop();
-    return (entry?.[1] as { route?: string; path?: string } | undefined) ?? null;
-  });
-
-  expect(reported?.route).toBe("/project-pack/[id]");
-  expect(reported?.path).not.toContain("9f3c1e2a");
-});
-
-test("client-side navigation reports a new page view", async ({ page }) => {
-  await page.goto("/concrete-calculator");
-  await waitForAnalytics(page);
-
-  const countViews = () =>
-    page.evaluate(() => (window.vaq ?? []).filter((item) => item[0] === "pageview").length);
-
-  const before = await countViews();
-
-  // The footer nav is present at every viewport; the header nav is desktop-only.
-  await page.getByLabel("Company").getByRole("link", { name: "All projects" }).click();
-  await expect(page).toHaveURL(/\/projects$/);
-
-  await expect.poll(countViews).toBeGreaterThan(before);
-
-  const reported = await page.evaluate(() => {
-    const entry = (window.vaq ?? []).filter((item) => item[0] === "pageview").pop();
-    return (entry?.[1] as { route?: string } | undefined) ?? null;
-  });
-  expect(reported?.route).toBe("/projects");
-});
-
-test("analytics does not break navigation or the calculator", async ({ page }) => {
-  const errors: string[] = [];
-  page.on("pageerror", (error) => errors.push(error.message));
-
+test("gtag exists before the library arrives", async ({ page }) => {
+  // The property that makes the fix work: the stub defines gtag during parse,
+  // so anything firing at hydration queues rather than vanishing.
   await page.goto("/");
-  await page.getByRole("link", { name: "Concrete", exact: false }).first().click();
-  await expect(page).toHaveURL(/concrete-calculator/);
+  expect(await page.evaluate(() => typeof (window as never as { gtag?: unknown }).gtag)).toBe(
+    "function",
+  );
+});
 
-  // The estimate still computes after a client-side navigation.
-  const headline = page.locator("#result-headline").locator("xpath=following-sibling::p[1]");
-  await expect(headline).toHaveText("4.35 yd³");
+test("client-side navigation is still counted, once each", async ({ page }) => {
+  await page.goto("/");
+  await page.waitForLoadState("load");
+  await page.getByRole("link", { name: /see all projects/i }).first().click();
+  await page.waitForURL(/\/projects/);
+  await expect
+    .poll(async () => (await events(page, "page_view")).length, { timeout: 10_000 })
+    .toBeGreaterThan(1);
 
-  // And recalculates.
-  await page.locator("form").getByLabel("Length", { exact: true }).fill("30");
-  await expect(headline).not.toHaveText("4.35 yd³");
+  const paths = (await events(page, "page_view")).map((event) => event.params.page_path);
+  expect(paths).toContain("/");
+  expect(paths).toContain("/projects");
+  expect(paths.filter((path) => path === "/projects")).toHaveLength(1);
+});
 
-  expect(errors).toEqual([]);
+/* ------------------------------------------------------------ the funnel -- */
+
+test("planner_started fires with its source", async ({ page }) => {
+  await page.goto("/concrete-calculator");
+  await page.waitForSelector("#result-headline");
+  await expect
+    .poll(async () => (await events(page, "planner_started")).length, {
+      message: "planner_started did not fire on a bare planner visit",
+      timeout: 10_000,
+    })
+    .toBe(1);
+
+  const [started] = await events(page, "planner_started");
+  expect(started.params.projectType).toBe("concrete-calculator");
+  // No referrer on a direct visit, so the honest answer is "other".
+  expect(started.params.source).toBe("other");
+  expect(started.params.prefilled).toBe(0);
+});
+
+test("planner_started reports the answer page that sent them", async ({ page }) => {
+  /*
+   * The whole reason `source` exists: the organic experiment needs to know
+   * whether the answer pages feed the planner. Arriving from one has to be
+   * distinguishable from arriving cold.
+   */
+  await page.goto("/concrete-calculator/10x10-slab");
+  await page.getByRole("link", { name: /open the concrete planner/i }).click();
+  await page.waitForSelector("#result-headline");
+  await expect
+    .poll(async () => (await events(page, "planner_started")).length, { timeout: 10_000 })
+    .toBe(1);
+
+  const [started] = await events(page, "planner_started");
+  expect(started.params.source, "an answer-page referral was not attributed").toBe("answer");
+  expect(started.params.prefilled).toBe(3);
+});
+
+test("planner_completed, project_saved and project_pack_opened all fire", async ({ page }) => {
+  await page.goto("/concrete-calculator");
+  await page.waitForSelector("#result-headline");
+
+  await page.getByRole("button", { name: "Calculate my project" }).click();
+  await page.waitForTimeout(300);
+  const [completed] = await events(page, "planner_completed");
+  expect(completed).toBeDefined();
+  expect(completed.params.projectType).toBe("concrete-calculator");
+  expect(completed.params.source).toBe("planner");
+  expect(completed.params.system).toBe("us");
+
+  await page.getByRole("button", { name: /^save/i }).first().click();
+  await page.waitForTimeout(300);
+  const [saved] = await events(page, "project_saved");
+  expect(saved).toBeDefined();
+  expect(saved.params.projectType).toBe("concrete-calculator");
+
+  await page.getByRole("button", { name: /preview project pack/i }).first().click();
+  await page.waitForTimeout(300);
+  const [opened] = await events(page, "project_pack_opened");
+  expect(opened).toBeDefined();
+});
+
+test("shopping_list_viewed fires only when the list is actually seen", async ({ page }) => {
+  await page.goto("/concrete-calculator");
+  await page.waitForSelector("#result-headline");
+
+  // The list renders below the fold; a mount-time event would already be here.
+  expect(await events(page, "shopping_list_viewed")).toHaveLength(0);
+
+  await page.locator('section[aria-labelledby="shopping-list"]').scrollIntoViewIfNeeded();
+  await page.waitForTimeout(600);
+
+  const seen = await events(page, "shopping_list_viewed");
+  expect(seen).toHaveLength(1);
+  expect(seen[0].params.placement).toBe("shopping_list");
+  expect(seen[0].params.projectType).toBe("concrete-calculator");
+});
+
+test("retailer_click carries the retailer and the material", async ({ page }) => {
+  await page.goto("/concrete-calculator");
+  await page.waitForSelector("#result-headline");
+  const list = page.locator('section[aria-labelledby="shopping-list"]');
+  await list.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(400);
+
+  /*
+   * Suppress the navigation, keep the handler.
+   *
+   * `dataLayer` lives on the page, so anything that navigates away — including
+   * removing `target` and letting the click through — destroys the evidence
+   * before it can be read. Cancelling the default in the capture phase stops
+   * the browser following the link while leaving React's own click handler to
+   * run on the bubble phase, which is the thing under test.
+   */
+  const link = list.locator('a[href^="https://retailer.invalid"]').first();
+  await link.evaluate((node) =>
+    node.addEventListener("click", (event) => event.preventDefault(), true),
+  );
+  await link.click();
+  await page.waitForTimeout(400);
+
+  const [clicked] = await events(page, "retailer_click");
+  expect(clicked, "retailer_click did not fire").toBeDefined();
+  expect(["home_depot", "amazon"]).toContain(clicked.params.retailer);
+  expect(clicked.params.materialId).toBeTruthy();
+  expect(clicked.params.projectType).toBe("concrete-calculator");
+  expect(clicked.params.source).toBe("planner");
+});
+
+test("project_pack_downloaded fires from the pack", async ({ page }) => {
+  await page.goto("/concrete-calculator");
+  await page.waitForSelector("#result-headline");
+  await page.getByRole("button", { name: /preview project pack/i }).first().click();
+  await page.waitForURL(/project-pack\//, { timeout: 25_000 });
+
+  await page.getByRole("button", { name: /download pdf/i }).first().click();
+  await page.waitForTimeout(3_000);
+
+  expect(await events(page, "project_pack_downloaded")).not.toHaveLength(0);
+});
+
+/* ----------------------------------------------------------- the privacy -- */
+
+test("no dimension, description or id ever reaches the queue", async ({ page }) => {
+  /*
+   * The test that matters most. Drive the parts of the product that put user
+   * input into a URL, then read every value queued for Google and assert none
+   * of it came from the person using the site.
+   */
+  await page.goto("/concrete-calculator?length=27&width=13&thickness=5");
+  await page.waitForSelector("#result-headline");
+  await page.getByRole("button", { name: "Calculate my project" }).click();
+  await page.waitForTimeout(300);
+  await page.getByRole("button", { name: /preview project pack/i }).first().click();
+  await page.waitForURL(/project-pack\//, { timeout: 25_000 });
+  await page.waitForTimeout(500);
+
+  /*
+   * Checked per parameter value rather than by searching the whole serialised
+   * blob. An earlier version matched bare numbers against the JSON, which hit
+   * the timestamp in the `js` entry and the port in the origin — noise that
+   * looks exactly like a leak and is not one.
+   */
+  const packId = new URL(page.url()).pathname.split("/").pop()!;
+  const values = (await dataLayer(page))
+    .flatMap((call) => Object.values(call[2] ?? {}))
+    .filter((value): value is string => typeof value === "string");
+
+  expect(values.length).toBeGreaterThan(0);
+  for (const value of values) {
+    expect(value, `a query string reached the queue: ${value}`).not.toContain("?");
+    for (const marker of ["length=", "width=", "thickness="]) {
+      expect(value, `${marker} reached the queue: ${value}`).not.toContain(marker);
+    }
+    expect(value, `a saved-project id reached the queue: ${value}`).not.toContain(packId);
+  }
+  // And the route pattern is what got reported instead.
+  const paths = (await events(page, "page_view")).map((event) => event.params.page_path);
+  expect(paths).toContain("/project-pack/[id]");
+});
+
+test("a typed description never reaches the queue", async ({ page }) => {
+  await page.goto(`/plan?q=${encodeURIComponent("a 20 by 16 concrete patio for my mother")}`);
+  await page.waitForLoadState("load");
+  await page.waitForTimeout(600);
+
+  const serialised = JSON.stringify(await dataLayer(page));
+  for (const fragment of ["mother", "patio", "q=", "20%20by"]) {
+    expect(serialised, `"${fragment}" reached the analytics queue`).not.toContain(fragment);
+  }
+});
+
+test("page_location is redacted, never the raw href", async ({ page }) => {
+  await page.goto("/concrete-calculator?length=31&width=19");
+  await page.waitForLoadState("load");
+  await page.waitForTimeout(400);
+
+  for (const event of await events(page)) {
+    const location = event.params.page_location;
+    if (typeof location !== "string") continue;
+    expect(location, `${event.name} leaked a query string`).not.toContain("?");
+    // Checked by parameter name rather than by value: the test server's port
+    // contains "31", so asserting on the bare number matched the origin.
+    for (const param of ["length=", "width=", "thickness="]) {
+      expect(location, `${event.name} leaked ${param}`).not.toContain(param);
+    }
+  }
 });

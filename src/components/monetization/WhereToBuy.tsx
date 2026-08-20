@@ -1,8 +1,9 @@
 "use client";
 
 import { ExternalLink } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { retailerRel, retailerUrl, retailers, whereToBuyEnabled } from "@/config/retailers";
-import { track } from "@/lib/analytics";
+import { sourceFromPath, track } from "@/lib/analytics";
 
 /**
  * "Where to buy", per material.
@@ -25,13 +26,18 @@ import { track } from "@/lib/analytics";
 export function WhereToBuy({
   query,
   projectType,
+  materialId,
   className = "",
 }: {
   /** The material's search term. Not user input. */
   query: string;
   projectType?: string;
+  /** The calculation's own id for this material. Not user input. */
+  materialId?: string;
   className?: string;
 }) {
+  const pathname = usePathname();
+
   if (!whereToBuyEnabled || !query) return null;
 
   return (
@@ -45,7 +51,15 @@ export function WhereToBuy({
           href={retailerUrl(retailer, query)}
           target="_blank"
           rel={retailerRel(retailer)}
-          onClick={() => track("retailer_click", { projectType, placement: "shopping_list" })}
+          onClick={() =>
+            track("retailer_click", {
+              projectType,
+              materialId,
+              retailer: retailer.id,
+              placement: "shopping_list",
+              source: sourceFromPath(pathname ?? "/"),
+            })
+          }
           className="inline-flex items-center gap-1 text-xs font-medium text-brand underline-offset-4 hover:underline"
         >
           {retailer.name}

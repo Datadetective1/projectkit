@@ -56,7 +56,8 @@ export function ConversionAnswer({
       bags: bags ? run.fmt(bags) : "—",
       bulk: run.money(recommended?.totalCost ?? alternative?.totalCost),
       bagged: run.money(
-        run.result.scenarios.find((scenario) => /bagged/i.test(scenario.name))?.totalCost,
+        run.result.scenarios.find((scenario) => /bagged/i.test(scenario.name))
+          ?.totalCost,
       ),
     };
   }).filter((row): row is NonNullable<typeof row> => row !== null);
@@ -84,40 +85,63 @@ export function ConversionAnswer({
           ))}
         </div>
         <p className="pk-prose mt-4 text-sm">
-          A cubic yard is 27 cubic feet, so the count is just 27 divided by the bag. That is why an
-          answer given without a bag size is not much of an answer — the same yard is nine bags or
-          eighteen depending on which pallet you are standing next to. Cubitora assumes{" "}
-          <strong className="text-ink">{bagSizeAssumption?.value ?? "2 cu ft"}</strong> and lets you
-          change it.
+          A cubic yard is 27 cubic feet, so the count is just 27 divided by the
+          bag. That is why an answer given without a bag size is not much of an
+          answer — the same yard is nine bags or eighteen depending on which
+          pallet you are standing next to. Cubitora assumes{" "}
+          <strong className="text-ink">
+            {bagSizeAssumption?.value ?? "2 cu ft"}
+          </strong>{" "}
+          and lets you change it.
         </p>
       </section>
 
       {/* --------------------------------------------- what it means for a bed */}
       <section aria-labelledby="bed-heading">
-        <h2 id="bed-heading" className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">
+        <h2
+          id="bed-heading"
+          className="text-xl font-semibold tracking-tight text-ink sm:text-2xl"
+        >
           What that means for an actual bed
         </h2>
         <p className="pk-prose mt-2 text-sm">
-          The conversion is rarely what someone needs on its own — they need the bag count for their
-          bed. Here is a 500 sq ft bed at each sensible depth, run through the mulch planner.
+          The conversion is rarely what someone needs on its own — they need the
+          bag count for their bed. Here is a 500 sq ft bed at each sensible
+          depth, run through the mulch planner.
         </p>
 
-        <div className="mt-4 overflow-x-auto">
+        {/*
+            Focusable, and named.
+
+            The table is wider than a phone, so this container scrolls — and a
+            scrollable region with nothing focusable inside it cannot be reached
+            by keyboard at all. axe flags it as `scrollable-region-focusable`,
+            and it is right: without a tab stop the only way to read the
+            right-hand columns is to touch the screen.
+          */}
+        <div
+          className="mt-4 overflow-x-auto"
+          tabIndex={0}
+          role="region"
+          aria-label="Mulch needed for a 500 square foot bed by depth"
+        >
           <table className="w-full min-w-[32rem] border-collapse text-sm">
             <caption className="sr-only">
               A 500 square foot bed at two, three and four inches deep
             </caption>
             <thead>
               <tr className="border-b border-line-strong text-left">
-                {["Depth", "Volume", "Order", "Bags", "Bulk", "Bagged"].map((heading) => (
-                  <th
-                    key={heading}
-                    scope="col"
-                    className="py-2 pr-3 font-mono text-[0.625rem] uppercase tracking-[0.12em] text-ink-subtle"
-                  >
-                    {heading}
-                  </th>
-                ))}
+                {["Depth", "Volume", "Order", "Bags", "Bulk", "Bagged"].map(
+                  (heading) => (
+                    <th
+                      key={heading}
+                      scope="col"
+                      className="py-2 pr-3 font-mono text-[0.625rem] uppercase tracking-[0.12em] text-ink-subtle"
+                    >
+                      {heading}
+                    </th>
+                  ),
+                )}
               </tr>
             </thead>
             <tbody>
@@ -126,7 +150,10 @@ export function ConversionAnswer({
                   key={row.depth}
                   className={`border-b border-line last:border-0 ${row.depth === 3 ? "bg-brand-soft/45" : ""}`}
                 >
-                  <th scope="row" className="py-2.5 pr-3 text-left font-medium text-ink">
+                  <th
+                    scope="row"
+                    className="py-2.5 pr-3 text-left font-medium text-ink"
+                  >
                     {row.depth} in
                     {row.depth === 3 ? (
                       <span className="ml-1.5 font-mono text-[0.625rem] uppercase text-brand">
@@ -134,11 +161,21 @@ export function ConversionAnswer({
                       </span>
                     ) : null}
                   </th>
-                  <td className="py-2.5 pr-3 tabular-nums text-ink-muted">{row.volume}</td>
-                  <td className="py-2.5 pr-3 font-medium tabular-nums text-ink">{row.order}</td>
-                  <td className="py-2.5 pr-3 tabular-nums text-ink">{row.bags}</td>
-                  <td className="py-2.5 pr-3 tabular-nums text-ink-muted">{row.bulk}</td>
-                  <td className="py-2.5 tabular-nums text-ink-muted">{row.bagged}</td>
+                  <td className="py-2.5 pr-3 tabular-nums text-ink-muted">
+                    {row.volume}
+                  </td>
+                  <td className="py-2.5 pr-3 font-medium tabular-nums text-ink">
+                    {row.order}
+                  </td>
+                  <td className="py-2.5 pr-3 tabular-nums text-ink">
+                    {row.bags}
+                  </td>
+                  <td className="py-2.5 pr-3 tabular-nums text-ink-muted">
+                    {row.bulk}
+                  </td>
+                  <td className="py-2.5 tabular-nums text-ink-muted">
+                    {row.bagged}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -146,31 +183,38 @@ export function ConversionAnswer({
         </div>
 
         <p className="pk-prose mt-4 text-sm">
-          Two things fall out of that table. Depth scales the order exactly — double the depth,
-          double the mulch — and bags cost meaningfully more than the same volume delivered loose,
-          at every depth. What bags buy is not a lower price; it is no delivery to schedule and no
-          pile on the driveway.
+          Two things fall out of that table. Depth scales the order exactly —
+          double the depth, double the mulch — and bags cost meaningfully more
+          than the same volume delivered loose, at every depth. What bags buy is
+          not a lower price; it is no delivery to schedule and no pile on the
+          driveway.
         </p>
       </section>
 
       {/* ------------------------------------------------- when bags win */}
       <section aria-labelledby="bags-heading">
-        <h2 id="bags-heading" className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">
+        <h2
+          id="bags-heading"
+          className="text-xl font-semibold tracking-tight text-ink sm:text-2xl"
+        >
           When bags are still the right call
         </h2>
         <ul className="pk-prose mt-3 list-disc space-y-1.5 pl-5 text-sm">
           <li>
-            <strong className="text-ink">Under about a cubic yard.</strong> That is roughly a
-            hundred square feet at three inches — below it, bulk delivery is not worth arranging and
-            the planner recommends bags.
+            <strong className="text-ink">Under about a cubic yard.</strong> That
+            is roughly a hundred square feet at three inches — below it, bulk
+            delivery is not worth arranging and the planner recommends bags.
           </li>
           <li>
-            <strong className="text-ink">Nowhere to put a pile.</strong> Bulk arrives as a heap that
-            has to sit somewhere and be moved by barrow.
+            <strong className="text-ink">Nowhere to put a pile.</strong> Bulk
+            arrives as a heap that has to sit somewhere and be moved by barrow.
           </li>
           <li>
-            <strong className="text-ink">Topping up rather than starting over.</strong> A thin
-            refresh over existing mulch is a handful of bags, not a delivery.
+            <strong className="text-ink">
+              Topping up rather than starting over.
+            </strong>{" "}
+            A thin refresh over existing mulch is a handful of bags, not a
+            delivery.
           </li>
         </ul>
       </section>

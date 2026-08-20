@@ -33,14 +33,23 @@ const SIZES: [number, number][] = [
   [24, 24],
 ];
 
-export function ComparisonAnswer({ project }: { project: ProjectDefinition; computed: Computed }) {
+export function ComparisonAnswer({
+  project,
+}: {
+  project: ProjectDefinition;
+  computed: Computed;
+}) {
   const rows = SIZES.map(([length, width]) => {
     const run = compute(project.slug, { length, width, thickness: 4 });
     if (!run) return null;
 
     const numbers = threeNumbers(run);
-    const readyMix = run.result.scenarios.find((scenario) => /ready/i.test(scenario.name));
-    const bagged = run.result.scenarios.find((scenario) => /bag/i.test(scenario.name));
+    const readyMix = run.result.scenarios.find((scenario) =>
+      /ready/i.test(scenario.name),
+    );
+    const bagged = run.result.scenarios.find((scenario) =>
+      /bag/i.test(scenario.name),
+    );
     if (!readyMix || !bagged) return null;
 
     return {
@@ -49,7 +58,9 @@ export function ComparisonAnswer({ project }: { project: ProjectDefinition; comp
       readyMix: run.money(readyMix.totalCost),
       bagged: run.money(bagged.totalCost),
       bags: run.fmt(bagged.rows.find((row) => row.measure !== "currency")),
-      winner: readyMix.recommended ? ("ready-mix" as const) : ("bagged" as const),
+      winner: readyMix.recommended
+        ? ("ready-mix" as const)
+        : ("bagged" as const),
     };
   }).filter((row): row is NonNullable<typeof row> => row !== null);
 
@@ -62,7 +73,10 @@ export function ComparisonAnswer({ project }: { project: ProjectDefinition; comp
     <>
       {/* ------------------------------------------------- the short answer */}
       <section aria-labelledby="short-heading">
-        <h2 id="short-heading" className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">
+        <h2
+          id="short-heading"
+          className="text-xl font-semibold tracking-tight text-ink sm:text-2xl"
+        >
           The short answer
         </h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -70,9 +84,12 @@ export function ComparisonAnswer({ project }: { project: ProjectDefinition; comp
             <p className="font-mono text-[0.625rem] uppercase tracking-[0.14em] text-brand-ink/70">
               Above about a cubic yard
             </p>
-            <p className="mt-1.5 text-xl font-semibold text-brand-ink">Ready-mix</p>
+            <p className="mt-1.5 text-xl font-semibold text-brand-ink">
+              Ready-mix
+            </p>
             <p className="mt-1.5 text-sm leading-snug text-brand-ink/85">
-              Cheaper per cubic yard, and one pour instead of an afternoon of mixing.
+              Cheaper per cubic yard, and one pour instead of an afternoon of
+              mixing.
               {firstReadyMix
                 ? ` A ${firstReadyMix.label} slab is the first size here where a delivery makes sense.`
                 : null}
@@ -84,8 +101,9 @@ export function ComparisonAnswer({ project }: { project: ProjectDefinition; comp
             </p>
             <p className="mt-1.5 text-xl font-semibold text-ink">Bags</p>
             <p className="mt-1.5 pk-prose text-sm leading-snug">
-              Not because the material is cheaper — it is not — but because no supplier will send a
-              truck for that little without a fee that swallows the difference.
+              Not because the material is cheaper — it is not — but because no
+              supplier will send a truck for that little without a fee that
+              swallows the difference.
             </p>
           </div>
         </div>
@@ -93,32 +111,56 @@ export function ComparisonAnswer({ project }: { project: ProjectDefinition; comp
 
       {/* ---------------------------------------------------- the table */}
       <section aria-labelledby="table-heading">
-        <h2 id="table-heading" className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">
+        <h2
+          id="table-heading"
+          className="text-xl font-semibold tracking-tight text-ink sm:text-2xl"
+        >
           Both options, priced at every common slab size
         </h2>
         <p className="pk-prose mt-2 text-sm">
-          Each row is the concrete planner run at those dimensions, four inches thick, including
-          the same waste allowance and purchase rounding a real order gets.
+          Each row is the concrete planner run at those dimensions, four inches
+          thick, including the same waste allowance and purchase rounding a real
+          order gets.
         </p>
 
-        <div className="mt-4 overflow-x-auto">
+        {/*
+            Focusable, and named.
+
+            The table is wider than a phone, so this container scrolls — and a
+            scrollable region with nothing focusable inside it cannot be reached
+            by keyboard at all. axe flags it as `scrollable-region-focusable`,
+            and it is right: without a tab stop the only way to read the
+            right-hand columns is to touch the screen.
+          */}
+        <div
+          className="mt-4 overflow-x-auto"
+          tabIndex={0}
+          role="region"
+          aria-label="Ready-mix and bagged concrete compared by slab size"
+        >
           <table className="w-full min-w-[34rem] border-collapse text-sm">
             <caption className="sr-only">
-              Ready-mix and bagged concrete cost compared across eight slab sizes
+              Ready-mix and bagged concrete cost compared across eight slab
+              sizes
             </caption>
             <thead>
               <tr className="border-b border-line-strong text-left">
-                {["Slab", "Order", "Ready-mix", "Bagged", "Bags to mix", "Cheaper to use"].map(
-                  (heading) => (
-                    <th
-                      key={heading}
-                      scope="col"
-                      className="py-2 pr-3 font-mono text-[0.625rem] uppercase tracking-[0.12em] text-ink-subtle"
-                    >
-                      {heading}
-                    </th>
-                  ),
-                )}
+                {[
+                  "Slab",
+                  "Order",
+                  "Ready-mix",
+                  "Bagged",
+                  "Bags to mix",
+                  "Cheaper to use",
+                ].map((heading) => (
+                  <th
+                    key={heading}
+                    scope="col"
+                    className="py-2 pr-3 font-mono text-[0.625rem] uppercase tracking-[0.12em] text-ink-subtle"
+                  >
+                    {heading}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -129,13 +171,24 @@ export function ComparisonAnswer({ project }: { project: ProjectDefinition; comp
                     row === firstReadyMix ? "bg-brand-soft/45" : ""
                   }`}
                 >
-                  <th scope="row" className="py-2.5 pr-3 text-left font-medium text-ink">
+                  <th
+                    scope="row"
+                    className="py-2.5 pr-3 text-left font-medium text-ink"
+                  >
                     {row.label}
                   </th>
-                  <td className="py-2.5 pr-3 tabular-nums text-ink-muted">{row.order}</td>
-                  <td className="py-2.5 pr-3 tabular-nums text-ink">{row.readyMix}</td>
-                  <td className="py-2.5 pr-3 tabular-nums text-ink">{row.bagged}</td>
-                  <td className="py-2.5 pr-3 tabular-nums text-ink-muted">{row.bags}</td>
+                  <td className="py-2.5 pr-3 tabular-nums text-ink-muted">
+                    {row.order}
+                  </td>
+                  <td className="py-2.5 pr-3 tabular-nums text-ink">
+                    {row.readyMix}
+                  </td>
+                  <td className="py-2.5 pr-3 tabular-nums text-ink">
+                    {row.bagged}
+                  </td>
+                  <td className="py-2.5 pr-3 tabular-nums text-ink-muted">
+                    {row.bags}
+                  </td>
                   <td className="py-2.5">
                     <span
                       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[0.625rem] uppercase tracking-wide ${
@@ -158,11 +211,13 @@ export function ComparisonAnswer({ project }: { project: ProjectDefinition; comp
 
         {lastBagged && firstReadyMix ? (
           <p className="pk-prose mt-4 text-sm">
-            The recommendation changes between <strong className="text-ink">{lastBagged.label}</strong>{" "}
-            and <strong className="text-ink">{firstReadyMix.label}</strong> — the point where the
-            order passes one cubic yard. Notice what the money does across that boundary: ready-mix
-            is the cheaper material on <em>both</em> rows, and on every row above and below them.
-            Bags win the smaller job on practicality, not price.
+            The recommendation changes between{" "}
+            <strong className="text-ink">{lastBagged.label}</strong> and{" "}
+            <strong className="text-ink">{firstReadyMix.label}</strong> — the
+            point where the order passes one cubic yard. Notice what the money
+            does across that boundary: ready-mix is the cheaper material on{" "}
+            <em>both</em> rows, and on every row above and below them. Bags win
+            the smaller job on practicality, not price.
           </p>
         ) : null}
       </section>
@@ -176,12 +231,15 @@ export function ComparisonAnswer({ project }: { project: ProjectDefinition; comp
           What these prices leave out
         </h2>
         <p className="pk-prose mt-2 text-sm">
-          Both columns are material only, and the omissions land on opposite sides — which is why
-          the table alone should not make the decision for a job near the threshold.
+          Both columns are material only, and the omissions land on opposite
+          sides — which is why the table alone should not make the decision for
+          a job near the threshold.
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <div className="rounded-[var(--radius-card)] border border-line bg-surface p-4">
-            <h3 className="text-sm font-semibold text-ink">Ready-mix leaves out</h3>
+            <h3 className="text-sm font-semibold text-ink">
+              Ready-mix leaves out
+            </h3>
             <ul className="pk-prose mt-2 list-disc space-y-1 pl-4 text-sm">
               <li>Delivery, which is charged per load</li>
               <li>Short-load fees under the supplier&rsquo;s minimum</li>
@@ -192,7 +250,10 @@ export function ComparisonAnswer({ project }: { project: ProjectDefinition; comp
             <h3 className="text-sm font-semibold text-ink">Bags leave out</h3>
             <ul className="pk-prose mt-2 list-disc space-y-1 pl-4 text-sm">
               <li>Mixer hire, unless you are mixing in a barrow</li>
-              <li>Your day — and a second pair of hands on anything but a small pad</li>
+              <li>
+                Your day — and a second pair of hands on anything but a small
+                pad
+              </li>
               <li>
                 The risk of a cold joint if the mixing falls behind the pour
               </li>

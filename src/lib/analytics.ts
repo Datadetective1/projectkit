@@ -1,5 +1,6 @@
 import { track as vercelTrack } from "@vercel/analytics";
 import { analyticsConfig } from "@/config/site";
+import type { RetailerId } from "@/config/retailers";
 import { redactPathname, redactUrl } from "@/lib/analytics/redact";
 
 /**
@@ -83,6 +84,147 @@ export interface AnalyticsProps {
   prefilled?: number;
   /** Whether a checklist item was ticked on or off. */
   checked?: boolean;
+  /**
+   * Which material a retailer link was for — the calculation's own id, such as
+   * `concrete-readymix` or `gravel-base`.
+   *
+   * Authored in the calculation files and provably invariant under user input:
+   * see the "never lets a user's dimensions reach a search term" test, which
+   * evaluates every planner at two different sizes and requires the ids and
+   * terms to match. Never derived from anything typed.
+   */
+  materialId?: string;
+  /** Which retailer earned an outbound click. */
+  retailer?: RetailerId;
+  /**
+   * The kind of page an action started from.
+   *
+   * A six-token enum, never a path. The question this exists to answer is the
+   * organic experiment's: do answer pages turn into planner starts? A raw
+   * pathname would answer it too, and would also reintroduce exactly the
+   * cardinality and leakage the redaction layer exists to prevent.
+   */
+  source?: AnalyticsSource;
+}
+
+/**
+ * Where an action came from.
+ *
+ * Deliberately not "direct" — that describes a *referrer*, not a page, and
+ * cannot be derived from a pathname. `other` covers everything unmapped rather
+ * than inventing a category.
+ */
+export type AnalyticsSource =
+  | "home"
+  | "planner"
+  | "answer"
+  | "projects"
+  | "plan"
+  | "other";
+
+/**
+ * Classify a pathname into the closed `source` vocabulary.
+ *
+ * Takes the path rather than reading `location` so it is pure and testable, and
+ * so a caller cannot accidentally hand it a full URL with a query string.
+ */
+/**
+ * Where the visitor came *from*, for the event that opens the funnel.
+ *
+ * `sourceFromPath(pathname)` answers "which page did this happen on", which is
+ * the right question for a click but the wrong one for `planner_started` — it
+ * would report "planner" every time, since planners are where planners start.
+ * The question worth answering is the organic experiment's: do the answer pages
+ * send people into the tool?
+ *
+ * So this reads the referrer, and **only when it is our own origin**. An
+ * external referrer is another site's URL: it is not ours to record, it can
+ * carry a search query, and it would explode the vocabulary. Anything that is
+ * not same-origin — an external site, a bookmark, a pasted link, an empty
+ * referrer — collapses to `other`, which is honest about not knowing.
+ */
+/**
+ * The last Cubitora page this visitor was on, within this page session.
+ *
+ * Needed because `document.referrer` does not survive client-side navigation:
+ * Next moves between routes with the History API, which leaves the referrer
+ * frozen at whatever loaded the document — usually empty. So a visitor going
+ * from an answer page into the planner has no referrer at all, which is the
+ * one journey this whole field exists to measure.
+ *
+ * Held in a module variable rather than storage: it is per-tab, it dies with
+ * the page, and it holds one of six fixed tokens' worth of information.
+ */
+let currentPath: string | null = null;
+let priorPath: string | null = null;
+
+/**
+ * Called by AnalyticsProvider on every route.
+ *
+ * Two variables rather than one, because a single "previous path" is only
+ * correct if this always runs *after* the effects that read it — and it does
+ * not. The planner sits behind Suspense, so on a fresh load its effects run
+ * after the provider's, while on a client-side navigation they run before.
+ * Depending on that ordering made the attribution report "planner" for a
+ * direct visit and "answer" for a referred one, from the same code.
+ *
+ * Advancing only when the path actually changes removes the race: `priorPath`
+ * is the page before this one whichever order the effects happen to run in.
+ */
+export function notePathChange(path: string): void {
+  if (path === currentPath) return;
+  priorPath = currentPath;
+  currentPath = path;
+}
+
+/**
+ * @param thisPath the path the caller is currently on, so the answer does not
+ * depend on whether the provider's effect has run yet.
+ */
+export function entrySource(thisPath: string): AnalyticsSource {
+  /*
+   * Both orderings, handled explicitly rather than assumed.
+   *
+   * If `currentPath` is still some *other* page, the provider has not caught up
+   * with this navigation yet and that other page is the one we came from. If it
+   * has caught up, `priorPath` holds it. Reading both is what makes this give
+   * the same answer whether the caller's effect runs before or after the
+   * provider's — which, thanks to Suspense, varies by route.
+   */
+  if (currentPath && currentPath !== thisPath) return sourceFromPath(currentPath);
+  if (priorPath) return sourceFromPath(priorPath);
+
+  /*
+   * Otherwise the referrer, and only when it is our own origin. An external
+   * referrer is another site's URL: not ours to record, capable of carrying a
+   * search query, and it would explode the vocabulary. Anything else — an
+   * external site, a bookmark, a pasted link, no referrer — collapses to
+   * `other`, which is honest about not knowing.
+   */
+  try {
+    if (typeof document === "undefined" || !document.referrer) return "other";
+
+    const referrer = new URL(document.referrer);
+    if (referrer.origin !== window.location.origin) return "other";
+
+    return sourceFromPath(referrer.pathname);
+  } catch {
+    return "other";
+  }
+}
+
+export function sourceFromPath(pathname: string): AnalyticsSource {
+  const path = pathname.split("?")[0].split("#")[0].replace(/\/+$/, "");
+
+  if (path === "" || path === "/") return "home";
+  if (path === "/projects") return "projects";
+  if (path === "/plan") return "plan";
+
+  const segments = path.split("/").filter(Boolean);
+  if (segments[0]?.endsWith("-calculator")) {
+    return segments.length > 1 ? "answer" : "planner";
+  }
+  return "other";
 }
 
 type GtagWindow = Window & {
@@ -92,8 +234,18 @@ type GtagWindow = Window & {
 
 /* ------------------------------------------------------------ providers -- */
 
+/**
+ * A GA4 measurement ID, not merely a non-empty string.
+ *
+ * The shape is checked rather than the length because this value is
+ * interpolated into an inline script and into a script `src`. Validating it
+ * here means a typo, a stray quote, or a half-filled environment variable can
+ * never become markup — the scripts simply do not render.
+ */
+const GA4_MEASUREMENT_ID = /^G-[A-Z0-9]{4,20}$/;
+
 export function isGoogleAnalyticsEnabled(): boolean {
-  return Boolean(analyticsConfig.measurementId);
+  return GA4_MEASUREMENT_ID.test(analyticsConfig.measurementId);
 }
 
 /**
