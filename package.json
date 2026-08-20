@@ -14,7 +14,7 @@
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
     "check": "npm run lint && npm run typecheck && npm run test",
-    "indexnow": "tsx scripts/indexnow.mts"
+    "indexnow": "npx tsx scripts/indexnow.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.117.1",

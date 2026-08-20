@@ -50,43 +50,60 @@ if (rejected.length > 0) {
   for (const { url, reason } of rejected) console.log(`  - ${url}  (${reason})`);
 }
 
+/*
+ * Exit via `process.exitCode` rather than `process.exit()`. Calling exit()
+ * while a fetch is still settling tears the event loop down underneath it,
+ * which on Windows surfaces as a libuv assertion after an otherwise correct
+ * run — an alarming-looking crash reported on top of an accurate result.
+ */
 if (dryRun) {
   console.log("\nDry run — nothing submitted.");
-  process.exit(0);
-}
-
-if (valid.length === 0) {
+} else if (valid.length === 0) {
   console.log("\nNothing to submit.");
-  process.exit(1);
+  process.exitCode = 1;
+} else if (await keyFileVerifies()) {
+  const result = await submitUrls(urls);
+
+  console.log(
+    `\n${result.ok ? "OK" : "FAILED"}  ${result.status ?? "no response"}  ${result.message}`,
+  );
+  if (result.endpoint) console.log(`endpoint     ${result.endpoint}`);
+  console.log(`submitted    ${result.submitted.length}`);
+
+  process.exitCode = result.ok ? 0 : 1;
+} else {
+  process.exitCode = 1;
 }
 
-/*
- * Verify the key file first. A 403 from the endpoint is indistinguishable from
- * a dozen other problems, and checking takes one request — so check, and say
- * exactly what is wrong before spending the submission.
+/**
+ * Check the key file before submitting.
+ *
+ * A 403 from the endpoint is indistinguishable from half a dozen other
+ * problems, and checking costs one request — so check, and say exactly what is
+ * wrong rather than spending the submission to find out.
  */
-console.log(`\nChecking ${keyFileUrl()} …`);
-try {
-  const response = await fetch(keyFileUrl(), { signal: AbortSignal.timeout(10_000) });
-  const body = (await response.text()).trim();
-  if (!response.ok) {
-    console.error(`  key file returned ${response.status}. Submission would be rejected (403).`);
-    process.exit(1);
+async function keyFileVerifies(): Promise<boolean> {
+  console.log(`\nChecking ${keyFileUrl()} …`);
+  try {
+    const response = await fetch(keyFileUrl(), { signal: AbortSignal.timeout(10_000) });
+    const body = (await response.text()).trim();
+
+    if (!response.ok) {
+      console.error(`  key file returned ${response.status}. Submission would be rejected (403).`);
+      console.error("  Has this branch been deployed to production?");
+      return false;
+    }
+    if (body !== INDEXNOW_KEY) {
+      console.error(
+        `  key file contains "${body.slice(0, 40)}" but the submitter uses "${INDEXNOW_KEY}".`,
+      );
+      return false;
+    }
+
+    console.log("  ok — key file matches.");
+    return true;
+  } catch (error) {
+    console.error(`  could not fetch the key file: ${(error as Error).message}`);
+    return false;
   }
-  if (body !== INDEXNOW_KEY) {
-    console.error(`  key file contains "${body.slice(0, 40)}" but the submitter uses "${INDEXNOW_KEY}".`);
-    process.exit(1);
-  }
-  console.log("  ok — key file matches.");
-} catch (error) {
-  console.error(`  could not fetch the key file: ${(error as Error).message}`);
-  process.exit(1);
 }
-
-const result = await submitUrls(urls);
-
-console.log(`\n${result.ok ? "OK" : "FAILED"}  ${result.status ?? "no response"}  ${result.message}`);
-if (result.endpoint) console.log(`endpoint     ${result.endpoint}`);
-console.log(`submitted    ${result.submitted.length}`);
-
-process.exit(result.ok ? 0 : 1);
