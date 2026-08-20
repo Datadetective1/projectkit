@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { projectSlugs } from "@/data/projects";
+import { answerPaths } from "@/data/answers";
 import { absoluteUrl } from "@/lib/seo";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -21,5 +22,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.9,
   }));
 
-  return [...core, ...planners];
+  /*
+   * Answer pages sit below their planner in priority: they exist to catch a
+   * specific question and hand the visitor to the tool, which is the page that
+   * should rank for the broad term.
+   */
+  const answers: MetadataRoute.Sitemap = answerPaths().map((path) => ({
+    url: absoluteUrl(path),
+    lastModified: now,
+    changeFrequency: "monthly",
+    priority: 0.7,
+  }));
+
+  return [...core, ...planners, ...answers];
 }

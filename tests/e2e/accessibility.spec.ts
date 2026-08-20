@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
+import { answerPages } from "../../src/data/answers";
 
 /**
  * Automated accessibility checks against WCAG 2.1 A and AA.
@@ -18,6 +19,16 @@ const PAGES = [
   { path: "/about", name: "about" },
   { path: "/privacy", name: "privacy" },
   { path: "/plan?q=nonsense", name: "plan fallback" },
+  /*
+   * Answer pages, derived rather than listed. They are dense with tables and
+   * numeric columns, which is exactly the markup that fails a contrast or
+   * header-association check quietly — and adding one must not be a decision
+   * about whether to test it.
+   */
+  ...answerPages.map((page) => ({
+    path: `/${page.planner}/${page.slug}`,
+    name: `answer: ${page.seo.breadcrumb}`,
+  })),
 ];
 
 function audit(page: Page) {

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ArrowRight } from "lucide-react";
 import { ProjectPlanner } from "@/components/planner/ProjectPlanner";
 import { ProjectCard } from "@/components/ProjectCard";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
@@ -12,6 +12,7 @@ import { AdSlot } from "@/components/monetization/AdSlot";
 import { PlannerMethod } from "@/components/PlannerMethod";
 import { MaterialSwatch } from "@/components/brand/MaterialSwatch";
 import { getProject, projectSlugs, relatedProjects } from "@/data/projects";
+import { answersFor } from "@/data/answers";
 import { breadcrumbJsonLd, faqJsonLd, pageMetadata, webApplicationJsonLd } from "@/lib/seo";
 import { legal } from "@/config/site";
 
@@ -45,6 +46,7 @@ export default async function ProjectPage({
   if (!project) notFound();
 
   const related = relatedProjects(project.slug);
+  const answers = answersFor(project.slug);
   const crumbs = [
     { name: "Home", path: "/" },
     { name: "Projects", path: "/projects" },
@@ -130,6 +132,42 @@ export default async function ProjectPage({
           of the page.
         */}
         <PlannerMethod project={project} />
+
+        {/*
+          Answer pages for this planner.
+
+          Without this module the answer pages would have exactly one inbound
+          link each — from the sitemap — and the planner would gain nothing from
+          their existence. This is the link surface that makes the pair work in
+          both directions: the question page catches the search, the hub
+          collects the authority.
+        */}
+        {answers.length > 0 ? (
+          <section aria-labelledby="answers-heading" className="pk-no-print mt-14 max-w-3xl">
+            <h2 id="answers-heading" className="text-2xl font-semibold tracking-tight text-ink">
+              Common {project.name.toLowerCase()} questions, answered
+            </h2>
+            <p className="pk-prose mt-2 text-sm">
+              Worked examples at the sizes people ask about most, using this same calculator.
+            </p>
+            <ul className="mt-5 flex flex-col gap-2">
+              {answers.map((answer) => (
+                <li key={answer.slug}>
+                  <Link
+                    href={`/${project.slug}/${answer.slug}`}
+                    className="group flex items-center gap-3 rounded-[var(--radius-card)] border border-line bg-surface px-4 py-3 transition-colors hover:border-brand/35 hover:bg-brand-soft/40"
+                  >
+                    <span className="min-w-0 flex-1 text-sm font-medium text-ink">{answer.h1}</span>
+                    <ArrowRight
+                      className="h-4 w-4 shrink-0 text-brand transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
+                      aria-hidden
+                    />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         {/* Marketing and browsing sections are not worth the paper. */}
         <div className="pk-no-print mt-12 max-w-3xl">
