@@ -97,3 +97,37 @@ describe("brand identity", () => {
     }
   });
 });
+
+describe("brand surfaces that carry no brand text", () => {
+  /**
+   * The social card carried a hardcoded "P" for ProjectKit and the previous
+   * tagline. Neither contains the string "ProjectKit", so a text sweep walked
+   * straight past them — it took looking at the rendered image to find them.
+   *
+   * These assert the card is derived from configuration rather than typed out,
+   * which is the only thing that makes it survive the next rename.
+   */
+  const source = readFileSync("src/app/opengraph-image.tsx", "utf8");
+
+  it("derives the social card's mark from the brand name", () => {
+    expect(source).toContain("site.name.charAt(0)");
+    // A bare initial in JSX is what went wrong; make its return obvious.
+    expect(source).not.toMatch(/\n\s{10,}P\n/);
+  });
+
+  it("derives the social card's copy from the configured positioning", () => {
+    expect(source).toContain("site.supportingLine");
+    expect(source).toContain("Plan the project.");
+    expect(source).toContain("Know what you need.");
+  });
+
+  it("carries no retired tagline anywhere in the app", () => {
+    // The previous positioning, in both the forms it appeared in.
+    for (const retired of ["figure out the rest", "figure out everything you need"]) {
+      const offenders = sourceFiles("src").filter((file) =>
+        readFileSync(file, "utf8").includes(retired),
+      );
+      expect(offenders.join("\n"), retired).toBe("");
+    }
+  });
+});

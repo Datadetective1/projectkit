@@ -36,7 +36,7 @@ export default function OpenGraphImage() {
               fontWeight: 700,
             }}
           >
-            P
+            {site.name.charAt(0)}
           </div>
           <div style={{ fontSize: 34, fontWeight: 600, color: "#16181D" }}>{site.name}</div>
         </div>
@@ -52,7 +52,7 @@ export default function OpenGraphImage() {
               maxWidth: 940,
             }}
           >
-            Tell us what you&apos;re building.
+            Plan the project.
           </div>
           <div
             style={{
@@ -64,12 +64,12 @@ export default function OpenGraphImage() {
               maxWidth: 940,
             }}
           >
-            We&apos;ll figure out the rest.
+            Know what you need.
           </div>
         </div>
 
         <div style={{ fontSize: 28, color: "#5B6270", maxWidth: 900 }}>
-          Material quantities, estimated costs, a shopping list, and a printable plan.
+          {site.supportingLine}
         </div>
       </div>
     ),
