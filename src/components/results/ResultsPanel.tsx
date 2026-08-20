@@ -13,12 +13,24 @@ interface ResultsPanelProps {
   projectName: string;
   /** Project slug, used as the categorical analytics label. */
   projectType: string;
+  /**
+   * Bumped when the user presses "Calculate my project". Used as a React key so
+   * the headline remounts and replays its settle animation — the page has just
+   * scrolled, and this is what lands the eye on the answer.
+   */
+  revealKey?: number;
 }
 
-export function ResultsPanel({ result, system, projectName, projectType }: ResultsPanelProps) {
+export function ResultsPanel({
+  result,
+  system,
+  projectName,
+  projectType,
+  revealKey = 0,
+}: ResultsPanelProps) {
   return (
     <div className="flex flex-col gap-6">
-      <Headline result={result} system={system} />
+      <Headline result={result} system={system} revealKey={revealKey} />
       <SummaryCard result={result} system={system} />
       <MaterialsCard
         result={result}
@@ -33,7 +45,15 @@ export function ResultsPanel({ result, system, projectName, projectType }: Resul
   );
 }
 
-function Headline({ result, system }: { result: CalculationResult; system: UnitSystem }) {
+function Headline({
+  result,
+  system,
+  revealKey,
+}: {
+  result: CalculationResult;
+  system: UnitSystem;
+  revealKey: number;
+}) {
   const { headline } = result;
   const formatted =
     headline.measure === "currency"
@@ -53,14 +73,26 @@ function Headline({ result, system }: { result: CalculationResult; system: UnitS
         {headline.label}
       </h2>
       <p
-        className="mt-2 text-[2.125rem] font-semibold leading-tight tracking-tight text-brand-ink sm:text-5xl"
+        /*
+         * Keyed on revealKey so pressing Calculate remounts this node and
+         * replays the settle. Keyed on the value too, so the number never
+         * animates while someone is mid-typing — only when it actually lands
+         * somewhere new.
+         */
+        key={`${revealKey}-${formatted}`}
+        className="pk-settle mt-2 text-[2.125rem] font-semibold leading-tight tracking-tight text-brand-ink sm:text-5xl"
         // Announce the primary number when inputs change.
         aria-live="polite"
       >
         {formatted}
       </p>
       {headline.sublabel ? (
-        <p className="mt-2 text-sm text-brand-ink/80 sm:text-base">{headline.sublabel}</p>
+        <p
+          key={`sub-${revealKey}-${headline.sublabel}`}
+          className="pk-settle-delayed mt-2 text-sm text-brand-ink/80 sm:text-base"
+        >
+          {headline.sublabel}
+        </p>
       ) : null}
     </section>
   );

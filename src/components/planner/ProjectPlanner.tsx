@@ -66,6 +66,8 @@ export function ProjectPlanner({ slug }: { slug: string }) {
   const [contractorQuote, setContractorQuote] = useState<number | "">(initial.contractorQuote);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
   const [copied, setCopied] = useState(false);
+  // Bumped by Calculate so the headline replays its settle after the scroll.
+  const [revealKey, setRevealKey] = useState(0);
 
   const prefilled = initial.prefilled;
   const fromNaturalLanguage = initial.fromNaturalLanguage;
@@ -155,6 +157,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
       system,
     });
     track("result_viewed", { projectType: project.slug });
+    setRevealKey((current) => current + 1);
     resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
@@ -371,6 +374,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
               system={system}
               projectName={project.name}
               projectType={project.slug}
+              revealKey={revealKey}
             />
 
             <WhatIf
