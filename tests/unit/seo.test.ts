@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { projects } from "@/data/projects";
 import { site } from "@/config/site";
 
@@ -63,5 +63,77 @@ describe("planner search metadata", () => {
         expect(related, `${project.slug} links to itself`).not.toBe(project.slug);
       }
     }
+  });
+});
+
+describe("deployment indexability", () => {
+  /**
+   * A preview deployment is a byte-identical copy of the site on a different
+   * host. Left crawlable it splits the real site's ranking between two URLs,
+   * and this very nearly shipped: NEXT_PUBLIC_SITE_URL applies to every
+   * environment unless it is scoped in Vercel, so the design preview
+   * canonicalised to production while serving "Allow: /".
+   */
+
+  const ORIGINAL = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...ORIGINAL };
+    vi.resetModules();
+  });
+
+  async function siteWith(env: Record<string, string | undefined>) {
+    vi.resetModules();
+    process.env = { ...ORIGINAL, ...env };
+    return import("@/config/site");
+  }
+
+  it("recognises the real domain as production", async () => {
+    const { isProductionSite } = await siteWith({
+      NEXT_PUBLIC_SITE_URL: "https://cubitora.com",
+    });
+    expect(isProductionSite).toBe(true);
+  });
+
+  it("does not mistake a preview for production", async () => {
+    for (const url of [
+      "https://projectkit-git-cubitora-design-x.vercel.app",
+      "http://localhost:3000",
+      // The www host is a redirect source, not the canonical.
+      "https://www.cubitora.com",
+    ]) {
+      const { isProductionSite } = await siteWith({ NEXT_PUBLIC_SITE_URL: url });
+      expect(isProductionSite, url).toBe(false);
+    }
+  });
+
+  it("closes robots.txt entirely off production", async () => {
+    vi.resetModules();
+    process.env = { ...ORIGINAL, NEXT_PUBLIC_SITE_URL: "https://preview.vercel.app" };
+    const robots = (await import("@/app/robots")).default();
+
+    expect(robots.rules).toEqual([{ userAgent: "*", disallow: "/" }]);
+    expect(robots.sitemap).toBeUndefined();
+  });
+
+  it("opens robots.txt on production, minus the private routes", async () => {
+    vi.resetModules();
+    process.env = { ...ORIGINAL, NEXT_PUBLIC_SITE_URL: "https://cubitora.com" };
+    const robots = (await import("@/app/robots")).default();
+    const rule = Array.isArray(robots.rules) ? robots.rules[0] : robots.rules;
+
+    expect(rule?.allow).toBe("/");
+    expect(rule?.disallow).toContain("/api/");
+    expect(rule?.disallow).toContain("/my-projects");
+    expect(robots.sitemap).toBe("https://cubitora.com/sitemap.xml");
+  });
+
+  it("marks every page noindex off production", async () => {
+    vi.resetModules();
+    process.env = { ...ORIGINAL, NEXT_PUBLIC_SITE_URL: "https://preview.vercel.app" };
+    const { pageMetadata } = await import("@/lib/seo");
+
+    const meta = pageMetadata({ title: "T", description: "D", path: "/" });
+    expect(meta.robots).toEqual({ index: false, follow: true });
   });
 });

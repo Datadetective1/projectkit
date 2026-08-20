@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { site } from "@/config/site";
+import { isProductionSite, site } from "@/config/site";
 
 export function absoluteUrl(path = "/"): string {
   return `${site.url}${path.startsWith("/") ? path : `/${path}`}`;
@@ -24,7 +24,18 @@ export function pageMetadata({
     title,
     description,
     alternates: { canonical: url },
-    robots: index ? undefined : { index: false, follow: true },
+    /*
+     * Two reasons a page is not indexable, and the deployment is the one that
+     * catches mistakes.
+     *
+     * NEXT_PUBLIC_SITE_URL applies to every environment unless it is scoped in
+     * Vercel, so a preview can end up canonicalising to production while
+     * serving an "Allow: /" robots.txt — a fully crawlable copy of the site
+     * pointing at the real one. Whatever the canonical says, a build that is
+     * not serving the canonical domain is not indexable.
+     */
+    robots:
+      index && isProductionSite ? undefined : { index: false, follow: true },
     openGraph: {
       type: "website",
       url,
