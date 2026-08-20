@@ -11,7 +11,7 @@ export const tileProject: ProjectDefinition = {
   intro:
     "Work out how many tiles and boxes a floor or wall needs, plus the thinset and grout to go with them. Waste is adjustable because a diagonal layout eats material a straight one does not.",
   icon: "Grid3x3",
-  accent: "teal",
+  accent: "ceramic",
   keywords: ["tile", "tiling", "ceramic", "porcelain", "backsplash", "grout", "thinset"],
 
   inputs: [

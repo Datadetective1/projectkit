@@ -229,14 +229,22 @@ export interface ProjectDefinition {
   keywords: string[];
 }
 
+/**
+ * Which material a planner is about, used to pick its colour and texture.
+ *
+ * These were stock hues — violet, rose, lime — chosen only to make ten cards
+ * distinguishable. Naming them after the material instead means the value says
+ * something true about the project, and the palette stops looking like a
+ * colour picker: cedar is cedar, bark is bark, chalk is joint compound.
+ */
 export type AccentToken =
-  | "slate"
-  | "amber"
-  | "violet"
-  | "emerald"
-  | "orange"
-  | "sky"
-  | "rose"
-  | "teal"
-  | "lime"
-  | "indigo";
+  | "stone" /* concrete */
+  | "cedar" /* fence */
+  | "pigment" /* paint */
+  | "oak" /* flooring */
+  | "bark" /* mulch */
+  | "slate" /* gravel */
+  | "chalk" /* drywall */
+  | "ceramic" /* tile */
+  | "timber" /* deck */
+  | "grass"; /* sod */

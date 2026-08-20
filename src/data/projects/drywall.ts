@@ -11,7 +11,7 @@ export const drywallProject: ProjectDefinition = {
   intro:
     "Enter a room and get the number of drywall sheets plus the accessories that always get forgotten — screws, joint compound, tape, and corner bead — with an estimated cost.",
   icon: "LayoutPanelTop",
-  accent: "rose",
+  accent: "chalk",
   keywords: ["drywall", "sheetrock", "gypsum", "wallboard", "plasterboard", "sheets"],
 
   inputs: [

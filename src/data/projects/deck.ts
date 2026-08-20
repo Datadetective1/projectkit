@@ -11,7 +11,7 @@ export const deckProject: ProjectDefinition = {
   intro:
     "Estimate the material a deck of a given size consumes — decking, framing, railing, stairs, and fasteners — so you can budget the project. This is material planning, not structural design.",
   icon: "Layers",
-  accent: "lime",
+  accent: "timber",
   keywords: ["deck", "decking", "porch", "joist", "railing", "composite"],
 
   inputs: [

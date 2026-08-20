@@ -11,7 +11,7 @@ export const concreteProject: ProjectDefinition = {
   intro:
     "Work out how much concrete a patio or slab actually needs, including waste, base gravel, and whether ready-mix or bags makes more sense. You get quantities, an estimated budget, and a shopping list you can take to the store.",
   icon: "Square",
-  accent: "slate",
+  accent: "stone",
   keywords: ["concrete", "slab", "patio", "cement", "pad", "footing", "driveway", "sidewalk"],
 
   inputs: [

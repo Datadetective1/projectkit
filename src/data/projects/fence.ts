@@ -11,7 +11,7 @@ export const fenceProject: ProjectDefinition = {
   intro:
     "Plan a fence from either the yard dimensions or a total run length. Cubitora works out sections, posts, rails, pickets, gate hardware, and how much concrete the post holes will swallow.",
   icon: "Fence",
-  accent: "amber",
+  accent: "cedar",
   keywords: ["fence", "fencing", "privacy fence", "picket", "gate", "backyard fence"],
 
   inputs: [
