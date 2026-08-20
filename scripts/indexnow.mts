@@ -39,6 +39,33 @@ const urls =
 
 const { valid, rejected } = filterSubmittable(urls);
 
+/*
+ * Every URL is fetched before it is announced.
+ *
+ * This exists because of a real incident rather than a hypothetical one. Git
+ * Bash on Windows rewrites a leading-slash argument as a filesystem path, so
+ * `npm run indexnow -- /concrete-calculator/10x10-slab` silently became
+ * `https://www.cubitora.com/C:/Program Files/Git/concrete-calculator/10x10-slab`
+ * — five nonsense URLs, submitted and accepted, because the safety filter only
+ * checks the host and the shape. It cannot know a path is meaningless.
+ *
+ * A HEAD request each is the check that would have caught it: announcing a URL
+ * that 404s is the one thing this tool must never do, since it spends the only
+ * currency it has with the engines.
+ */
+async function reachable(url: string): Promise<{ url: string; status: number | null }> {
+  try {
+    const response = await fetch(url, {
+      method: "HEAD",
+      redirect: "manual",
+      signal: AbortSignal.timeout(10_000),
+    });
+    return { url, status: response.status };
+  } catch {
+    return { url, status: null };
+  }
+}
+
 console.log(`host         ${new URL(site.url).host}`);
 console.log(`key          ${INDEXNOW_KEY}`);
 console.log(`keyLocation  ${keyFileUrl()}`);
@@ -56,13 +83,32 @@ if (rejected.length > 0) {
  * which on Windows surfaces as a libuv assertion after an otherwise correct
  * run — an alarming-looking crash reported on top of an accurate result.
  */
+console.log(`\nChecking all ${valid.length} are actually reachable …`);
+const checks = await Promise.all(valid.map(reachable));
+const dead = checks.filter((check) => check.status !== 200);
+
+for (const { url, status } of dead) {
+  console.error(`  ✗ ${url} → ${status ?? "unreachable"}`);
+}
+if (dead.length === 0) console.log("  ok — every URL returns 200.");
+
 if (dryRun) {
   console.log("\nDry run — nothing submitted.");
 } else if (valid.length === 0) {
   console.log("\nNothing to submit.");
   process.exitCode = 1;
+} else if (dead.length > 0) {
+  console.error(
+    `\nRefusing to submit: ${dead.length} URL${dead.length === 1 ? " does" : "s do"} not return 200.`,
+  );
+  console.error(
+    "If these came from shell arguments, check for path mangling — Git Bash on Windows\n" +
+      "rewrites a leading slash into a filesystem path. Pass full https:// URLs, or set\n" +
+      "MSYS_NO_PATHCONV=1.",
+  );
+  process.exitCode = 1;
 } else if (await keyFileVerifies()) {
-  const result = await submitUrls(urls);
+  const result = await submitUrls(valid);
 
   console.log(
     `\n${result.ok ? "OK" : "FAILED"}  ${result.status ?? "no response"}  ${result.message}`,
