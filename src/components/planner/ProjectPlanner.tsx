@@ -21,6 +21,7 @@ import { DiyOrHire } from "@/components/results/DiyOrHire";
 import { WhatIf } from "@/components/results/WhatIf";
 import { AdSlot } from "@/components/monetization/AdSlot";
 import { ReportProblem } from "@/components/ReportProblem";
+import { StickyCalculate } from "./StickyCalculate";
 import {
   anchorsFor,
   applyPrefill,
@@ -366,7 +367,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
       </form>
 
       {/* -------------------------------------------------------- results -- */}
-      <div ref={resultsRef} className="flex flex-col gap-6 scroll-mt-24">
+      <div ref={resultsRef} className="flex flex-col gap-6 scroll-mt-24 pb-20 sm:pb-0">
         {evaluation?.ok ? (
           <>
             <ResultsPanel
@@ -502,6 +503,12 @@ export function ProjectPlanner({ slug }: { slug: string }) {
           </div>
         )}
       </div>
+
+      <StickyCalculate
+        onCalculate={handleCalculate}
+        resultsRef={resultsRef}
+        disabled={hasErrors}
+      />
     </div>
   );
 }

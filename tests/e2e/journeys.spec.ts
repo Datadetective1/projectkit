@@ -47,9 +47,9 @@ async function expectNoHorizontalOverflow(page: Page) {
 
 test("journey 1: homepage to a concrete estimate", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "What are you trying to build?",
-  );
+  // The h1 carries the brand positioning; the prompt is the input label.
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Plan the project");
+  await expect(page.getByLabel(/what you.re building/i)).toBeVisible();
 
   await page.getByRole("link", { name: "Concrete", exact: false }).first().click();
   await expect(page).toHaveURL(/concrete-calculator/);
@@ -119,7 +119,7 @@ test("copy summary puts a readable plan on the clipboard", async ({
   await page.getByRole("button", { name: "Copy summary" }).click();
 
   const text = await page.evaluate(() => navigator.clipboard.readText());
-  expect(text).toContain("Concrete — ProjectKit estimate");
+  expect(text).toContain("Concrete — Cubitora estimate");
   expect(text).toContain("4.35 yd³");
   expect(text).toContain("Ready-mix concrete (delivered)");
   expect(text).toContain("Planning estimate only");
@@ -131,7 +131,7 @@ test("copy summary puts a readable plan on the clipboard", async ({
 test("journey 2: a plain-English request lands on a prefilled planner", async ({ page }) => {
   await page.goto("/");
   await page
-    .getByLabel("Describe your project")
+    .getByLabel(/what you.re building/i)
     .fill("I need a 6 foot privacy fence around a 75 by 110 backyard with one gate");
   await page.getByRole("button", { name: "Plan my project" }).click();
 
@@ -229,7 +229,7 @@ test("journey 5: the Project Pack previews and downloads", async ({ page }) => {
   const download = page.waitForEvent("download", { timeout: 60_000 });
   await page.getByRole("button", { name: "Download PDF" }).click();
   const file = await download;
-  expect(file.suggestedFilename()).toMatch(/^projectkit-.*\.pdf$/);
+  expect(file.suggestedFilename()).toMatch(/^cubitora-.*\.pdf$/);
 });
 
 test("a project pack for an unknown id explains itself", async ({ page }) => {
