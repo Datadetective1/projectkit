@@ -165,6 +165,7 @@ export function ShoppingList({
                       query={entry.searchTerm}
                       projectType={projectType}
                       measure={entry.measure}
+                      materialId={entry.id.replace(/^material:/, "")}
                     />
                   ) : null}
                 </span>

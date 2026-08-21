@@ -255,3 +255,32 @@ describe("affiliate links stay out of offline content", () => {
     expect(source).toContain("pk-no-print");
   });
 });
+
+describe("every affiliate link is labelled as one", () => {
+  it("marks paid links from the affiliate flag, not from a hardcoded name", async () => {
+    /*
+     * The label has to be derived, not typed. A "(paid link)" baked into a
+     * retailer's name would survive that retailer losing its programme, and a
+     * newly approved one would silently ship unmarked until somebody
+     * remembered to edit a string.
+     */
+    const { readFileSync } = await import("node:fs");
+    const source = readFileSync("src/components/monetization/WhereToBuy.tsx", "utf8");
+
+    expect(source).toContain("retailer.affiliate ?");
+    expect(source).toContain("(paid link)");
+
+    // The name itself stays clean — the marker is added at render.
+    const { retailers } = await retailersWith({});
+    for (const retailer of retailers) {
+      expect(retailer.name, `${retailer.id} bakes the marker into its name`).not.toContain(
+        "paid link",
+      );
+    }
+  });
+
+  it("keeps Amazon's identity separate from its label", async () => {
+    const { retailers } = await retailersWith({});
+    expect(retailers.find((retailer) => retailer.id === "amazon")!.name).toBe("Amazon");
+  });
+});
