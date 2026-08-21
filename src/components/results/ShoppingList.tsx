@@ -3,8 +3,9 @@
 import { useEffect, useRef } from "react";
 import { Printer } from "lucide-react";
 import { WhereToBuy } from "@/components/monetization/WhereToBuy";
+import { RetailerDisclosure } from "@/components/monetization/RetailerDisclosure";
 import { formatMaterialQuantity } from "@/lib/format";
-import type { UnitSystem } from "@/lib/units";
+import type { Measure, UnitSystem } from "@/lib/units";
 import type { CalculationResult } from "@/types/project";
 import { track } from "@/lib/analytics";
 
@@ -24,6 +25,14 @@ export interface ShoppingEntry {
    * a refactor.
    */
   searchTerm?: string;
+  /**
+   * The material's unit of measure, when it came from a computed line.
+   *
+   * Used only to decide whether a retailer link makes sense: goods sold by the
+   * cubic yard or the ton arrive on a truck from a yard, and no online retailer
+   * sells them.
+   */
+  measure?: Measure;
 }
 
 /** Build the checklist from computed materials plus the project's extras. */
@@ -37,6 +46,7 @@ export function buildShoppingList(
     detail: formatMaterialQuantity(line, system),
     optional: line.optional,
     searchTerm: line.searchTerm,
+    measure: line.measure,
   }));
   const extras = result.shoppingExtras.map((item) => ({
     id: `extra:${item.id}`,
@@ -119,6 +129,8 @@ export function ShoppingList({
         </button>
       </div>
 
+      <RetailerDisclosure className="mt-3" />
+
       <ul className="mt-4 divide-y divide-line">
         {entries.map((entry) => {
           const isChecked = checkedSet.has(entry.id);
@@ -149,7 +161,11 @@ export function ShoppingList({
                   ) : null}
                   {/* Renders nothing until a retailer is actually configured. */}
                   {entry.searchTerm ? (
-                    <WhereToBuy query={entry.searchTerm} projectType={projectType} />
+                    <WhereToBuy
+                      query={entry.searchTerm}
+                      projectType={projectType}
+                      measure={entry.measure}
+                    />
                   ) : null}
                 </span>
               </label>

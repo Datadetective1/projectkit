@@ -3,6 +3,7 @@
 import { ExternalLink } from "lucide-react";
 import { retailerRel, retailerUrl, retailers, whereToBuyEnabled } from "@/config/retailers";
 import { track } from "@/lib/analytics";
+import type { Measure } from "@/lib/units";
 
 /**
  * "Where to buy", per material.
@@ -22,17 +23,32 @@ import { track } from "@/lib/analytics";
  * The search term comes from the calculation (`MaterialLine.searchTerm`), never
  * from anything the user typed, and is never sent to analytics.
  */
+/**
+ * Units that mean "a truck brings this from a yard".
+ *
+ * Cubic yards and tons are how bulk aggregate, ready-mix and mulch are sold,
+ * and no online retailer sells them — an Amazon search for "ready mix concrete
+ * delivery" returns nothing anyone wants. Offering the link anyway would be a
+ * dead end dressed up as help, and dead ends are what make an affiliate surface
+ * feel like one.
+ */
+const BULK_MEASURES: ReadonlySet<Measure> = new Set<Measure>(["volumeYd", "weight"]);
+
 export function WhereToBuy({
   query,
   projectType,
+  measure,
   className = "",
 }: {
   /** The material's search term. Not user input. */
   query: string;
   projectType?: string;
+  /** Suppresses the link for goods sold by the yard or the ton. */
+  measure?: Measure;
   className?: string;
 }) {
   if (!whereToBuyEnabled || !query) return null;
+  if (measure && BULK_MEASURES.has(measure)) return null;
 
   return (
     <div className={`pk-no-print mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 ${className}`}>
@@ -55,16 +71,7 @@ export function WhereToBuy({
           </span>
         </a>
       ))}
-      {/*
-        Disclosure at the link, not in a footer. Someone deciding whether to
-        click should be able to see the relationship without scrolling.
-      */}
-      {retailers.some((retailer) => retailer.affiliate) ? (
-        <span className="basis-full text-[0.6875rem] text-ink-subtle">
-          Cubitora may earn a commission from purchases made through these links. It does not
-          change the quantities above.
-        </span>
-      ) : null}
+
     </div>
   );
 }

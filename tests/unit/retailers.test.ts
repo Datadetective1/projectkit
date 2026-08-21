@@ -35,45 +35,57 @@ async function retailersWith(env: Record<string, string | undefined>) {
   return import("@/config/retailers");
 }
 
-describe("nothing is enabled by default", () => {
-  it("configures no retailers when the environment is empty", async () => {
-    const { retailers, whereToBuyEnabled } = await retailersWith({});
-    expect(retailers).toEqual([]);
-    expect(whereToBuyEnabled).toBe(false);
+describe("only approved programmes are live", () => {
+  it("ships Amazon, and only Amazon", async () => {
+    const { retailers } = await retailersWith({});
+    expect(retailers.map((retailer) => retailer.id)).toEqual(["amazon"]);
   });
 
-  it("stays off when the flag is on but nothing is configured", async () => {
-    // An empty panel promising retailers is worse than no panel.
-    const { whereToBuyEnabled } = await retailersWith({
-      NEXT_PUBLIC_WHERE_TO_BUY_ENABLED: "true",
-    });
-    expect(whereToBuyEnabled).toBe(false);
+  it("uses the approved store id and Amazon's documented search endpoint", async () => {
+    const { retailers } = await retailersWith({});
+    const amazon = retailers.find((retailer) => retailer.id === "amazon")!;
+    expect(amazon.searchUrlTemplate).toContain("tag=cubitora86-20");
+    expect(amazon.searchUrlTemplate).toContain("https://www.amazon.com/s?k={query}");
+    expect(amazon.affiliate).toBe(true);
   });
 
-  it("stays off when a retailer exists but the flag does not", async () => {
-    const { retailers, whereToBuyEnabled } = await retailersWith({
-      NEXT_PUBLIC_RETAILER_AMAZON_URL: "https://example.test/s?k={query}",
-    });
-    expect(retailers).toHaveLength(1);
-    expect(whereToBuyEnabled).toBe(false);
+  it("carries the exact disclosure the Associates agreement requires", async () => {
+    // Paraphrasing this is a compliance failure, so it is asserted verbatim.
+    const { retailers } = await retailersWith({});
+    const amazon = retailers.find((retailer) => retailer.id === "amazon")!;
+    expect(amazon.disclosure).toBe(
+      "As an Amazon Associate, Cubitora earns from qualifying purchases.",
+    );
   });
 
-  it("turns on only when both are true", async () => {
-    const { whereToBuyEnabled } = await retailersWith({
-      NEXT_PUBLIC_WHERE_TO_BUY_ENABLED: "true",
-      NEXT_PUBLIC_RETAILER_AMAZON_URL: "https://example.test/s?k={query}",
-    });
-    expect(whereToBuyEnabled).toBe(true);
+  it("does not ship Home Depot, whose application is still under review", async () => {
+    /*
+     * Implemented and configurable, deliberately absent. Home Depot appears
+     * only if someone supplies a URL, which nobody should until Impact
+     * approves the application and issues tracking details.
+     */
+    const { retailers } = await retailersWith({});
+    expect(retailers.some((retailer) => retailer.id === "home_depot")).toBe(false);
   });
 
-  it("ignores a URL with no {query} placeholder", async () => {
-    // Without the placeholder every material would link to the same page,
-    // which is a worse outcome than no link.
-    const { retailers } = await retailersWith({
-      NEXT_PUBLIC_RETAILER_LOWES_URL: "https://example.test/search",
+  it("has no Lowe's slot to configure", async () => {
+    // Checked as behaviour, not as a word in the file — the source says why
+    // Lowe's is absent, and a test that forbids the explanation is silly.
+    const mod = await retailersWith({
+      NEXT_PUBLIC_RETAILER_LOWES_URL: "https://example.test/s?k={query}",
     });
-    expect(retailers).toEqual([]);
+    expect(mod.retailers.map((retailer) => retailer.id)).toEqual(["amazon"]);
   });
+
+  it("can be killed from the environment without a deploy", async () => {
+    // The remaining reason for the flag: suspend every outbound link at once.
+    const off = await retailersWith({ NEXT_PUBLIC_WHERE_TO_BUY_ENABLED: "false" });
+    expect(off.whereToBuyEnabled).toBe(false);
+
+    const on = await retailersWith({});
+    expect(on.whereToBuyEnabled).toBe(true);
+  });
+
 });
 
 describe("the honesty of an outbound link", () => {
@@ -92,35 +104,48 @@ describe("the honesty of an outbound link", () => {
     ).not.toContain("sponsored");
   });
 
-  it("defaults a configured retailer to non-affiliate", async () => {
+  it("defaults an environment-configured retailer to non-affiliate", async () => {
+    // Commercial status is declared, never inferred from a URL existing.
     const { retailers } = await retailersWith({
       NEXT_PUBLIC_RETAILER_HOME_DEPOT_URL: "https://example.test/s/{query}",
     });
-    expect(retailers[0].affiliate).toBe(false);
+    const homeDepot = retailers.find((retailer) => retailer.id === "home_depot")!;
+    expect(homeDepot.affiliate).toBe(false);
   });
 
   it("encodes the search term into the URL", async () => {
-    const { retailerUrl, retailers } = await retailersWith({
-      NEXT_PUBLIC_RETAILER_HOME_DEPOT_URL: "https://example.test/s/{query}",
-    });
-    expect(retailerUrl(retailers[0], "ready mix concrete")).toBe(
-      "https://example.test/s/ready%20mix%20concrete",
+    const { retailerUrl, retailers } = await retailersWith({});
+    const amazon = retailers.find((retailer) => retailer.id === "amazon")!;
+    expect(retailerUrl(amazon, "ready mix concrete")).toBe(
+      "https://www.amazon.com/s?k=ready%20mix%20concrete&tag=cubitora86-20",
     );
   });
 
-  it("ships no affiliate identifier in the repository", async () => {
+  it("ships exactly one affiliate identifier, and it is the approved one", async () => {
     /*
-     * The check that matters most. A tag committed here would be live the
-     * moment anyone enabled the feature, without a decision being made.
+     * This test used to assert that *no* identifier existed anywhere. That was
+     * right while nothing was approved; it is wrong now, and loosening it to
+     * "any id is fine" would throw away the protection entirely.
+     *
+     * So it is narrowed rather than deleted: the only tracking parameter in the
+     * file must be Amazon's approved store id, and no unapproved retailer may
+     * carry a hardcoded destination. A Home Depot URL appearing here before the
+     * application is approved fails this.
      */
     const { readFileSync } = await import("node:fs");
     const source = readFileSync("src/config/retailers.ts", "utf8");
 
-    for (const marker of ["tag=", "aff_id", "affiliate_id", "linkCode", "ascsubtag", "clickref"]) {
+    // Every tracking parameter that actually resolves, across every retailer.
+    const { retailers, retailerUrl } = await retailersWith({});
+    const tags = retailers
+      .flatMap((retailer) => [...retailerUrl(retailer, "x").matchAll(/[?&]tag=([^&]+)/g)])
+      .map((match) => match[1]);
+    expect(tags).toEqual(["cubitora86-20"]);
+
+    for (const marker of ["aff_id", "affiliate_id", "linkCode", "ascsubtag", "clickref"]) {
       expect(source, `retailers.ts contains "${marker}"`).not.toContain(marker);
     }
-    // And no hardcoded retailer host — every destination comes from the env.
-    for (const host of ["homedepot.com", "lowes.com", "amazon.com"]) {
+    for (const host of ["homedepot.com", "lowes.com"]) {
       expect(source, `retailers.ts hardcodes ${host}`).not.toContain(host);
     }
   });
@@ -194,5 +219,39 @@ describe("materials carry a destination", () => {
         expect(line.searchTerm, `${project.slug}: ${line.id}`).toBe(before.get(line.id));
       }
     }
+  });
+});
+
+describe("affiliate links stay out of offline content", () => {
+  it("never reaches the Project Pack PDF", async () => {
+    /*
+     * An Associates Operating Agreement rule, not a preference: affiliate
+     * links must not appear in email, PDFs, or other offline material. The
+     * Project Pack is a downloadable PDF, so it must be built without them.
+     *
+     * Asserted against the pack builder rather than trusted to a code review,
+     * because the failure mode is a compliance breach that nothing in the UI
+     * would reveal.
+     */
+    const { readFileSync } = await import("node:fs");
+    const packSources = [
+      "src/lib/pack/buildPack.ts",
+      "src/components/pack/PackDocument.tsx",
+    ];
+
+    for (const path of packSources) {
+      const source = readFileSync(path, "utf8");
+      expect(source, `${path} imports the retailer layer`).not.toContain("WhereToBuy");
+      expect(source, `${path} references a retailer config`).not.toContain("retailers");
+      expect(source, `${path} carries an associate tag`).not.toContain("tag=");
+    }
+  });
+
+  it("is hidden from print", async () => {
+    // The shopping list is printable from the browser as well as downloadable.
+    // `pk-no-print` is what keeps the links off paper.
+    const { readFileSync } = await import("node:fs");
+    const source = readFileSync("src/components/monetization/WhereToBuy.tsx", "utf8");
+    expect(source).toContain("pk-no-print");
   });
 });
