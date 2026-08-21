@@ -83,7 +83,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
 
   useEffect(() => {
     if (initial.prefilled.length > 0) {
-      track("project_started", { projectType: slug, prefilled: initial.prefilled.length });
+      track("planner_started", { projectType: slug, prefilled: initial.prefilled.length });
     }
   }, [initial.prefilled.length, slug]);
 
@@ -152,7 +152,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
 
   const handleCalculate = () => {
     if (!evaluation?.ok) return;
-    track("project_completed", {
+    track("planner_completed", {
       projectType: project.slug,
       mode: showAdvanced ? "advanced" : "quick",
       system,
@@ -247,7 +247,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
 
   const handlePackClick = () => {
     if (!evaluation?.ok) return;
-    track("project_pack_previewed", { projectType: project.slug });
+    track("project_pack_opened", { projectType: project.slug });
     const saved = saveProject({
       id: savedId,
       slug: project.slug,
@@ -459,6 +459,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
             <ShoppingList
               title={`${project.name} shopping list`}
               entries={shoppingEntries}
+              projectType={project.slug}
               checked={checked}
               onToggle={(id, next) => {
                 setChecked((current) =>

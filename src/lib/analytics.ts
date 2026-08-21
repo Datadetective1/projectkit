@@ -21,17 +21,40 @@ import { redactPathname, redactUrl } from "@/lib/analytics/redact";
 
 /* --------------------------------------------------------------- schema -- */
 
+/**
+ * The funnel, named after what a person did rather than what the code calls it.
+ *
+ * The seven marked below are the intent funnel — landing through to an outbound
+ * click — and they are deliberately named for the journey:
+ *
+ *   planner_started → planner_completed → project_pack_opened →
+ *   project_pack_downloaded → shopping_list_viewed → retailer_click
+ *
+ * with `project_saved` as the parallel signal of someone intending to come
+ * back. Everything after them is supporting detail.
+ *
+ * **These were renamed.** `project_started` became `planner_started`,
+ * `project_pack_previewed` became `project_pack_opened`, `affiliate_clicked`
+ * became `retailer_click`. Renaming an event normally means losing the history
+ * behind it — here there is none to lose, because nothing has ever been
+ * recorded (see the audit note in components/analytics/VercelAnalytics.tsx).
+ * That makes today the last free moment to fix the names, and after the first
+ * real event lands it stops being free.
+ */
 export type AnalyticsEvent =
-  | "project_started"
-  | "project_completed"
-  | "result_viewed"
+  /* -- the intent funnel ------------------------------------------------- */
+  | "planner_started"
+  | "planner_completed"
+  | "project_pack_opened"
+  | "project_pack_downloaded"
+  | "shopping_list_viewed"
+  | "retailer_click"
   | "project_saved"
+  /* -- supporting signals ------------------------------------------------ */
+  | "result_viewed"
   | "project_shared"
-  | "project_pack_previewed"
   | "project_pack_checkout_started"
   | "project_pack_purchased"
-  | "project_pack_downloaded"
-  | "affiliate_clicked"
   | "related_project_clicked"
   | "natural_language_submitted"
   | "natural_language_routed"

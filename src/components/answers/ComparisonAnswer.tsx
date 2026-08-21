@@ -101,7 +101,21 @@ export function ComparisonAnswer({ project }: { project: ProjectDefinition; comp
           the same waste allowance and purchase rounding a real order gets.
         </p>
 
-        <div className="mt-4 overflow-x-auto">
+        {/*
+          Focusable, and named.
+
+          This table is wider than a phone, so the container scrolls — and a
+          scrollable region with nothing focusable inside it cannot be reached
+          by keyboard at all. axe flags it as `scrollable-region-focusable`,
+          and it is right: without a tab stop the only way to read the
+          right-hand columns is to touch the screen.
+        */}
+        <div
+          className="mt-4 overflow-x-auto"
+          tabIndex={0}
+          role="region"
+          aria-label="Ready-mix and bagged concrete compared by slab size"
+        >
           <table className="w-full min-w-[34rem] border-collapse text-sm">
             <caption className="sr-only">
               Ready-mix and bagged concrete cost compared across eight slab sizes
