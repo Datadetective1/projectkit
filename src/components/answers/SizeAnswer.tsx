@@ -91,7 +91,21 @@ export function SizeAnswer({
             Thickness is the single biggest lever on a slab order, and it is the input people are
             least sure about. Four inches suits a patio or shed base; five or six carry vehicles.
           </p>
-          <div className="mt-4 overflow-x-auto">
+          {/*
+            Focusable, and named.
+
+            This table is wider than a phone, so the container scrolls — and a
+            scrollable region with nothing focusable inside it cannot be reached
+            by keyboard at all. axe flags it as `scrollable-region-focusable`,
+            and it is right: without a tab stop the only way to read the
+            right-hand columns is to touch the screen.
+          */}
+          <div
+            className="mt-4 overflow-x-auto"
+            tabIndex={0}
+            role="region"
+            aria-label="The same slab at each thickness"
+          >
             <table className="w-full min-w-[30rem] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-line-strong text-left">

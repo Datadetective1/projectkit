@@ -102,7 +102,21 @@ export function ConversionAnswer({
           bed. Here is a 500 sq ft bed at each sensible depth, run through the mulch planner.
         </p>
 
-        <div className="mt-4 overflow-x-auto">
+        {/*
+          Focusable, and named.
+
+          This table is wider than a phone, so the container scrolls — and a
+          scrollable region with nothing focusable inside it cannot be reached
+          by keyboard at all. axe flags it as `scrollable-region-focusable`,
+          and it is right: without a tab stop the only way to read the
+          right-hand columns is to touch the screen.
+        */}
+        <div
+          className="mt-4 overflow-x-auto"
+          tabIndex={0}
+          role="region"
+          aria-label="Mulch needed for a 500 square foot bed by depth"
+        >
           <table className="w-full min-w-[32rem] border-collapse text-sm">
             <caption className="sr-only">
               A 500 square foot bed at two, three and four inches deep

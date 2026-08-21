@@ -146,7 +146,21 @@ export function CoverageAnswer({
           reason to check before ordering.
         </p>
 
-        <div className="mt-4 overflow-x-auto">
+        {/*
+          Focusable, and named.
+
+          This table is wider than a phone, so the container scrolls — and a
+          scrollable region with nothing focusable inside it cannot be reached
+          by keyboard at all. axe flags it as `scrollable-region-focusable`,
+          and it is right: without a tab stop the only way to read the
+          right-hand columns is to touch the screen.
+        */}
+        <div
+          className="mt-4 overflow-x-auto"
+          tabIndex={0}
+          role="region"
+          aria-label="Sod cost by pallet and by square foot across lawn sizes"
+        >
           <table className="w-full min-w-[34rem] border-collapse text-sm">
             <caption className="sr-only">Sod cost by pallet and by square foot across lawn sizes</caption>
             <thead>
