@@ -180,13 +180,46 @@ test("every interactive control on a planner is reachable by keyboard", async ({
   // A control that cannot be tabbed to cannot be used without a mouse, and axe
   // does not check this — it checks markup, not reachability.
   const unreachable = await page.evaluate(() => {
-    const selector = "a[href], button, input, select, textarea, [tabindex]";
+    const NATIVE = "a[href], button, input, select, textarea";
+    const INTERACTIVE_ROLES = new Set([
+      "button",
+      "link",
+      "checkbox",
+      "radio",
+      "tab",
+      "menuitem",
+      "option",
+      "switch",
+      "textbox",
+      "combobox",
+      "slider",
+      "spinbutton",
+    ]);
+
+    const selector = `${NATIVE}, [role], [tabindex]`;
     return Array.from(document.querySelectorAll<HTMLElement>(selector))
       .filter((element) => {
         if (element.hasAttribute("disabled") || element.getAttribute("aria-hidden") === "true") {
           return false;
         }
         if (element.offsetParent === null) return false; // Not rendered.
+
+        /*
+         * Only *controls* are required to be tabbable. `tabindex="-1"` on a
+         * plain container is the documented way to make a region focusable by
+         * script without adding a tab stop — it is how the results page moves
+         * focus to the shopping list when somebody presses "Shop these
+         * materials", so that the keyboard lands where the scroll did. Treating
+         * it as an unreachable control would forbid the very pattern that makes
+         * in-page navigation accessible.
+         *
+         * A natively interactive element, or anything claiming an interactive
+         * role, is still held to the original rule.
+         */
+        const role = element.getAttribute("role");
+        const isControl = element.matches(NATIVE) || (role !== null && INTERACTIVE_ROLES.has(role));
+        if (!isControl) return false;
+
         return element.tabIndex < 0;
       })
       .map((element) => element.outerHTML.slice(0, 120));

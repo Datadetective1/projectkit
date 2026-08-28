@@ -267,8 +267,17 @@ describe("every affiliate link is labelled as one", () => {
     const { readFileSync } = await import("node:fs");
     const source = readFileSync("src/components/monetization/WhereToBuy.tsx", "utf8");
 
+    /*
+     * Two markers, both derived from the flag: the visible "Paid link" beside
+     * the button, and the screen-reader sentence inside it. The visible one
+     * moved out of the button label when the link became a button — a marker
+     * inside a call to action reads as part of the action ("Shop on Amazon
+     * (paid link)"), which is worse for both the person and the disclosure.
+     */
     expect(source).toContain("retailer.affiliate ?");
-    expect(source).toContain("(paid link)");
+    expect(source).toMatch(/retailers\.some\(\(retailer\) => retailer\.affiliate\)/);
+    expect(source).toContain("Paid link");
+    expect(source).toContain("a paid affiliate link");
 
     // The name itself stays clean — the marker is added at render.
     const { retailers } = await retailersWith({});

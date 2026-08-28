@@ -42,10 +42,13 @@ async function analyticsWith(id: string | undefined) {
 const FUNNEL = [
   "planner_started",
   "planner_completed",
-  "project_pack_opened",
-  "project_pack_downloaded",
+  "result_viewed",
+  "shopping_cta_viewed",
+  "shopping_cta_clicked",
   "shopping_list_viewed",
   "retailer_click",
+  "project_pack_opened",
+  "project_pack_downloaded",
 ] as const;
 
 describe("the canonical funnel", () => {
@@ -344,8 +347,15 @@ describe("retailer is a controlled value", () => {
      * terminal event.
      */
     const fs = await import("node:fs");
-    const shopMaterials = fs.readFileSync("src/components/monetization/ShopMaterials.tsx", "utf8");
-    expect(shopMaterials).not.toMatch(/track\(\s*"retailer_click"/);
+
+    /*
+     * ShopMaterials was the surface that could not name a retailer: it pointed
+     * at a plain web search whenever no partner was configured, which in
+     * practice was always. It has since been deleted outright as part of the
+     * shopping redesign — it was also the decoy that stopped users finding the
+     * real Amazon links. Asserting its absence keeps it from coming back.
+     */
+    expect(fs.existsSync("src/components/monetization/ShopMaterials.tsx")).toBe(false);
 
     const whereToBuy = fs.readFileSync("src/components/monetization/WhereToBuy.tsx", "utf8");
     expect(whereToBuy).toMatch(/track\(\s*"retailer_click"/);

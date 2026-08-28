@@ -4,40 +4,59 @@ import { useState } from "react";
 import { AlertTriangle, ChevronDown, Info } from "lucide-react";
 import { formatMaterialQuantity, formatRow, formatUnitPrice } from "@/lib/format";
 import { formatCurrency, formatQuantity, type UnitSystem } from "@/lib/units";
-import { ShopMaterials } from "@/components/monetization/ShopMaterials";
 import type { CalculationResult } from "@/types/project";
 
 interface ResultsPanelProps {
   result: CalculationResult;
   system: UnitSystem;
-  projectName: string;
-  /** Project slug, used as the categorical analytics label. */
-  projectType: string;
   /**
    * Bumped when the user presses "Calculate my project". Used as a React key so
    * the headline remounts and replays its settle animation — the page has just
    * scrolled, and this is what lands the eye on the answer.
    */
   revealKey?: number;
+  /**
+   * What to do next, rendered between the headline and the summary.
+   *
+   * Passed in rather than built here because it needs the planner's shopping
+   * list and its scroll targets, and this component is deliberately a pure
+   * presenter of one `CalculationResult`. The position is the point: the offer
+   * has to sit in the space the eye lands on after the number, which is the one
+   * thing the old page never did.
+   */
+  nextStep?: React.ReactNode;
+  /**
+   * The shopping list, rendered immediately after the materials table.
+   *
+   * Position is the entire redesign. "What do I need" and "where do I get it"
+   * are one question, and the page used to answer them five blocks apart with
+   * every explanation, comparison and formula in between. Everything that
+   * explains the answer now sits below the thing to do about it.
+   */
+  shoppingList?: React.ReactNode;
 }
 
 export function ResultsPanel({
   result,
   system,
-  projectName,
-  projectType,
   revealKey = 0,
+  nextStep,
+  shoppingList,
 }: ResultsPanelProps) {
   return (
     <div className="flex flex-col gap-6">
+      {/* CALCULATE */}
       <Headline result={result} system={system} revealKey={revealKey} />
+      {nextStep}
+
+      {/* UNDERSTAND */}
       <SummaryCard result={result} system={system} />
-      <MaterialsCard
-        result={result}
-        system={system}
-        projectName={projectName}
-        projectType={projectType}
-      />
+      <MaterialsCard result={result} system={system} />
+
+      {/* SHOP */}
+      {shoppingList}
+
+      {/* DEEPER — why the numbers are what they are */}
       {result.scenarios.length > 0 ? <ScenariosCard result={result} system={system} /> : null}
       <ExplanationCard result={result} />
       <HowCalculatedCard result={result} />
@@ -130,16 +149,25 @@ function SummaryCard({ result, system }: { result: CalculationResult; system: Un
   );
 }
 
+/**
+ * The materials table.
+ *
+ * It used to end with a "Shop materials" button, which was the only shopping
+ * affordance anywhere near the top of the page — and it opened a Google search,
+ * because `affiliateConfig` defaults to one when no partner is configured. So
+ * the one place a person could plausibly find shopping was a decoy that left
+ * the site, which is a large part of why users reported that Cubitora did not
+ * help them buy anything.
+ *
+ * The button is gone. Buying now happens in one place, on the material lines
+ * themselves, where each link is a real Amazon search for that specific item.
+ */
 function MaterialsCard({
   result,
   system,
-  projectName,
-  projectType,
 }: {
   result: CalculationResult;
   system: UnitSystem;
-  projectName: string;
-  projectType: string;
 }) {
   const hasCosts = result.materials.some((line) => line.cost !== undefined);
 
@@ -267,13 +295,6 @@ function MaterialsCard({
           quantities. Sales tax, delivery, and equipment rental are not included — on bulk materials
           delivery alone can add a meaningful amount.
         </p>
-        <ShopMaterials
-          className="mt-4"
-          query={`${projectName} materials`}
-          projectType={projectType}
-          placement="materials"
-          label="Shop materials"
-        />
       </div>
     </section>
   );

@@ -16,12 +16,14 @@ import { InputField } from "./InputField";
 import { UnitToggle } from "./UnitToggle";
 import { ResultsPanel } from "@/components/results/ResultsPanel";
 import { ShoppingList, buildShoppingList } from "@/components/results/ShoppingList";
+import { NextStep } from "@/components/results/NextStep";
 import { ProjectSequence } from "@/components/results/ProjectSequence";
 import { DiyOrHire } from "@/components/results/DiyOrHire";
 import { WhatIf } from "@/components/results/WhatIf";
 import { AdSlot } from "@/components/monetization/AdSlot";
+import { countReadyToBuy } from "@/lib/shopping/groups";
 import { ReportProblem } from "@/components/ReportProblem";
-import { StickyCalculate } from "./StickyCalculate";
+import { StickyAction } from "./StickyAction";
 import {
   anchorsFor,
   applyPrefill,
@@ -82,6 +84,15 @@ export function ProjectPlanner({ slug }: { slug: string }) {
   const fromNaturalLanguage = initial.fromNaturalLanguage;
 
   const resultsRef = useRef<HTMLDivElement>(null);
+  /*
+   * Scroll targets for the two calls to action under the headline. Refs rather
+   * than `#hash` links: an anchor would push a fragment into the URL, and the
+   * redaction layer strips fragments from analytics precisely because they can
+   * carry anything — leaving one in the address bar for the user to copy and
+   * share is the same problem one step later.
+   */
+  const shoppingRef = useRef<HTMLDivElement>(null);
+  const detailsRef = useRef<HTMLDivElement>(null);
 
   // Remembers the exact value behind each field so flipping units repeatedly
   // returns to the number the user typed, not a drifting approximation.
@@ -160,6 +171,13 @@ export function ProjectPlanner({ slug }: { slug: string }) {
     return buildShoppingList(evaluation.result, system);
   }, [evaluation, system]);
 
+  /*
+   * Counted once, here, and handed to the three surfaces that quote it — the
+   * card, the sticky bar, and the list's own heading. They must never be able
+   * to disagree about how many things a person can buy.
+   */
+  const readyToBuy = useMemo(() => countReadyToBuy(shoppingEntries), [shoppingEntries]);
+
   if (!project) {
     return (
       <div className="pk-card p-6">
@@ -179,6 +197,21 @@ export function ProjectPlanner({ slug }: { slug: string }) {
   );
 
   const hasErrors = Object.keys(errors).length > 0;
+
+  /**
+   * Bring a section into view without touching the URL.
+   *
+   * `block: "start"` with the section's own `scroll-mt-24` clears the sticky
+   * header. Focus moves too, so the action means the same thing to somebody
+   * navigating by keyboard as it does to somebody scrolling with a thumb —
+   * without it, the page moves and the tab order does not follow.
+   */
+  const revealSection = (target: React.RefObject<HTMLDivElement | null>) => {
+    const node = target.current;
+    if (!node) return;
+    node.scrollIntoView({ behavior: "smooth", block: "start" });
+    node.focus({ preventScroll: true });
+  };
 
   const handleCalculate = () => {
     if (!evaluation?.ok) return;
@@ -408,128 +441,176 @@ export function ProjectPlanner({ slug }: { slug: string }) {
       <div ref={resultsRef} className="flex flex-col gap-6 scroll-mt-24 pb-20 sm:pb-0">
         {evaluation?.ok ? (
           <>
+            {/*
+              CALCULATE → UNDERSTAND → SHOP → DEEPER.
+
+              The order below is the redesign. It used to run headline, summary,
+              materials, options, explanation, formulas, what-if, ad, save,
+              *then* the shopping list — tenth of fourteen blocks. Users told us
+              they never discovered Cubitora could help them buy anything, and
+              the page was the reason: everything that explains the answer sat
+              between the answer and the thing to do about it.
+
+              Now the offer is made immediately under the number, the list it
+              points at is the next thing after the materials table, and every
+              deeper layer — options, explanation, what-if, the Project Pack,
+              the sequence, the DIY comparison — sits below both. Nothing was
+              removed; the Project Pack in particular is still a differentiator
+              and still one click away, just no longer a toll gate in front of
+              shopping.
+            */}
             <ResultsPanel
               result={evaluation.result}
               system={system}
-              projectName={project.name}
-              projectType={project.slug}
               revealKey={revealKey}
-            />
-
-            <WhatIf
-              def={project}
-              values={values}
-              system={system}
-              costTotal={evaluation.result.costTotal}
-              onChange={handleChange}
-            />
-
-            <AdSlot placement="result-below-summary" />
-
-            <section className="pk-card pk-no-print p-5 sm:p-6">
-              <h2 className="text-lg font-semibold text-ink">Save, share, and take it with you</h2>
-              <p className="mt-1 text-sm text-ink-muted">
-                No account needed. Saved projects stay in this browser.
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button type="button" onClick={handleSave} className="pk-btn pk-btn-secondary">
-                  <Save className="h-4 w-4" aria-hidden />
-                  {savedId ? "Update saved project" : "Save this project"}
-                </button>
-                <button type="button" onClick={handleShare} className="pk-btn pk-btn-secondary">
-                  {copied ? (
-                    <Check className="h-4 w-4" aria-hidden />
-                  ) : (
-                    <Share2 className="h-4 w-4" aria-hidden />
-                  )}
-                  {copied ? "Copied" : "Share"}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCopySummary}
-                  className="pk-btn pk-btn-secondary"
-                >
-                  <Copy className="h-4 w-4" aria-hidden />
-                  Copy summary
-                </button>
-                <button type="button" onClick={handlePackClick} className="pk-btn pk-btn-primary">
-                  <FileText className="h-4 w-4" aria-hidden />
-                  Preview Project Pack
-                </button>
-              </div>
-
-              <div className="mt-5">
-                <label htmlFor="project-notes" className="block text-sm font-medium text-ink">
-                  Notes
-                </label>
-                <textarea
-                  id="project-notes"
-                  rows={3}
-                  className="pk-field mt-1.5 resize-y"
-                  placeholder="Colour, supplier, delivery date, anything you want on the printout."
-                  value={notes}
-                  onChange={(event) => setNotes(event.target.value)}
+              nextStep={
+                <NextStep
+                  projectType={project.slug}
+                  entries={shoppingEntries}
+                  costTotal={evaluation.result.costTotal}
+                  difficulty={evaluation.result.effort.difficulty}
+                  timeCategory={evaluation.result.effort.timeCategory}
+                  onShop={() => revealSection(shoppingRef)}
+                  onPlan={() => revealSection(detailsRef)}
                 />
-              </div>
+              }
+              shoppingList={
+                <div ref={shoppingRef} tabIndex={-1} className="scroll-mt-24">
+                  <ShoppingList
+                    title={`${project.name} shopping list`}
+                    entries={shoppingEntries}
+                    projectType={project.slug}
+                    checked={checked}
+                    onToggle={(id, next) => {
+                      setChecked((current) =>
+                        next ? [...current, id] : current.filter((item) => item !== id),
+                      );
+                      track("shopping_list_item_toggled", {
+                        projectType: project.slug,
+                        checked: next,
+                      });
+                    }}
+                  />
+                </div>
+              }
+            />
 
-              <div aria-live="polite" className="mt-3 min-h-[1.25rem]">
-                {status.kind === "saved" ? (
-                  <p className="flex items-center gap-2 text-sm text-brand-ink">
-                    <Check className="h-4 w-4" aria-hidden />
-                    Saved.{" "}
-                    <Link href="/my-projects" className="underline underline-offset-4">
-                      View my projects
-                    </Link>
-                  </p>
-                ) : null}
-                {status.kind === "error" ? (
-                  <p className="text-sm text-danger">{status.message}</p>
-                ) : null}
-                {copied ? (
-                  <p className="flex items-center gap-2 text-sm text-brand-ink">
+            {/* ------------------------------------------------ DEEPER -- */}
+            <div
+              ref={detailsRef}
+              tabIndex={-1}
+              className="flex flex-col gap-6 scroll-mt-24"
+            >
+              {/*
+                The Project Pack leads, because it is what the secondary call to
+                action promised and because it is the differentiator. It is also
+                the reason this whole block is *below* the shopping list rather
+                than in front of it: the pack is worth reaching, but making
+                somebody consume it before they can buy anything turned a
+                feature into a toll gate.
+              */}
+              <ProjectPackTeaser
+                onClick={handlePackClick}
+                costTotal={evaluation.result.costTotal}
+              />
+
+              <ProjectSequence steps={project.steps} />
+
+              <DiyOrHire
+                result={evaluation.result}
+                quote={contractorQuote}
+                onQuoteChange={setContractorQuote}
+              />
+
+              <WhatIf
+                def={project}
+                values={values}
+                system={system}
+                costTotal={evaluation.result.costTotal}
+                onChange={handleChange}
+              />
+
+              <AdSlot placement="result-below-summary" />
+
+              <section className="pk-card pk-no-print p-5 sm:p-6">
+                <h2 className="text-lg font-semibold text-ink">Save, share, and take it with you</h2>
+                <p className="mt-1 text-sm text-ink-muted">
+                  No account needed. Saved projects stay in this browser.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <button type="button" onClick={handleSave} className="pk-btn pk-btn-secondary">
+                    <Save className="h-4 w-4" aria-hidden />
+                    {savedId ? "Update saved project" : "Save this project"}
+                  </button>
+                  <button type="button" onClick={handleShare} className="pk-btn pk-btn-secondary">
+                    {copied ? (
+                      <Check className="h-4 w-4" aria-hidden />
+                    ) : (
+                      <Share2 className="h-4 w-4" aria-hidden />
+                    )}
+                    {copied ? "Copied" : "Share"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCopySummary}
+                    className="pk-btn pk-btn-secondary"
+                  >
                     <Copy className="h-4 w-4" aria-hidden />
-                    Summary and link copied.
-                  </p>
-                ) : null}
-              </div>
-            </section>
+                    Copy summary
+                  </button>
+                  <button type="button" onClick={handlePackClick} className="pk-btn pk-btn-primary">
+                    <FileText className="h-4 w-4" aria-hidden />
+                    Preview Project Pack
+                  </button>
+                </div>
 
-            <ShoppingList
-              title={`${project.name} shopping list`}
-              entries={shoppingEntries}
-              projectType={project.slug}
-              checked={checked}
-              onToggle={(id, next) => {
-                setChecked((current) =>
-                  next ? [...current, id] : current.filter((item) => item !== id),
-                );
-                track("shopping_list_item_toggled", { projectType: project.slug, checked: next });
-              }}
-            />
+                <div className="mt-5">
+                  <label htmlFor="project-notes" className="block text-sm font-medium text-ink">
+                    Notes
+                  </label>
+                  <textarea
+                    id="project-notes"
+                    rows={3}
+                    className="pk-field mt-1.5 resize-y"
+                    placeholder="Colour, supplier, delivery date, anything you want on the printout."
+                    value={notes}
+                    onChange={(event) => setNotes(event.target.value)}
+                  />
+                </div>
 
-            <ProjectSequence steps={project.steps} />
+                <div aria-live="polite" className="mt-3 min-h-[1.25rem]">
+                  {status.kind === "saved" ? (
+                    <p className="flex items-center gap-2 text-sm text-brand-ink">
+                      <Check className="h-4 w-4" aria-hidden />
+                      Saved.{" "}
+                      <Link href="/my-projects" className="underline underline-offset-4">
+                        View my projects
+                      </Link>
+                    </p>
+                  ) : null}
+                  {status.kind === "error" ? (
+                    <p className="text-sm text-danger">{status.message}</p>
+                  ) : null}
+                  {copied ? (
+                    <p className="flex items-center gap-2 text-sm text-brand-ink">
+                      <Copy className="h-4 w-4" aria-hidden />
+                      Summary and link copied.
+                    </p>
+                  ) : null}
+                </div>
+              </section>
 
-            <DiyOrHire
-              result={evaluation.result}
-              quote={contractorQuote}
-              onQuoteChange={setContractorQuote}
-            />
-
-            <ProjectPackTeaser
-              onClick={handlePackClick}
-              costTotal={evaluation.result.costTotal}
-            />
-
-            {/*
-              Under the result, because that is where someone realises a number
-              looks wrong. Sends the planner, the unit system, and the build —
-              never the dimensions or the notes.
-            */}
-            <ReportProblem
-              projectType={project.slug}
-              system={system}
-              className="justify-center pk-no-print"
-            />
+              {/*
+                Under the result, because that is where someone realises a
+                number looks wrong. Sends the planner, the unit system, and the
+                build — never the dimensions or the notes.
+              */}
+              <ReportProblem
+                projectType={project.slug}
+                system={system}
+                className="justify-center pk-no-print"
+              />
+            </div>
           </>
         ) : (
           <div className="pk-card p-6">
@@ -543,9 +624,27 @@ export function ProjectPlanner({ slug }: { slug: string }) {
         )}
       </div>
 
-      <StickyCalculate
+      {/*
+        One bar, three states: jump to the result, then to the shopping list,
+        then out of the way. Two independently-positioned fixed bars would
+        eventually render at once and cover each other.
+      */}
+      <StickyAction
         onCalculate={handleCalculate}
+        onShop={() => {
+          track("shopping_cta_clicked", {
+            projectType: project.slug,
+            placement: "sticky_bar",
+            itemsReady: readyToBuy,
+            source,
+          });
+          revealSection(shoppingRef);
+        }}
         resultsRef={resultsRef}
+        shoppingRef={shoppingRef}
+        itemsReady={readyToBuy}
+        canShopOnline={readyToBuy > 0}
+        showShop={Boolean(evaluation?.ok)}
         disabled={hasErrors}
       />
     </div>

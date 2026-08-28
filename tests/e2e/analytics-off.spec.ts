@@ -91,7 +91,7 @@ test("the shopping list and its Amazon links render with analytics off", async (
   await page.goto("/concrete-calculator");
   await page.waitForSelector("#result-headline");
 
-  const list = page.locator('section[aria-labelledby="shopping-list"]');
+  const list = page.locator("#shopping-list");
   await list.scrollIntoViewIfNeeded();
   await expect(list).toContainText(/As an Amazon Associate/i);
 
