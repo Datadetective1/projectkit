@@ -71,12 +71,14 @@ src/
     planner/              The interactive form (client)
     results/              Result panel, shopping list, steps, DIY-vs-hire
     pack/                 Project Pack preview + react-pdf document
-    monetization/         Ad slots and affiliate CTAs (both flag-gated)
+    monetization/         Retailer links and the Amazon disclosure
   config/site.ts          Brand, pricing, feature flags, legal copy
+  config/retailers.ts     Amazon Associates; every other retailer env-gated
   data/projects/          One definition per project + the registry
   lib/
     calc/engine.ts        Defaults, validation, unit conversion, evaluation
     calculations/         One pure calculation per project — the real logic
+    shopping/groups.ts    Parcel or truck — the one rule three surfaces share
     units.ts              Canonical-US maths, metric display, formatting
     pricing.ts            Planning price book and shared assumptions
     ai/                   Deterministic parser, then optional Claude extraction
@@ -93,6 +95,41 @@ A `ProjectDefinition` is data: inputs, a pure `calculate` function, steps, FAQs,
 related projects, and SEO copy. Everything else — routing, the form, validation,
 results, the shopping list, saving, sharing, the Project Pack, the sitemap — is
 driven off that definition. There is one planner page, not ten.
+
+### The post-calculation page
+
+The results column is ordered `CALCULATE → UNDERSTAND → SHOP → DEEPER`:
+
+```
+Headline number
+"Here's what you need"   cost · list length · how much ships · difficulty
+                         [Shop these materials] [View full project plan]
+Project summary
+Materials
+Shopping list            grouped: ready to buy · order locally · tools
+———
+Compare options · What this means · How it was calculated
+Project Pack · Sequence · DIY or hire · What if · Save & share
+```
+
+This order is the product of user research, not taste. The shopping list used
+to be the tenth of fourteen blocks, and the only shopping affordance near the
+top was a "Shop materials" button that opened a **Google search** —
+`affiliateConfig` defaults to one when no partner is configured. Users reported
+liking the calculators and never realising Cubitora could help them buy
+anything; the page was the reason. Everything that *explains* the answer now
+sits below the thing to *do* about it, and the Project Pack remains one click
+away rather than a toll gate in front of shopping.
+
+**Not every project can be shopped.** `lib/shopping/groups.ts` decides what a
+parcel carrier can realistically deliver: goods sold by the cubic yard, by the
+ton, or by the linear foot arrive on a truck from a local yard, and sod is a
+perishable crop. Three planners — mulch, gravel and sod — therefore have
+*nothing* to buy online, so the primary button becomes "View shopping list" and
+promises quantities to take to a supplier instead of opening an empty sheet.
+That one rule is exported once and consumed by the card that counts items, the
+list that groups them, and the mobile bar that repeats the count, so the three
+can never disagree.
 
 ### Units
 
@@ -234,19 +271,37 @@ so the entry page counts exactly once.
 intent funnel, with `project_saved` as a parallel return-intent signal:
 
 ```
-planner_started → planner_completed → project_pack_opened →
-project_pack_downloaded → shopping_list_viewed → retailer_click
+planner_started → planner_completed → result_viewed →
+shopping_cta_viewed → shopping_cta_clicked → shopping_list_viewed →
+retailer_click
+
+project_saved                                    (return intent)
+project_pack_opened → project_pack_downloaded     (the deeper branch)
 ```
 
 | Event | Fires when | Parameters beyond `page_location` |
 | --- | --- | --- |
 | `planner_started` | A planner mounts, once per planner | `projectType`, `source`, `prefilled` |
 | `planner_completed` | "Calculate my project" succeeds | `projectType`, `source`, `mode`, `system` |
+| `result_viewed` | A result is presented | `projectType` |
+| `shopping_cta_viewed` | Half the "here's what you need" card enters the viewport | `projectType`, `source`, `placement`, `itemsReady` |
+| `shopping_cta_clicked` | The shop button is pressed, on the card or the sticky bar | `projectType`, `source`, `placement`, `itemsReady` |
+| `shopping_list_viewed` | 25% of the list enters the viewport | `projectType`, `source`, `placement`, `itemsReady` |
+| `retailer_click` | An outbound retailer link is clicked | `retailer`, `projectType`, `materialId`, `source`, `placement` |
 | `project_pack_opened` | The pack page renders a pack | `projectType`, `source` |
 | `project_pack_downloaded` | The PDF blob is handed to the browser | `projectType`, `source` |
-| `shopping_list_viewed` | 25% of the list enters the viewport | `projectType`, `source`, `placement` |
-| `retailer_click` | An outbound retailer link is clicked | `retailer`, `projectType`, `materialId`, `source`, `placement` |
 | `project_saved` | A project is saved to local storage | `projectType`, `source` |
+
+`shopping_cta_viewed` and `shopping_cta_clicked` sit either side of the moment
+users told us never happened. Without the first, a low `retailer_click` count
+cannot distinguish "nobody wants this" from "nobody found it" — the exact
+ambiguity that produced the post-calculation redesign. `placement` separates
+`result_summary` from `sticky_bar`, so the mobile bar has to justify its space.
+
+`itemsReady` is how many materials on the project can actually be bought online.
+Three planners — mulch, gravel and sod — produce only bulk goods delivered by
+the load, so they report `0` and segment cleanly rather than dragging the
+conversion rate down for a reason that is not a product failure.
 
 `retailer_click` **requires** `retailer`, enforced by an overload on `track()`.
 A surface that cannot name an approved retailer cannot claim the funnel's

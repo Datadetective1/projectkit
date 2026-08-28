@@ -4,63 +4,40 @@ import { ExternalLink } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { retailerRel, retailerUrl, retailers, whereToBuyEnabled } from "@/config/retailers";
 import { sourceFromPath, track } from "@/lib/analytics";
+import { isDeliverableOnline } from "@/lib/shopping/groups";
 import type { Measure } from "@/lib/units";
 
 /**
- * "Where to buy", per material.
+ * The buy action for one material.
  *
- * Live, since Amazon Associates was approved. `whereToBuyEnabled` is now a
- * kill switch rather than an on switch: setting
+ * Live since Amazon Associates was approved. `whereToBuyEnabled` is a kill
+ * switch rather than an on switch: setting
  * `NEXT_PUBLIC_WHERE_TO_BUY_ENABLED=false` removes every outbound link without
  * a deploy. Retailers with no agreement stay absent because they have no
  * configuration, not because of a flag.
  *
- * The restraint is the design. A shopping list with a row of retailer buttons
- * against every line stops being a checklist and becomes an affiliate page, and
- * the moment a planning tool looks like one, its numbers stop being believed.
- * So this is small, text-weight, and sits under the item rather than beside it —
- * available to someone who wants it, invisible to someone ticking items off in
- * a store.
+ * **This used to be 11px of text reading "Where to buy · Amazon".** That
+ * restraint was right when there was no programme and the panel was a
+ * placeholder — a shopping list with a row of retailer buttons against every
+ * line stops being a checklist and becomes an affiliate page. But real users
+ * then told us they never realised Cubitora could help them buy anything, and
+ * a link nobody sees is not restraint; it is a feature that does not exist.
+ *
+ * So it is a button now, and it says what it does. What keeps it from reading
+ * as an affiliate page is everything around it: it renders on roughly half the
+ * lines, under a heading that already said these are the buyable ones, below a
+ * result that never changes because of it. The label is the material's own
+ * action — "Shop on Amazon" — not a retailer's branding.
  *
  * The search term comes from the calculation (`MaterialLine.searchTerm`), never
  * from anything the user typed, and is never sent to analytics — the event
  * carries `materialId` instead, which identifies the same thing with bounded
  * cardinality.
+ *
+ * Whether a line gets a link at all is decided by `lib/shopping/groups`, shared
+ * with the list that groups them and the card that counts them, so the three
+ * cannot disagree.
  */
-/**
- * What a general online retailer is not a realistic source for.
- *
- * Every link that leads somewhere useless costs more than it earns: it wastes
- * a click, and it makes the whole surface read as an affiliate page rather than
- * a shopping list. So the default is to link nothing unless it is plausible.
- *
- *  - **volumeYd, weight** — bulk aggregate, ready-mix, mulch by the cubic yard
- *    or the ton. These arrive on a truck from a yard. An Amazon search for
- *    "ready mix concrete delivery" returns nothing anyone wants.
- *  - **length** — dimensional lumber sold by the linear foot: decking, joists,
- *    rim boards, form boards. Nobody ships 449 linear feet of decking. This
- *    also drops a couple of things Amazon does stock, like quarter round, and
- *    that trade is deliberate — a rule that is occasionally too strict beats a
- *    rule that occasionally sends someone to a dead end.
- *
- * `count`, `area` and `volumeLiquid` stay: fasteners, tape, grout, spacers,
- * paint, boxed flooring and tile are exactly what a general retailer sells.
- */
-const UNSUITABLE_MEASURES: ReadonlySet<Measure> = new Set<Measure>([
-  "volumeYd",
-  "weight",
-  "length",
-]);
-
-/**
- * Materials no measure can rule out.
- *
- * Sod is quoted in square feet like anything else, but it is a perishable crop
- * delivered on pallets within a day of being cut. There is no version of that
- * which arrives in a parcel.
- */
-const UNSUITABLE_MATERIALS: ReadonlySet<string> = new Set(["sod-area"]);
-
 export function WhereToBuy({
   query,
   projectType,
@@ -76,9 +53,9 @@ export function WhereToBuy({
   /**
    * The calculation's own id.
    *
-   * Two jobs: the handful of exclusions `measure` misses, and the analytics
-   * `materialId`, which is what makes "which material earns the clicks?"
-   * answerable. Code-authored in `lib/calculations/*.ts`, never user input.
+   * Two jobs: the exclusions `measure` misses, and the analytics `materialId`,
+   * which is what makes "which material earns the clicks?" answerable.
+   * Code-authored in `lib/calculations/*.ts`, never user input.
    */
   materialId?: string;
   className?: string;
@@ -90,14 +67,17 @@ export function WhereToBuy({
   const pathname = usePathname();
 
   if (!whereToBuyEnabled || !query) return null;
-  if (measure && UNSUITABLE_MEASURES.has(measure)) return null;
-  if (materialId && UNSUITABLE_MATERIALS.has(materialId)) return null;
+  /*
+   * The same predicate the grouping uses, called with the same fields. Asking
+   * the shared rule rather than re-implementing it is what stops this link
+   * appearing on a line the list has filed under "order locally".
+   */
+  if (!isDeliverableOnline({ id: `material:${materialId ?? ""}`, searchTerm: query, measure })) {
+    return null;
+  }
 
   return (
-    <div className={`pk-no-print mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 ${className}`}>
-      <span className="font-mono text-[0.625rem] uppercase tracking-[0.1em] text-ink-subtle">
-        Where to buy
-      </span>
+    <div className={`pk-no-print mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 ${className}`}>
       {retailers.map((retailer) => (
         <a
           key={retailer.id}
@@ -121,21 +101,17 @@ export function WhereToBuy({
               source: sourceFromPath(pathname ?? "/"),
             })
           }
-          className="inline-flex items-center gap-1 text-xs font-medium text-brand underline-offset-4 hover:underline"
+          className="pk-btn pk-btn-secondary h-9 px-3 text-sm"
         >
+          Shop on {retailer.name}
+          <ExternalLink className="h-3.5 w-3.5" aria-hidden />
           {/*
-            "(paid link)" comes from the affiliate flag, not from the name, so
-            the marker cannot drift from the fact. A retailer we have no
-            agreement with never carries it, and one that gets approved later
-            picks it up without anybody remembering to edit a label.
-
-            Per-link as well as the disclosure above the list: the FTC asks for
-            it clear and conspicuous at the link itself, and someone scanning a
-            checklist may never read the paragraph at the top.
+            The leading space is deliberate. JSX drops the whitespace at a line
+            break inside an element, so without it the accessible name ran
+            together as "Shop on Amazon— search for…" with no gap before the
+            dash — which a screen reader reads as one word.
           */}
-          {retailer.name}
-          {retailer.affiliate ? " (paid link)" : null}
-          <ExternalLink className="h-3 w-3" aria-hidden />
+          {" "}
           <span className="sr-only">
             — search for {query} at {retailer.name}
             {retailer.affiliate ? ", a paid affiliate link" : ""} (opens in a new tab)
@@ -143,6 +119,20 @@ export function WhereToBuy({
         </a>
       ))}
 
+      {/*
+        "Paid link" comes from the affiliate flag, not from the name, so the
+        marker cannot drift from the fact. A retailer we have no agreement with
+        never carries it, and one approved later picks it up without anybody
+        remembering to edit a label.
+
+        Beside the button as well as in the disclosure above the list: the FTC
+        asks for it clear and conspicuous at the link itself, and someone
+        scanning a checklist may never read the paragraph at the top. Small and
+        quiet on purpose — it has to be legible, not loud.
+      */}
+      {retailers.some((retailer) => retailer.affiliate) ? (
+        <span className="text-xs text-ink-subtle">Paid link</span>
+      ) : null}
     </div>
   );
 }

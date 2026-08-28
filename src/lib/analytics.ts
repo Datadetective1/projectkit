@@ -28,11 +28,22 @@ import { redactPathname, redactUrl } from "@/lib/analytics/redact";
  * The seven marked below are the intent funnel — landing through to an outbound
  * click — and they are deliberately named for the journey:
  *
- *   planner_started → planner_completed → project_pack_opened →
- *   project_pack_downloaded → shopping_list_viewed → retailer_click
+ *   planner_started → planner_completed → result_viewed →
+ *   shopping_cta_viewed → shopping_cta_clicked → shopping_list_viewed →
+ *   retailer_click
  *
  * with `project_saved` as the parallel signal of someone intending to come
- * back. Everything after them is supporting detail.
+ * back, and `project_pack_opened` → `project_pack_downloaded` as the deeper
+ * branch people take instead of, or after, shopping. Everything else is
+ * supporting detail.
+ *
+ * **`shopping_cta_viewed` and `shopping_cta_clicked` are the redesign's whole
+ * question.** Real users told us they never discovered that Cubitora could help
+ * them buy anything, and the shopping list was the tenth block on the results
+ * page. The two events sit either side of that discovery: how many people saw
+ * the offer at all, and how many acted on it. Without both, a low
+ * `retailer_click` number cannot distinguish "nobody wants this" from "nobody
+ * found it" — which is the exact ambiguity that produced this work.
  *
  * **These were renamed.** `project_started` became `planner_started`,
  * `project_pack_previewed` became `project_pack_opened`, `affiliate_clicked`
@@ -46,13 +57,15 @@ export type AnalyticsEvent =
   /* -- the intent funnel ------------------------------------------------- */
   | "planner_started"
   | "planner_completed"
-  | "project_pack_opened"
-  | "project_pack_downloaded"
+  | "result_viewed"
+  | "shopping_cta_viewed"
+  | "shopping_cta_clicked"
   | "shopping_list_viewed"
   | "retailer_click"
+  | "project_pack_opened"
+  | "project_pack_downloaded"
   | "project_saved"
   /* -- supporting signals ------------------------------------------------ */
-  | "result_viewed"
   | "project_shared"
   | "project_pack_checkout_started"
   | "project_pack_purchased"
@@ -74,14 +87,39 @@ export interface AnalyticsProps {
   projectType?: string;
   /** Which tier of the form was in use. */
   mode?: "quick" | "advanced";
-  /** Where in the page an action was taken. */
-  placement?: "results" | "materials" | "pack" | "shopping_list";
+  /**
+   * Where in the page an action was taken.
+   *
+   * `result_summary` is the card directly under the headline; `sticky_bar` is
+   * the mobile bar pinned to the bottom of the viewport. They are separated so
+   * we can answer whether the sticky bar earns the space it takes — if it
+   * produces a negligible share of `shopping_cta_clicked`, it should go.
+   */
+  placement?:
+    | "results"
+    | "materials"
+    | "pack"
+    | "shopping_list"
+    | "result_summary"
+    | "sticky_bar";
   /** How something was shared or unlocked. */
   method?: "web_share" | "clipboard" | "copy_summary" | "print_list";
   /** Measurement system in use. */
   system?: "us" | "metric";
   /** Count of fields prefilled by the natural-language router. */
   prefilled?: number;
+  /**
+   * How many materials on this project could actually be bought online.
+   *
+   * A small integer derived entirely from the calculation — never from input.
+   * It exists because three of the ten planners have none: mulch, gravel and
+   * sod arrive by the load from a local yard. Without this field their traffic
+   * would sit in the same bucket as everyone else and drag the conversion rate
+   * down for a reason that is not a product failure. With it, `itemsReady: 0`
+   * segments cleanly, and "do projects with more buyable items convert better?"
+   * becomes answerable.
+   */
+  itemsReady?: number;
   /** Whether a checklist item was ticked on or off. */
   checked?: boolean;
   /**
@@ -287,7 +325,14 @@ export function isAnalyticsEnabled(): boolean {
  */
 const ALLOWED_VALUES: Partial<Record<keyof AnalyticsProps, ReadonlySet<string>>> = {
   mode: new Set(["quick", "advanced"]),
-  placement: new Set(["results", "materials", "pack", "shopping_list"]),
+  placement: new Set([
+    "results",
+    "materials",
+    "pack",
+    "shopping_list",
+    "result_summary",
+    "sticky_bar",
+  ]),
   method: new Set(["web_share", "clipboard", "copy_summary", "print_list"]),
   system: new Set(["us", "metric"]),
   source: new Set(ANALYTICS_SOURCES),
@@ -306,8 +351,8 @@ const ALLOWED_VALUES: Partial<Record<keyof AnalyticsProps, ReadonlySet<string>>>
 const SLUG = /^[a-z0-9][a-z0-9-]{0,63}$/;
 const SLUG_FIELDS: ReadonlySet<string> = new Set(["projectType", "materialId"]);
 
-/** The one numeric field, and the one boolean. */
-const NUMBER_FIELDS: ReadonlySet<string> = new Set(["prefilled"]);
+/** The numeric fields, and the one boolean. */
+const NUMBER_FIELDS: ReadonlySet<string> = new Set(["prefilled", "itemsReady"]);
 const BOOLEAN_FIELDS: ReadonlySet<string> = new Set(["checked"]);
 
 /**

@@ -73,6 +73,15 @@ export function AnalyticsProvider() {
         `location.href`, which on a planner URL is the dimensions the user
         typed.
 
+        `anonymize_ip: true` used to sit beside it and has been removed. It is a
+        Universal Analytics field; GA4 anonymises IP addresses always and does
+        not accept the directive — so gtag did not consume it, it forwarded it
+        as a *custom event parameter*, and live validation of the preview found
+        `ep.anonymize_ip=true` riding on every single hit. It leaked nothing,
+        being a constant we authored, but it was noise on every event and would
+        have consumed one of the fifty custom-dimension slots had anyone
+        registered it. Nothing about IP handling changes by dropping it.
+
         The id is validated against /^G-[A-Z0-9]{4,20}$/ before this renders,
         so nothing malformed — and nothing user-controlled — can reach this
         string.
@@ -84,7 +93,7 @@ export function AnalyticsProvider() {
             `window.dataLayer=window.dataLayer||[];` +
             `window.gtag=function(){window.dataLayer.push(arguments)};` +
             `gtag('js',new Date());` +
-            `gtag('config','${id}',{anonymize_ip:true,send_page_view:false});`,
+            `gtag('config','${id}',{send_page_view:false});`,
         }}
       />
       <Script src={`https://www.googletagmanager.com/gtag/js?id=${id}`} strategy="lazyOnload" />

@@ -48,6 +48,37 @@ async function calculateConcrete(page: Page) {
   await page.getByRole("button", { name: "Calculate my project" }).click();
 }
 
+/**
+ * Bring the "here's what you need" card fully into view.
+ *
+ * Needed because the card's observer waits for half of it to be on screen, and
+ * on a phone the whole results column sits below the form — so a bare `goto`
+ * never shows it. Centred rather than merely scrolled to: `scrollIntoViewIfNeeded`
+ * parks an element at the nearest edge, which can leave less than half of it
+ * visible and the event correctly unfired.
+ */
+async function revealShoppingCta(page: Page) {
+  await page
+    .locator("#next-step-heading")
+    .evaluate((node) => node.scrollIntoView({ block: "center" }));
+  await page.waitForTimeout(400);
+}
+
+/**
+ * Open the Project Pack, waiting for the page to stop moving first.
+ *
+ * The teaser now sits in the deeper block below the shopping list, so reaching
+ * it involves a scroll — and Playwright refuses to click a moving target. This
+ * settles the scroll before clicking rather than retrying into a timeout.
+ */
+async function openProjectPack(page: Page) {
+  const button = page.getByRole("button", { name: /preview project pack/i }).first();
+  await button.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(500);
+  await button.click();
+  await page.waitForURL(/project-pack\//, { timeout: 25_000 });
+}
+
 test.beforeEach(async ({ page }) => {
   // Never call Google, even from a test. The stub queues regardless.
   await page.route("https://www.googletagmanager.com/**", (route) => route.abort());
@@ -172,8 +203,7 @@ test("project_pack_opened fires once, from the pack page", async ({ page }) => {
    * between "finished a calculation" and "downloaded a plan".
    */
   await calculateConcrete(page);
-  await page.getByRole("button", { name: /preview project pack/i }).first().click();
-  await page.waitForURL(/project-pack\//, { timeout: 25_000 });
+  await openProjectPack(page);
 
   const opened = await waitForEvents(page, "project_pack_opened");
   await page.waitForTimeout(1_000);
@@ -186,13 +216,69 @@ test("project_pack_opened fires once, from the pack page", async ({ page }) => {
 
 test("project_pack_downloaded fires from the pack", async ({ page }) => {
   await calculateConcrete(page);
-  await page.getByRole("button", { name: /preview project pack/i }).first().click();
-  await page.waitForURL(/project-pack\//, { timeout: 25_000 });
+  await openProjectPack(page);
 
   await page.getByRole("button", { name: /download pdf/i }).first().click();
 
   const downloaded = await waitForEvents(page, "project_pack_downloaded");
   expect(downloaded[0].params.projectType).toBe("concrete-calculator");
+});
+
+test("shopping_cta_viewed fires when the offer reaches the screen", async ({ page }) => {
+  /*
+   * The event that makes a low click count interpretable. Without it, few
+   * retailer clicks cannot be told apart from "nobody saw the offer" — which is
+   * exactly the ambiguity the user research surfaced and this redesign fixes.
+   */
+  await page.goto("/concrete-calculator");
+  await page.waitForSelector("#result-headline");
+  await revealShoppingCta(page);
+
+  const viewed = await waitForEvents(page, "shopping_cta_viewed");
+  expect(viewed).toHaveLength(1);
+  expect(viewed[0].params.projectType).toBe("concrete-calculator");
+  expect(viewed[0].params.placement).toBe("result_summary");
+  expect(viewed[0].params.itemsReady).toBe(2);
+});
+
+test("shopping_cta_clicked names which control was used", async ({ page }) => {
+  await page.goto("/concrete-calculator");
+  await page.waitForSelector("#result-headline");
+  await revealShoppingCta(page);
+  await waitForEvents(page, "shopping_cta_viewed");
+
+  await page.getByRole("button", { name: /shop these materials/i }).click();
+
+  const clicked = await waitForEvents(page, "shopping_cta_clicked");
+  expect(clicked).toHaveLength(1);
+  expect(clicked[0].params.placement).toBe("result_summary");
+  expect(clicked[0].params.projectType).toBe("concrete-calculator");
+  expect(clicked[0].params.itemsReady).toBe(2);
+  expect(clicked[0].params.source).toBe("planner");
+});
+
+test("itemsReady segments the planners that have nothing to ship", async ({ page }) => {
+  /*
+   * Mulch arrives by the load from a local yard. Its traffic would otherwise
+   * sit in the same bucket as everyone else and drag the conversion rate down
+   * for a reason that is not a product failure.
+   */
+  await page.goto("/mulch-calculator");
+  await page.waitForSelector("#result-headline");
+  await revealShoppingCta(page);
+
+  const viewed = await waitForEvents(page, "shopping_cta_viewed");
+  expect(viewed[0].params.itemsReady).toBe(0);
+  expect(viewed[0].params.projectType).toBe("mulch-calculator");
+});
+
+test("shopping_list_viewed carries how much of the list is buyable", async ({ page }) => {
+  await page.goto("/concrete-calculator");
+  await page.waitForSelector("#result-headline");
+  await page.locator("#shopping-list").scrollIntoViewIfNeeded();
+
+  const seen = await waitForEvents(page, "shopping_list_viewed");
+  expect(seen[0].params.itemsReady).toBe(2);
 });
 
 test("shopping_list_viewed fires only when the list is actually seen", async ({ page }) => {
@@ -205,7 +291,7 @@ test("shopping_list_viewed fires only when the list is actually seen", async ({ 
    * that a component below the fold mounted. The list renders with the results
    * on first paint, so a mount-time event would already be in the queue here.
    */
-  const list = page.locator('section[aria-labelledby="shopping-list"]');
+  const list = page.locator("#shopping-list");
   await expect(list).toBeAttached();
   expect(
     await events(page, "shopping_list_viewed"),
@@ -224,7 +310,7 @@ test("shopping_list_viewed fires only when the list is actually seen", async ({ 
 test("shopping_list_viewed fires once, not on every scroll past", async ({ page }) => {
   await page.goto("/concrete-calculator");
   await page.waitForSelector("#result-headline");
-  const list = page.locator('section[aria-labelledby="shopping-list"]');
+  const list = page.locator("#shopping-list");
 
   await list.scrollIntoViewIfNeeded();
   await waitForEvents(page, "shopping_list_viewed");
@@ -240,7 +326,7 @@ test("shopping_list_viewed fires once, not on every scroll past", async ({ page 
 test("retailer_click names the retailer, the material and the source", async ({ page }) => {
   await page.goto("/concrete-calculator");
   await page.waitForSelector("#result-headline");
-  const list = page.locator('section[aria-labelledby="shopping-list"]');
+  const list = page.locator("#shopping-list");
   await list.scrollIntoViewIfNeeded();
 
   const link = list.locator('a[href*="amazon.com"]').first();
@@ -277,14 +363,23 @@ test("the affiliate link itself is unchanged by the tracking", async ({ page }) 
    */
   await page.goto("/concrete-calculator");
   await page.waitForSelector("#result-headline");
-  const list = page.locator('section[aria-labelledby="shopping-list"]');
+  const list = page.locator("#shopping-list");
   await list.scrollIntoViewIfNeeded();
 
   const link = list.locator('a[href*="amazon.com"]').first();
   await expect(link).toHaveAttribute("href", /tag=cubitora86-20/);
   await expect(link).toHaveAttribute("rel", /sponsored/);
   await expect(link).toHaveAttribute("target", "_blank");
-  await expect(link).toContainText("paid link");
+
+  /*
+   * The visible marker sits beside the button rather than inside its label. It
+   * moved when the link became a button: "Shop on Amazon (paid link)" reads as
+   * part of the action, which is worse both as a call to action and as a
+   * disclosure. The screen-reader sentence stays inside the link, where it
+   * belongs.
+   */
+  await expect(list.getByText("Paid link").first()).toBeVisible();
+  await expect(link).toContainText("a paid affiliate link");
 
   // The Associates disclosure is at the head of the list, near the links.
   await expect(list).toContainText(/As an Amazon Associate/i);
@@ -301,8 +396,7 @@ test("no dimension, description or id ever reaches the queue", async ({ page }) 
   await page.goto("/concrete-calculator?length=27&width=13&thickness=5");
   await page.waitForSelector("#result-headline");
   await page.getByRole("button", { name: "Calculate my project" }).click();
-  await page.getByRole("button", { name: /preview project pack/i }).first().click();
-  await page.waitForURL(/project-pack\//, { timeout: 25_000 });
+  await openProjectPack(page);
   await waitForEvents(page, "project_pack_opened");
 
   /*
@@ -380,6 +474,7 @@ test("every parameter on every event is in the closed vocabulary", async ({ page
     "method",
     "system",
     "prefilled",
+    "itemsReady",
     "checked",
     "page_path",
     "page_location",
@@ -389,7 +484,7 @@ test("every parameter on every event is in the closed vocabulary", async ({ page
   await page.waitForSelector("#result-headline");
   await page.getByRole("button", { name: "Calculate my project" }).click();
   await page.getByRole("button", { name: /^save/i }).first().click();
-  const list = page.locator('section[aria-labelledby="shopping-list"]');
+  const list = page.locator("#shopping-list");
   await list.scrollIntoViewIfNeeded();
   await waitForEvents(page, "shopping_list_viewed");
 
