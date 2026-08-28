@@ -60,5 +60,8 @@ next-env.d.ts
 /Cubitora Measurement Pass.html
 /Cubitora Measurement Pass_files/
 
+# Output of the live-validation harness, which runs against a deployed preview.
+/live-validation/
+
 # Local screenshot scratch from verification runs.
 /amazon-*.jpg
