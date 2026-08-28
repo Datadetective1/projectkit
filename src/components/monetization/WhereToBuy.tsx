@@ -1,17 +1,19 @@
 "use client";
 
 import { ExternalLink } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { retailerRel, retailerUrl, retailers, whereToBuyEnabled } from "@/config/retailers";
-import { track } from "@/lib/analytics";
+import { sourceFromPath, track } from "@/lib/analytics";
 import type { Measure } from "@/lib/units";
 
 /**
  * "Where to buy", per material.
  *
- * Off by default and off in production today — `whereToBuyEnabled` requires
- * both a feature flag and at least one configured destination, and no
- * destination is configured. This renders nothing until a real retailer
- * relationship exists.
+ * Live, since Amazon Associates was approved. `whereToBuyEnabled` is now a
+ * kill switch rather than an on switch: setting
+ * `NEXT_PUBLIC_WHERE_TO_BUY_ENABLED=false` removes every outbound link without
+ * a deploy. Retailers with no agreement stay absent because they have no
+ * configuration, not because of a flag.
  *
  * The restraint is the design. A shopping list with a row of retailer buttons
  * against every line stops being a checklist and becomes an affiliate page, and
@@ -21,7 +23,9 @@ import type { Measure } from "@/lib/units";
  * a store.
  *
  * The search term comes from the calculation (`MaterialLine.searchTerm`), never
- * from anything the user typed, and is never sent to analytics.
+ * from anything the user typed, and is never sent to analytics — the event
+ * carries `materialId` instead, which identifies the same thing with bounded
+ * cardinality.
  */
 /**
  * What a general online retailer is not a realistic source for.
@@ -69,10 +73,22 @@ export function WhereToBuy({
   projectType?: string;
   /** Suppresses the link for goods a parcel carrier cannot sensibly deliver. */
   measure?: Measure;
-  /** The calculation's own id, for the handful of exclusions measure misses. */
+  /**
+   * The calculation's own id.
+   *
+   * Two jobs: the handful of exclusions `measure` misses, and the analytics
+   * `materialId`, which is what makes "which material earns the clicks?"
+   * answerable. Code-authored in `lib/calculations/*.ts`, never user input.
+   */
   materialId?: string;
   className?: string;
 }) {
+  /*
+   * Hook before the early returns — the rules of hooks are not negotiable, and
+   * every `return null` below sits after it for that reason.
+   */
+  const pathname = usePathname();
+
   if (!whereToBuyEnabled || !query) return null;
   if (measure && UNSUITABLE_MEASURES.has(measure)) return null;
   if (materialId && UNSUITABLE_MATERIALS.has(materialId)) return null;
@@ -88,7 +104,23 @@ export function WhereToBuy({
           href={retailerUrl(retailer, query)}
           target="_blank"
           rel={retailerRel(retailer)}
-          onClick={() => track("retailer_click", { projectType, placement: "shopping_list" })}
+          onClick={() =>
+            /*
+             * The one thing that must never appear here is `query`. It is the
+             * material's search term — code-authored, and safe in that sense —
+             * but sending it would make the event's cardinality a function of
+             * the calculations rather than of a fixed vocabulary, and it is
+             * exactly the field a future edit would be tempted to make dynamic.
+             * `materialId` says the same thing in a bounded way.
+             */
+            track("retailer_click", {
+              retailer: retailer.id,
+              projectType,
+              materialId,
+              placement: "shopping_list",
+              source: sourceFromPath(pathname ?? "/"),
+            })
+          }
           className="inline-flex items-center gap-1 text-xs font-medium text-brand underline-offset-4 hover:underline"
         >
           {/*

@@ -159,7 +159,7 @@ Every one of these degrades to something honest rather than breaking.
 | --- | --- |
 | **Anthropic** (`ANTHROPIC_API_KEY`) | The deterministic parser handles the natural-language box; every planner works by hand regardless. |
 | **Stripe** (`STRIPE_SECRET_KEY`) | `NEXT_PUBLIC_PROJECT_PACK_DEV_UNLOCK=true` unlocks the Project Pack locally; it is off unless explicitly set, and the server refuses it on production deployments regardless. Without the flag and without a key, checkout explains that payments are not configured. Live keys are refused unless `STRIPE_ALLOW_LIVE_MODE=true`. |
-| **Analytics** (`NEXT_PUBLIC_ANALYTICS_ID`) | No script loads and every `track()` call is a no-op. |
+| **Google Analytics** (`NEXT_PUBLIC_ANALYTICS_ID`) | No script loads, no `dataLayer`, no request to googletagmanager, and every `track()` call is a no-op. Vercel Web Analytics is separate and keeps working. |
 | **Ads** (`NEXT_PUBLIC_ADS_ENABLED`) | Ad slots render nothing. They never sit inside a calculator and reserve fixed height so they cannot shift layout. |
 | **Affiliate** (`NEXT_PUBLIC_AFFILIATE_SEARCH_URL`) | "Shop materials" points at a plain web search — nothing implies a retailer relationship that does not exist. |
 
@@ -200,27 +200,82 @@ So `/plan?q=I want a 20 by 16 concrete patio` reports as `/plan`, and
 `/concrete-calculator?from=nl`. Redaction is covered by unit tests and by
 `tests/e2e/analytics.spec.ts`, which runs the page's own hook over real URLs.
 
+Google Analytics has no `beforeSend`, so the same protection is applied
+explicitly: GA4 stamps `page_location` onto every event from
+`document.location.href`, which on a planner URL *is* the dimensions somebody
+typed. Both `page_view` and every custom event pass a redacted absolute URL to
+override it. `tests/e2e/analytics-ga4.spec.ts` drives the real product and
+asserts that no query string, fragment, saved-project id, or typed description
+reaches `dataLayer`.
+
 `Referrer-Policy` stays at `strict-origin-when-cross-origin`. It governs what
 *we* leak on outbound clicks, not what Vercel can attribute inbound — so it
 costs no analytics value and keeps query strings out of affiliate referrers.
 
-### Product events
+### Google Analytics 4
 
-`src/lib/analytics.ts` keeps a provider-agnostic `track()` over the funnel:
-`project_started`, `project_completed`, `result_viewed`, `project_saved`,
-`project_shared`, `project_pack_previewed`, `project_pack_checkout_started`,
-`project_pack_purchased`, `project_pack_downloaded`, `affiliate_clicked`, and
-related.
+Entirely gated on `NEXT_PUBLIC_ANALYTICS_ID`, which must match
+`/^G-[A-Z0-9]{4,20}$/`. Anything else — empty, absent, a UA id, a GTM id, a
+half-filled variable — loads nothing at all. The shape is validated because the
+value is interpolated into an inline script and a script `src`.
 
-Metadata is closed-vocabulary by type — `projectType`, `mode`, `placement`,
-`method`, `system`, `prefilled`, `checked`. There is no field for a dimension, a
-price, or free text, so a careless call site cannot leak one.
+The loader is deliberately two pieces. A few hundred bytes of inline stub define
+`dataLayer` and `gtag` during HTML parse, so anything firing at hydration
+queues; `gtag/js` then loads `lazyOnload` and flushes the queue. Without the
+stub the first page view of every session was lost, because the effect that
+sends it ran before the library existed — GA4 would have recorded only
+client-side navigation, which is the wrong half when the question is about
+organic landings. `send_page_view: false` keeps GA4 from also sending its own,
+so the entry page counts exactly once.
 
-**Custom events are currently off.** They require Web Analytics Plus, a paid
-tier; sending them without it is a silent no-op, so rather than fake collection
-the path is gated behind `NEXT_PUBLIC_VERCEL_CUSTOM_EVENTS`. Set it to `true`
-once the tier is enabled and the existing calls forward to Vercel's `track()` —
-no refactor. Google Analytics works the same way via `NEXT_PUBLIC_ANALYTICS_ID`.
+### The funnel
+
+`src/lib/analytics.ts` keeps a provider-agnostic `track()`. Six events form the
+intent funnel, with `project_saved` as a parallel return-intent signal:
+
+```
+planner_started → planner_completed → project_pack_opened →
+project_pack_downloaded → shopping_list_viewed → retailer_click
+```
+
+| Event | Fires when | Parameters beyond `page_location` |
+| --- | --- | --- |
+| `planner_started` | A planner mounts, once per planner | `projectType`, `source`, `prefilled` |
+| `planner_completed` | "Calculate my project" succeeds | `projectType`, `source`, `mode`, `system` |
+| `project_pack_opened` | The pack page renders a pack | `projectType`, `source` |
+| `project_pack_downloaded` | The PDF blob is handed to the browser | `projectType`, `source` |
+| `shopping_list_viewed` | 25% of the list enters the viewport | `projectType`, `source`, `placement` |
+| `retailer_click` | An outbound retailer link is clicked | `retailer`, `projectType`, `materialId`, `source`, `placement` |
+| `project_saved` | A project is saved to local storage | `projectType`, `source` |
+
+`retailer_click` **requires** `retailer`, enforced by an overload on `track()`.
+A surface that cannot name an approved retailer cannot claim the funnel's
+terminal event, so the number stays a prediction of affiliate revenue rather
+than a count of outbound clicks in general.
+
+`source` answers "did the organic answer pages turn into planner usage?" and is
+a closed seven-token enum — `home`, `planner`, `answer`, `projects`, `plan`,
+`direct`, `other` — never a pathname. For `planner_started` it reports where the
+visitor came *from*, tracked across client-side navigation because
+`document.referrer` is frozen by the History API and cannot see that hop. An
+external referrer is never recorded as itself; it collapses to `other`.
+
+`materialId` is the calculation's own id (`ready-mix`, `base-gravel`), authored
+as a string literal and proved invariant under user input by evaluating every
+planner at two different sizes.
+
+Metadata is closed-vocabulary twice over: by type at the call site, and by an
+**allowlist of keys and values** in `sanitize()` at runtime. Types are erased at
+compilation, so the runtime allowlist is the protection that actually survives —
+a field nobody declared is dropped rather than truncated, and `projectType` and
+`materialId` must match a slug shape. There is no field for a dimension, a
+price, a note, or anything typed.
+
+**Vercel custom events are currently off.** They require Web Analytics Plus, a
+paid tier; sending them without it is a silent no-op, so rather than fake
+collection the path is gated behind `NEXT_PUBLIC_VERCEL_CUSTOM_EVENTS`. Set it
+to `true` once the tier is enabled and the existing calls forward to Vercel's
+`track()` — no refactor.
 
 Speed Insights is not installed; it can be added later.
 

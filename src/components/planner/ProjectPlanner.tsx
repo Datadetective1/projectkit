@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Check,
@@ -34,7 +34,7 @@ import {
   type CanonicalAnchors,
 } from "@/lib/calc/engine";
 import { getProject } from "@/data/projects";
-import { track } from "@/lib/analytics";
+import { entrySource, sourceFromPath, track } from "@/lib/analytics";
 import { formatCurrency, roundTo, toCanonical, type UnitSystem } from "@/lib/units";
 import { buildTextSummary } from "@/lib/summary";
 import { legal } from "@/config/site";
@@ -51,6 +51,14 @@ type Status = { kind: "idle" } | { kind: "saved"; id: string } | { kind: "error"
 export function ProjectPlanner({ slug }: { slug: string }) {
   const project = getProject(slug);
   const searchParams = useSearchParams();
+  /*
+   * `source` for the events that happen *on* this page — completing, saving,
+   * opening the pack. The funnel's entry event uses `entrySource()` instead,
+   * which answers the different question of where the visitor came from; see
+   * the planner_started effect below.
+   */
+  const pathname = usePathname();
+  const source = sourceFromPath(pathname ?? "/");
   const router = useRouter();
 
   // Everything the URL and local storage determine is resolved once, lazily,
@@ -81,11 +89,33 @@ export function ProjectPlanner({ slug }: { slug: string }) {
     project ? anchorsFor(project, initial.values, initial.system) : {},
   );
 
+  /*
+   * The first step of the funnel, and it has to fire for everyone.
+   *
+   * This was conditional on `prefilled.length > 0`, so it only counted people
+   * arriving from the natural-language router or an answer page — which made
+   * it useless as a funnel entry point. Opening a planner directly is by far
+   * the common case, and leaving those out gives the funnel no denominator:
+   * `planner_completed / planner_started` could exceed 100%.
+   *
+   * `prefilled` survives as a parameter, now reporting 0 rather than gating the
+   * event, so "did they arrive with values already filled in?" is still
+   * answerable — as a segment rather than as a silent filter.
+   *
+   * The ref keeps it to once per planner, including under the double-invoked
+   * effects of development strict mode.
+   */
+  const startedFor = useRef<string | null>(null);
   useEffect(() => {
-    if (initial.prefilled.length > 0) {
-      track("planner_started", { projectType: slug, prefilled: initial.prefilled.length });
-    }
-  }, [initial.prefilled.length, slug]);
+    if (startedFor.current === slug) return;
+    startedFor.current = slug;
+    track("planner_started", {
+      projectType: slug,
+      prefilled: initial.prefilled.length,
+      // Where they came *from*, not where they are — see entrySource.
+      source: entrySource(pathname ?? "/"),
+    });
+  }, [initial.prefilled.length, slug, pathname]);
 
   const handleChange = useCallback(
     (id: string, value: InputValue) => {
@@ -153,6 +183,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
   const handleCalculate = () => {
     if (!evaluation?.ok) return;
     track("planner_completed", {
+      source,
       projectType: project.slug,
       mode: showAdvanced ? "advanced" : "quick",
       system,
@@ -185,7 +216,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
     }
     setSavedId(saved.id);
     setStatus({ kind: "saved", id: saved.id });
-    track("project_saved", { projectType: project.slug });
+    track("project_saved", { projectType: project.slug, source });
   };
 
   /** A link that reproduces exactly these inputs. Carries no personal data. */
@@ -247,7 +278,14 @@ export function ProjectPlanner({ slug }: { slug: string }) {
 
   const handlePackClick = () => {
     if (!evaluation?.ok) return;
-    track("project_pack_opened", { projectType: project.slug });
+    /*
+     * Deliberately not `project_pack_opened`. That event fires once, from the
+     * pack page itself — which is the moment the pack was actually opened, and
+     * which also catches somebody reaching it from /my-projects rather than
+     * from here. Firing it on this click as well double-counted the step for
+     * every visitor who took the ordinary route, inflating the one number
+     * between "completed a calculation" and "downloaded the plan".
+     */
     const saved = saveProject({
       id: savedId,
       slug: project.slug,

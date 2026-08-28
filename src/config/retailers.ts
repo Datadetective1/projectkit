@@ -1,16 +1,15 @@
 /**
  * Where a material can be bought.
  *
- * Cubitora has no retailer relationships. This file is the shape one would
- * slot into, not a claim that one exists — every destination is off unless an
- * environment variable turns it on, and there is not a single affiliate ID,
- * tag or tracking parameter anywhere in this repository.
+ * Amazon Associates is the one approved programme and the only destination
+ * committed to this file. Every other retailer is off unless an environment
+ * variable turns it on, and none is configured: Home Depot's application was
+ * declined, and Lowe's has no slot at all.
  *
- * The reason to build the shape before the relationship: retrofitting
- * per-material destinations into a shopping list that only carries labels is a
- * much larger change than carrying one extra field from the start. The field
- * already exists on `MaterialLine` as `searchTerm` — it was simply being thrown
- * away before it reached the list.
+ * The shape was built before the relationship existed, which is why adding
+ * Amazon was a config change rather than a refactor: `MaterialLine.searchTerm`
+ * was already carried through to the shopping list, so a per-material
+ * destination needed no new field.
  *
  * **What must stay true when a real programme is approved.** Affiliate links
  * carry `rel="sponsored"`, disclose the relationship at the point of the link
@@ -24,7 +23,9 @@
  * an unused slot in this union is an invitation to configure something that
  * does not exist.
  */
-export type RetailerId = "home_depot" | "amazon" | "local_supplier";
+export const RETAILER_IDS = ["home_depot", "amazon", "local_supplier"] as const;
+
+export type RetailerId = (typeof RETAILER_IDS)[number];
 
 export interface Retailer {
   id: RetailerId;

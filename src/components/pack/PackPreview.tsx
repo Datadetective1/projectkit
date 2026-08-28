@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, ArrowLeft, Check, Download, Loader2, Printer } from "lucide-react";
 import { UnlockPanel } from "./UnlockPanel";
 import { buildPack, packFileName, type ProjectPack } from "@/lib/pack/buildPack";
 import { useSavedProject, useStorageReady } from "@/lib/storage/useSavedProjects";
 import { isPackUnlocked, recordUnlock } from "@/lib/storage/entitlements";
-import { track } from "@/lib/analytics";
+import { sourceFromPath, track } from "@/lib/analytics";
 import { site } from "@/config/site";
 
 type DownloadState = "idle" | "working" | "error";
@@ -17,14 +18,32 @@ export function PackPreview({ id }: { id: string }) {
   const saved = useSavedProject(id);
   const pack = useMemo(() => (saved ? buildPack(saved) : undefined), [saved]);
   const slug = saved?.slug;
+  const pathname = usePathname();
 
   const [purchased, setPurchased] = useState(false);
   const [download, setDownload] = useState<DownloadState>("idle");
   const unlocked = purchased || isPackUnlocked(id);
 
+  /*
+   * The single place `project_pack_opened` fires.
+   *
+   * The planner used to fire it too, on the button that navigates here, so the
+   * ordinary journey counted the step twice and the funnel's third stage read
+   * about double. Here is the honest moment — the pack is on screen — and it
+   * also catches arrivals from /my-projects, which the button never saw.
+   *
+   * The ref holds it to once per pack: `slug` resolves asynchronously out of
+   * storage, and development strict mode invokes effects twice.
+   */
+  const openedFor = useRef<string | null>(null);
   useEffect(() => {
-    if (slug) track("project_pack_opened", { projectType: slug });
-  }, [slug]);
+    if (!slug || openedFor.current === id) return;
+    openedFor.current = id;
+    track("project_pack_opened", {
+      projectType: slug,
+      source: sourceFromPath(pathname ?? "/"),
+    });
+  }, [slug, id, pathname]);
 
   // Returning from Stripe checkout: verify the session before unlocking.
   useEffect(() => {
@@ -80,7 +99,10 @@ export function PackPreview({ id }: { id: string }) {
       anchor.remove();
       URL.revokeObjectURL(url);
       setDownload("idle");
-      track("project_pack_downloaded", { projectType: slug });
+      track("project_pack_downloaded", {
+        projectType: slug,
+        source: sourceFromPath(pathname ?? "/"),
+      });
     } catch {
       setDownload("error");
     }
