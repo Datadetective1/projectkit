@@ -231,6 +231,21 @@ test("tapping a buy button does not tick its checkbox", async ({ page }) => {
   await expect(list.getByText(/0 of \d+ ticked off/)).toBeVisible();
 
   const link = list.getByRole("link", { name: /shop on amazon/i }).first();
+  /*
+   * Centre the button before tapping it.
+   *
+   * `scrollIntoViewIfNeeded` parks an element at the nearest edge, which for the
+   * first row of the list is the very top of the viewport — underneath the 64px
+   * sticky header, which then intercepts the tap. Playwright retries until the
+   * test budget runs out, which is what made this fail two runs in three.
+   *
+   * Nothing about the product is wrong: the shopping section carries
+   * `scroll-mt-24`, and the "Shop these materials" button scrolls with
+   * `block: "start"` so the header is accounted for. It is only this test's raw
+   * scroll that lands under it.
+   */
+  await link.evaluate((node) => node.scrollIntoView({ block: "center" }));
+  await expect(link).toBeInViewport();
   await link.evaluate((node) =>
     node.addEventListener("click", (event) => event.preventDefault(), true),
   );
