@@ -57,3 +57,6 @@ next-env.d.ts
 # root while reviewing. Kept on disk, never tracked.
 /Cubitora Organic Discovery.html
 /Cubitora Organic Discovery_files/
+
+# Local screenshot scratch from verification runs.
+/amazon-*.jpg
