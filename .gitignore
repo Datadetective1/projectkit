@@ -60,6 +60,9 @@ next-env.d.ts
 /Cubitora Measurement Pass.html
 /Cubitora Measurement Pass_files/
 
+# Production smoke-test screenshots. Point-in-time, never worth tracking.
+/prod-shots/
+
 # Output of the live-validation harness, which runs against a deployed preview.
 /live-validation/
 
