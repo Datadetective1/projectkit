@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { Printer } from "lucide-react";
 import { WhereToBuy } from "@/components/monetization/WhereToBuy";
 import { RetailerDisclosure } from "@/components/monetization/RetailerDisclosure";
 import { formatMaterialQuantity } from "@/lib/format";
 import type { Measure, UnitSystem } from "@/lib/units";
 import type { CalculationResult } from "@/types/project";
-import { track } from "@/lib/analytics";
+import { sourceFromPath, track } from "@/lib/analytics";
 
 export interface ShoppingEntry {
   id: string;
@@ -71,6 +72,7 @@ export function ShoppingList({
   projectType?: string;
 }) {
   const checkedSet = new Set(checked);
+  const pathname = usePathname();
   const section = useRef<HTMLElement>(null);
   const seen = useRef(false);
 
@@ -92,7 +94,11 @@ export function ShoppingList({
         for (const record of records) {
           if (record.isIntersecting && !seen.current) {
             seen.current = true;
-            track("shopping_list_viewed", { projectType, placement: "shopping_list" });
+            track("shopping_list_viewed", {
+              projectType,
+              placement: "shopping_list",
+              source: sourceFromPath(pathname ?? "/"),
+            });
             observer.disconnect();
           }
         }
@@ -102,7 +108,7 @@ export function ShoppingList({
 
     observer.observe(node);
     return () => observer.disconnect();
-  }, [projectType]);
+  }, [projectType, pathname]);
   const done = entries.filter((entry) => checkedSet.has(entry.id)).length;
 
   return (
