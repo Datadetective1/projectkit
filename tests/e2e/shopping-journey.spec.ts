@@ -115,14 +115,17 @@ test("the secondary action reaches the deeper plan", async ({ page }) => {
 
   await page.getByRole("button", { name: /view full project plan/i }).click();
   /*
-   * Lands at the top of the deeper block, which now opens with the interactive
-   * what-if rather than the Project Pack. The pack moved below it because
-   * decision support comes before take-it-with-you, and because the pack was
-   * being introduced twice — once by a teaser card and again by the save card.
+   * Lands on the Project Pack card, which is what the label names.
+   *
+   * It briefly landed at the top of the deeper block instead, which opens with
+   * the what-if sliders — decision support genuinely does come before
+   * take-it-with-you, but that is an argument about section order, not a licence
+   * for the call to action to point somewhere other than where it says.
    */
-  await expect(page.getByRole("heading", { name: /what if/i }).first()).toBeInViewport({
-    timeout: 5_000,
-  });
+  await expect(page.getByRole("heading", { name: /take the whole plan with you/i })).toBeInViewport(
+    { timeout: 5_000 },
+  );
+  await expect(page.getByRole("button", { name: "Preview Project Pack" })).toBeInViewport();
 });
 
 /* -------------------------------------------------- the count is honest -- */

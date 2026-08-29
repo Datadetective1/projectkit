@@ -92,7 +92,16 @@ export function ProjectPlanner({ slug }: { slug: string }) {
    * share is the same problem one step later.
    */
   const shoppingRef = useRef<HTMLDivElement>(null);
-  const detailsRef = useRef<HTMLDivElement>(null);
+  /**
+   * Where "View full project plan" lands.
+   *
+   * On the Project Pack card, not on the top of the deeper block. The block
+   * opens with the what-if sliders because decision support comes before
+   * take-it-with-you, but the call to action names the plan — so it goes to the
+   * plan, and the sections above it stay where a person scrolling back up will
+   * find them.
+   */
+  const packRef = useRef<HTMLElement>(null);
 
   // Remembers the exact value behind each field so flipping units repeatedly
   // returns to the number the user typed, not a drifting approximation.
@@ -206,7 +215,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
    * navigating by keyboard as it does to somebody scrolling with a thumb —
    * without it, the page moves and the tab order does not follow.
    */
-  const revealSection = (target: React.RefObject<HTMLDivElement | null>) => {
+  const revealSection = (target: React.RefObject<HTMLElement | null>) => {
     const node = target.current;
     if (!node) return;
     node.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -471,7 +480,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
                   difficulty={evaluation.result.effort.difficulty}
                   timeCategory={evaluation.result.effort.timeCategory}
                   onShop={() => revealSection(shoppingRef)}
-                  onPlan={() => revealSection(detailsRef)}
+                  onPlan={() => revealSection(packRef)}
                 />
               }
               shoppingList={
@@ -508,11 +517,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
               the save-and-share card carrying the same button. One surface is
               stronger than two, so they are one card now.
             */}
-            <div
-              ref={detailsRef}
-              tabIndex={-1}
-              className="flex flex-col gap-6 scroll-mt-24"
-            >
+            <div className="flex flex-col gap-6">
               <WhatIf
                 def={project}
                 values={values}
@@ -529,7 +534,11 @@ export function ProjectPlanner({ slug }: { slug: string }) {
 
               <AdSlot placement="result-below-summary" />
 
-              <section className="pk-card pk-no-print p-5 sm:p-6">
+              <section
+                ref={packRef}
+                tabIndex={-1}
+                className="pk-card pk-no-print scroll-mt-24 p-5 sm:p-6"
+              >
                 <h2 className="text-lg font-semibold text-ink">Take the whole plan with you</h2>
                 <p className="mt-1 max-w-prose text-sm text-ink-muted">
                   The Project Pack collects your quantities, the{" "}
