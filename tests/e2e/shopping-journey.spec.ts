@@ -66,11 +66,32 @@ test("the shopping list comes before the explanations, not after them", async ({
 
   const list = await page.locator("#shopping-list").boundingBox();
   const explanation = await page.locator("#result-meaning").boundingBox();
-  const materials = await page.locator("#result-materials").boundingBox();
+  const headline = await page.locator("#result-headline").boundingBox();
 
   expect(list, "no shopping list").not.toBeNull();
-  expect(materials!.y, "materials should precede the list").toBeLessThan(list!.y);
+  expect(headline!.y, "the answer should precede the list").toBeLessThan(list!.y);
   expect(explanation!.y, "the explanation should follow the list").toBeGreaterThan(list!.y);
+});
+
+test("materials are stated once, not twice", async ({ page }) => {
+  /*
+   * The redundancy this pass exists to remove. Every material used to appear in
+   * a "Materials" table and again in the shopping list, with the same name and
+   * the same formatted quantity, five sections apart. Counting occurrences of a
+   * material name is the direct test of that: one row, one place.
+   */
+  await openPlanner(page, "concrete-calculator");
+
+  for (const material of ["Ready-mix concrete (delivered)", "Compactable base gravel"]) {
+    await expect(
+      page.getByText(material, { exact: true }),
+      `${material} appears more than once`,
+    ).toHaveCount(1);
+  }
+
+  // And the cost now sits with the material rather than in a table of its own.
+  const list = page.locator("#shopping-list");
+  await expect(list.getByText("$743", { exact: false }).first()).toBeVisible();
 });
 
 test("the primary action reaches the list", async ({ page }) => {
@@ -93,9 +114,18 @@ test("the secondary action reaches the deeper plan", async ({ page }) => {
   await openPlanner(page, "concrete-calculator");
 
   await page.getByRole("button", { name: /view full project plan/i }).click();
-  await expect(page.getByRole("button", { name: "Preview Project Pack" }).first()).toBeInViewport({
-    timeout: 5_000,
-  });
+  /*
+   * Lands on the Project Pack card, which is what the label names.
+   *
+   * It briefly landed at the top of the deeper block instead, which opens with
+   * the what-if sliders — decision support genuinely does come before
+   * take-it-with-you, but that is an argument about section order, not a licence
+   * for the call to action to point somewhere other than where it says.
+   */
+  await expect(page.getByRole("heading", { name: /take the whole plan with you/i })).toBeInViewport(
+    { timeout: 5_000 },
+  );
+  await expect(page.getByRole("button", { name: "Preview Project Pack" })).toBeInViewport();
 });
 
 /* -------------------------------------------------- the count is honest -- */

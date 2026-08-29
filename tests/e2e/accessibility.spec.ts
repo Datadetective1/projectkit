@@ -88,7 +88,9 @@ for (const target of PAGES) {
 test("the expanded planner options are accessible", async ({ page }) => {
   await page.goto("/concrete-calculator");
   await page.getByRole("button", { name: "Customize estimate" }).click();
-  await page.getByRole("button", { name: "How this was calculated" }).click();
+  // The formulas and the assumptions share one disclosure now; they used to be
+  // a collapsed card of their own plus a static section further down.
+  await page.getByRole("button", { name: /the arithmetic and the assumptions/i }).click();
 
   const results = await scan(page);
   expect(results.violations.map((violation) => violation.id)).toEqual([]);

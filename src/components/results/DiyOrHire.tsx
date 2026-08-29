@@ -16,6 +16,13 @@ const DIFFICULTY_STYLES: Record<string, string> = {
  *
  * Deliberately does not invent local labour rates — the contractor number is
  * whatever quote the user types in.
+ *
+ * **It used to open with three tiles restating the material total, the
+ * difficulty and the rough time.** All three already sit in the action card
+ * directly under the result, so the section spent its first screen telling
+ * people what they had just read, and the one thing it uniquely offers — the
+ * comparison against a real quote — was below that. It leads with the question
+ * now, and stays quiet until there is a quote to answer it with.
  */
 export function DiyOrHire({
   result,
@@ -33,44 +40,27 @@ export function DiyOrHire({
 
   return (
     <section aria-labelledby="diy-or-hire" className="pk-card p-5 sm:p-6">
-      <h2 id="diy-or-hire" className="text-lg font-semibold text-ink">
-        DIY or hire someone?
-      </h2>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <h2 id="diy-or-hire" className="text-lg font-semibold text-ink">
+          DIY or hire someone?
+        </h2>
+        {/*
+          The difficulty as a chip beside the heading rather than as a tile of
+          its own. It is context for the question, not a finding.
+        */}
+        <span
+          className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+            DIFFICULTY_STYLES[result.effort.difficulty] ?? "bg-surface-sunken text-ink"
+          }`}
+        >
+          {result.effort.difficulty}
+        </span>
+      </div>
 
-      <dl className="mt-4 grid gap-3 sm:grid-cols-3">
-        <div className="rounded-xl bg-surface-sunken/60 p-4">
-          <dt className="text-xs font-medium uppercase tracking-wide text-ink-subtle">
-            Estimated materials
-          </dt>
-          <dd className="mt-1 text-xl font-semibold tabular-nums text-ink">
-            {formatCurrency(result.costTotal)}
-          </dd>
-        </div>
-        <div className="rounded-xl bg-surface-sunken/60 p-4">
-          <dt className="text-xs font-medium uppercase tracking-wide text-ink-subtle">
-            Complexity
-          </dt>
-          <dd className="mt-1">
-            <span
-              className={`inline-flex rounded-full px-2.5 py-1 text-sm font-semibold ${
-                DIFFICULTY_STYLES[result.effort.difficulty] ?? "bg-surface-sunken text-ink"
-              }`}
-            >
-              {result.effort.difficulty}
-            </span>
-          </dd>
-        </div>
-        <div className="rounded-xl bg-surface-sunken/60 p-4">
-          <dt className="text-xs font-medium uppercase tracking-wide text-ink-subtle">
-            Rough time
-          </dt>
-          <dd className="mt-1 text-sm font-medium text-ink">{result.effort.timeCategory}</dd>
-        </div>
-      </dl>
-
-      <div className="mt-5 rounded-xl border border-line p-4">
+      <div className="mt-4">
         <label htmlFor={fieldId} className="block text-sm font-medium text-ink">
-          Have a contractor quote? Enter it to compare.
+          Have a contractor quote? Enter it to compare against your{" "}
+          {formatCurrency(result.costTotal)} of materials.
         </label>
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <div className="relative w-full sm:w-48">
@@ -115,6 +105,7 @@ export function DiyOrHire({
       </div>
 
       <ul className="mt-4 space-y-1.5 text-sm text-ink-muted">
+        {/* What actually makes this job easy or hard — new information. */}
         {result.effort.notes.map((note) => (
           <li key={note} className="flex gap-2">
             <span aria-hidden className="text-ink-subtle">
@@ -126,8 +117,8 @@ export function DiyOrHire({
       </ul>
 
       <p className="mt-4 text-xs text-ink-subtle">
-        Cubitora does not estimate labour rates. Comparison uses only the quote you enter and the
-        material cost above.
+        Cubitora does not estimate labour rates. The comparison uses only the quote you enter and
+        the material cost.
         {features.contractorLeads ? "" : " Contractor matching is not part of Cubitora today."}
       </p>
     </section>

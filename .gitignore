@@ -60,6 +60,10 @@ next-env.d.ts
 /Cubitora Measurement Pass.html
 /Cubitora Measurement Pass_files/
 
+# Before/after screenshot scratch from the de-duplication pass.
+/shots-before/
+/shots-after/
+
 # Production smoke-test screenshots. Point-in-time, never worth tracking.
 /prod-shots/
 
