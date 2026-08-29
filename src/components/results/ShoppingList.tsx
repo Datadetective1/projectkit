@@ -5,9 +5,9 @@ import { usePathname } from "next/navigation";
 import { Printer, Truck } from "lucide-react";
 import { WhereToBuy } from "@/components/monetization/WhereToBuy";
 import { RetailerDisclosure } from "@/components/monetization/RetailerDisclosure";
-import { formatMaterialQuantity } from "@/lib/format";
+import { formatMaterialQuantity, formatUnitPrice } from "@/lib/format";
 import { countReadyToBuy, groupShoppingEntries, materialIdOf } from "@/lib/shopping/groups";
-import type { Measure, UnitSystem } from "@/lib/units";
+import { formatCurrency, type Measure, type UnitSystem } from "@/lib/units";
 import type { CalculationResult } from "@/types/project";
 import { sourceFromPath, track } from "@/lib/analytics";
 
@@ -19,12 +19,6 @@ export interface ShoppingEntry {
   /**
    * What to search a retailer for, when this line came from a computed
    * material. Carried from `MaterialLine.searchTerm`.
-   *
-   * This was previously dropped here — the calculations set it, and the
-   * shopping list threw it away, so a per-material destination was impossible
-   * without touching every calculation file. Preserving one field is the whole
-   * difference between "retailer links later" being a config change and being
-   * a refactor.
    */
   searchTerm?: string;
   /**
@@ -35,9 +29,24 @@ export interface ShoppingEntry {
    * retailer sells them.
    */
   measure?: Measure;
+  /** Planning cost for this line, when the price book has one. */
+  cost?: number;
+  /** Pre-formatted unit price, e.g. "$42 per gal". Absent when unpriced. */
+  unitPrice?: string;
+  /** A planning allowance rather than a computed quantity. */
+  isEstimate?: boolean;
+  /** The material's own caveat, carried from the calculation. */
+  note?: string;
 }
 
-/** Build the checklist from computed materials plus the project's extras. */
+/**
+ * Build the checklist from computed materials plus the project's extras.
+ *
+ * Carries the price fields now. They used to be read only by a separate
+ * "Materials" table that listed the same materials with the same quantities
+ * one section higher up the page; the two have been merged, so the cost travels
+ * with the thing it costs.
+ */
 export function buildShoppingList(
   result: CalculationResult,
   system: UnitSystem,
@@ -49,6 +58,10 @@ export function buildShoppingList(
     optional: line.optional,
     searchTerm: line.searchTerm,
     measure: line.measure,
+    cost: line.cost,
+    unitPrice: line.unitPrice === undefined ? undefined : formatUnitPrice(line, system),
+    isEstimate: line.isEstimate,
+    note: line.note,
   }));
   const extras = result.shoppingExtras.map((item) => ({
     id: `extra:${item.id}`,
@@ -60,19 +73,22 @@ export function buildShoppingList(
 }
 
 /**
- * The shopping list, grouped by how each thing actually reaches your driveway.
+ * Everything the project needs, in one place, grouped by how it reaches you.
  *
- * It used to be one flat checklist of twelve or more lines, with a small text
- * link under about half of them. Grouping is the difference between "here is
- * everything, good luck" and an answer: the things you can order now, the
- * things that come by the load from a supplier you have to call, and the tools
- * to have ready before you start. Someone looking at a cubic yard of gravel
- * with no buy button needs to know that is the correct answer rather than a gap
- * in the product.
+ * **This absorbed the Materials table.** The page used to carry both: a
+ * "Materials" card with every line's quantity, unit price and cost, and then a
+ * "shopping list" a section later with every line's quantity again plus a
+ * checkbox and a buy button. Users told us the pages felt long, and the reason
+ * was not scrolling — it was reading the same materials twice and having to
+ * work out whether the second list was saying anything new. It was not.
+ *
+ * So each material now states itself once and completely: what it is, how much,
+ * what it should cost, and where to get it. The grouping carries the part that
+ * genuinely differs between lines — a parcel, a truckload from a local yard, or
+ * a tool you probably own.
  *
  * Grouping never reorders within a group and never renames an id, because
- * `checked` is persisted against those ids in saved projects — a regrouping
- * that renumbered them would silently wipe every tick a returning user had.
+ * `checked` is persisted against those ids in saved projects.
  */
 export function ShoppingList({
   title,
@@ -80,12 +96,15 @@ export function ShoppingList({
   checked,
   onToggle,
   projectType,
+  costTotal,
 }: {
   title: string;
   entries: ShoppingEntry[];
   checked: string[];
   onToggle: (id: string, next: boolean) => void;
   projectType?: string;
+  /** Estimated materials total. Stated once, here, beside what it is buying. */
+  costTotal?: number;
 }) {
   const checkedSet = new Set(checked);
   const pathname = usePathname();
@@ -94,16 +113,8 @@ export function ShoppingList({
 
   const groups = groupShoppingEntries(entries);
   const readyToBuy = countReadyToBuy(entries);
+  const priced = entries.some((entry) => entry.cost !== undefined);
 
-  /*
-   * Fired when the list actually reaches the screen, not when it mounts.
-   *
-   * The list renders with the results, and on a phone it is still below the
-   * fold even after being moved up the page. Counting a mount would report that
-   * everyone who calculated anything also viewed their list, which is precisely
-   * the question this event exists to answer — so it waits for the list to be
-   * seen, and fires once.
-   */
   useEffect(() => {
     const node = section.current;
     if (!node || seen.current || typeof IntersectionObserver === "undefined") return;
@@ -144,8 +155,18 @@ export function ShoppingList({
           <h2 id="shopping-list-heading" className="text-lg font-semibold text-ink">
             {title}
           </h2>
-          <p className="mt-1 text-sm text-ink-muted" aria-live="polite">
-            {done} of {entries.length} ticked off
+          <p className="mt-1 text-sm text-ink-muted">
+            <span aria-live="polite">
+              {done} of {entries.length} ticked off
+            </span>
+            {priced && costTotal !== undefined ? (
+              <>
+                {" · "}
+                <span className="tabular-nums">
+                  {formatCurrency(costTotal)} estimated for materials
+                </span>
+              </>
+            ) : null}
           </p>
         </div>
         <button
@@ -182,11 +203,9 @@ export function ShoppingList({
 
             {/*
               The Amazon disclosure sits directly above the first paid link and
-              nowhere else. The Operating Agreement wants it displayed near the
-              links rather than in a page footer, and it does not want it beside
-              every single one — repeating it on each of twelve rows is what
-              turned a checklist into something that read like an affiliate
-              page, which is the exact impression a planning tool cannot afford.
+              nowhere else. The Operating Agreement wants it near the links
+              rather than in a page footer, and repeating it on every row is
+              what made a checklist read like an affiliate page.
             */}
             {group.id === "online" ? <RetailerDisclosure className="mt-2" /> : null}
 
@@ -195,22 +214,12 @@ export function ShoppingList({
                 const isChecked = checkedSet.has(entry.id);
                 return (
                   <li key={entry.id}>
-                    {/*
-                      Stacked on a phone, side by side from `sm` up.
-
-                      `flex-wrap` was not enough: the label carries `min-w-0
-                      flex-1`, so it shrank to nothing rather than pushing the
-                      button onto its own line, and "Drywall sheets (4 x 8 ft)"
-                      rendered one word per line beside an untouched button.
-                      Wrapping is the wrong tool when one child is allowed to
-                      collapse; a direction change is the right one.
-                    */}
                     <div className="flex flex-col gap-2 py-3 sm:flex-row sm:items-start sm:gap-3">
                       {/*
                         The label wraps the checkbox and the text only, never
                         the buy button. Activating a label activates its
                         control, so a button nested inside one can tick the box
-                        instead of following its own link — or do both.
+                        instead of following its own link.
                       */}
                       <label className="flex min-w-0 flex-1 cursor-pointer items-start gap-3">
                         <input
@@ -231,10 +240,41 @@ export function ShoppingList({
                                 (optional)
                               </span>
                             ) : null}
+                            {entry.isEstimate ? (
+                              <span className="ml-2 inline-flex items-center rounded-full bg-accent-soft px-2 py-0.5 text-[0.6875rem] font-semibold uppercase tracking-wide text-accent">
+                                Estimate
+                              </span>
+                            ) : null}
                           </span>
-                          {entry.detail ? (
-                            <span className="mt-0.5 block text-sm tabular-nums text-ink-muted">
-                              {entry.detail}
+
+                          {/*
+                            Quantity, unit price and cost on one line. They were
+                            three columns of a separate table; as a sentence
+                            under the name they take one row on a phone instead
+                            of a horizontally scrolling grid.
+                          */}
+                          {entry.detail || entry.cost !== undefined ? (
+                            <span className="mt-0.5 flex flex-wrap items-baseline gap-x-2 text-sm tabular-nums text-ink-muted">
+                              {entry.detail ? <span>{entry.detail}</span> : null}
+                              {entry.cost !== undefined ? (
+                                <>
+                                  <span aria-hidden className="text-ink-subtle">
+                                    ·
+                                  </span>
+                                  <span className="font-medium text-ink">
+                                    {formatCurrency(entry.cost)}
+                                  </span>
+                                </>
+                              ) : null}
+                              {entry.unitPrice ? (
+                                <span className="text-ink-subtle">({entry.unitPrice})</span>
+                              ) : null}
+                            </span>
+                          ) : null}
+
+                          {entry.note ? (
+                            <span className="mt-0.5 block text-xs text-ink-subtle">
+                              {entry.note}
                             </span>
                           ) : null}
                         </span>
@@ -259,6 +299,13 @@ export function ShoppingList({
           </div>
         ))}
       </div>
+
+      {priced ? (
+        <p className="mt-5 border-t border-line pt-4 text-xs text-ink-subtle">
+          Costs use the prices in the estimate options above. Sales tax, delivery, and equipment
+          rental are not included — on bulk materials delivery alone can add a meaningful amount.
+        </p>
+      ) : null}
     </section>
   );
 }

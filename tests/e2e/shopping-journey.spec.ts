@@ -66,11 +66,32 @@ test("the shopping list comes before the explanations, not after them", async ({
 
   const list = await page.locator("#shopping-list").boundingBox();
   const explanation = await page.locator("#result-meaning").boundingBox();
-  const materials = await page.locator("#result-materials").boundingBox();
+  const headline = await page.locator("#result-headline").boundingBox();
 
   expect(list, "no shopping list").not.toBeNull();
-  expect(materials!.y, "materials should precede the list").toBeLessThan(list!.y);
+  expect(headline!.y, "the answer should precede the list").toBeLessThan(list!.y);
   expect(explanation!.y, "the explanation should follow the list").toBeGreaterThan(list!.y);
+});
+
+test("materials are stated once, not twice", async ({ page }) => {
+  /*
+   * The redundancy this pass exists to remove. Every material used to appear in
+   * a "Materials" table and again in the shopping list, with the same name and
+   * the same formatted quantity, five sections apart. Counting occurrences of a
+   * material name is the direct test of that: one row, one place.
+   */
+  await openPlanner(page, "concrete-calculator");
+
+  for (const material of ["Ready-mix concrete (delivered)", "Compactable base gravel"]) {
+    await expect(
+      page.getByText(material, { exact: true }),
+      `${material} appears more than once`,
+    ).toHaveCount(1);
+  }
+
+  // And the cost now sits with the material rather than in a table of its own.
+  const list = page.locator("#shopping-list");
+  await expect(list.getByText("$743", { exact: false }).first()).toBeVisible();
 });
 
 test("the primary action reaches the list", async ({ page }) => {
@@ -93,7 +114,13 @@ test("the secondary action reaches the deeper plan", async ({ page }) => {
   await openPlanner(page, "concrete-calculator");
 
   await page.getByRole("button", { name: /view full project plan/i }).click();
-  await expect(page.getByRole("button", { name: "Preview Project Pack" }).first()).toBeInViewport({
+  /*
+   * Lands at the top of the deeper block, which now opens with the interactive
+   * what-if rather than the Project Pack. The pack moved below it because
+   * decision support comes before take-it-with-you, and because the pack was
+   * being introduced twice — once by a teaser card and again by the save card.
+   */
+  await expect(page.getByRole("heading", { name: /what if/i }).first()).toBeInViewport({
     timeout: 5_000,
   });
 });

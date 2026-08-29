@@ -63,15 +63,17 @@ test("journey 1: homepage to a concrete estimate", async ({ page }) => {
   await expect(headline(page)).toHaveText("4.35 yd³");
   await expect(page.getByText("Recommended purchase: 4.50 yd³", { exact: false })).toBeVisible();
 
-  // Materials, cost, and the plain-English explanation are all present.
-  // Materials render as a table on desktop and as cards on a phone, so match
-  // whichever of the two the current viewport actually shows.
-  await expect(page.getByRole("heading", { name: "Materials" })).toBeVisible();
-  await expect(
-    page.getByText("Ready-mix concrete (delivered)").filter({ visible: true }).first(),
-  ).toBeVisible();
-  await expect(page.getByText("$990").filter({ visible: true }).first()).toBeVisible();
-  await expect(page.getByRole("heading", { name: "What this means" })).toBeVisible();
+  /*
+   * Materials, cost and the explanation are all still present — but each in one
+   * place now. There used to be a "Materials" table listing every line with its
+   * quantity and cost, and a shopping list a section later listing the same
+   * lines with the same quantities again. They are one section.
+   */
+  await expect(page.getByRole("heading", { name: "Materials" })).toHaveCount(0);
+  const list = page.locator("#shopping-list");
+  await expect(list.getByText("Ready-mix concrete (delivered)")).toBeVisible();
+  await expect(list.getByText("$990", { exact: false }).first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Why this number" })).toBeVisible();
 });
 
 test("changing an assumption recalculates immediately", async ({ page }) => {
@@ -313,9 +315,22 @@ for (const slug of PLANNER_SLUGS) {
 
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.locator("#result-headline")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Materials" })).toBeVisible();
+    await expect(page.locator("#shopping-list")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Why this number" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Project sequence" })).toBeVisible();
     await expect(page.getByRole("heading", { name: "DIY or hire someone?" })).toBeVisible();
+
+    /*
+     * The de-duplication, asserted on every planner rather than on one.
+     *
+     * A separate "Materials" heading returning means the table came back
+     * alongside the shopping list, and two "Preview Project Pack" buttons mean
+     * the pack is being introduced twice again — both were real, and both are
+     * the kind of regression that reads as harmless in a diff.
+     */
+    await expect(page.getByRole("heading", { name: "Materials" })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Project summary" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /preview project pack/i })).toHaveCount(1);
 
     const value = await headline(page).innerText();
     expect(value).not.toMatch(/NaN|Infinity|undefined|—/);

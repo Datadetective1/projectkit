@@ -480,6 +480,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
                     title={`${project.name} shopping list`}
                     entries={shoppingEntries}
                     projectType={project.slug}
+                    costTotal={evaluation.result.costTotal}
                     checked={checked}
                     onToggle={(id, next) => {
                       setChecked((current) =>
@@ -496,32 +497,22 @@ export function ProjectPlanner({ slug }: { slug: string }) {
             />
 
             {/* ------------------------------------------------ DEEPER -- */}
+            {/*
+              Everything below answers a question somebody might have rather
+              than one everybody has. The order runs: change something (What
+              if), decide whether to do it yourself, take it with you, then how
+              the work goes.
+
+              The Project Pack used to be introduced twice down here — once by a
+              teaser card carrying a "Preview Project Pack" button, and again by
+              the save-and-share card carrying the same button. One surface is
+              stronger than two, so they are one card now.
+            */}
             <div
               ref={detailsRef}
               tabIndex={-1}
               className="flex flex-col gap-6 scroll-mt-24"
             >
-              {/*
-                The Project Pack leads, because it is what the secondary call to
-                action promised and because it is the differentiator. It is also
-                the reason this whole block is *below* the shopping list rather
-                than in front of it: the pack is worth reaching, but making
-                somebody consume it before they can buy anything turned a
-                feature into a toll gate.
-              */}
-              <ProjectPackTeaser
-                onClick={handlePackClick}
-                costTotal={evaluation.result.costTotal}
-              />
-
-              <ProjectSequence steps={project.steps} />
-
-              <DiyOrHire
-                result={evaluation.result}
-                quote={contractorQuote}
-                onQuoteChange={setContractorQuote}
-              />
-
               <WhatIf
                 def={project}
                 values={values}
@@ -530,14 +521,27 @@ export function ProjectPlanner({ slug }: { slug: string }) {
                 onChange={handleChange}
               />
 
+              <DiyOrHire
+                result={evaluation.result}
+                quote={contractorQuote}
+                onQuoteChange={setContractorQuote}
+              />
+
               <AdSlot placement="result-below-summary" />
 
               <section className="pk-card pk-no-print p-5 sm:p-6">
-                <h2 className="text-lg font-semibold text-ink">Save, share, and take it with you</h2>
-                <p className="mt-1 text-sm text-ink-muted">
-                  No account needed. Saved projects stay in this browser.
+                <h2 className="text-lg font-semibold text-ink">Take the whole plan with you</h2>
+                <p className="mt-1 max-w-prose text-sm text-ink-muted">
+                  The Project Pack collects your quantities, the{" "}
+                  {formatCurrency(evaluation.result.costTotal)} budget, the shopping list, your
+                  assumptions, and the project sequence into one printable document. No account
+                  needed — saved projects stay in this browser.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
+                  <button type="button" onClick={handlePackClick} className="pk-btn pk-btn-primary">
+                    <FileText className="h-4 w-4" aria-hidden />
+                    Preview Project Pack
+                  </button>
                   <button type="button" onClick={handleSave} className="pk-btn pk-btn-secondary">
                     <Save className="h-4 w-4" aria-hidden />
                     {savedId ? "Update saved project" : "Save this project"}
@@ -557,10 +561,6 @@ export function ProjectPlanner({ slug }: { slug: string }) {
                   >
                     <Copy className="h-4 w-4" aria-hidden />
                     Copy summary
-                  </button>
-                  <button type="button" onClick={handlePackClick} className="pk-btn pk-btn-primary">
-                    <FileText className="h-4 w-4" aria-hidden />
-                    Preview Project Pack
                   </button>
                 </div>
 
@@ -599,6 +599,8 @@ export function ProjectPlanner({ slug }: { slug: string }) {
                   ) : null}
                 </div>
               </section>
+
+              <ProjectSequence steps={project.steps} />
 
               {/*
                 Under the result, because that is where someone realises a
@@ -648,29 +650,6 @@ export function ProjectPlanner({ slug }: { slug: string }) {
         disabled={hasErrors}
       />
     </div>
-  );
-}
-
-function ProjectPackTeaser({
-  onClick,
-  costTotal,
-}: {
-  onClick: () => void;
-  costTotal: number;
-}) {
-  return (
-    <section className="pk-no-print rounded-[var(--radius-card)] border border-brand/20 bg-brand-soft p-5 sm:p-6">
-      <h2 className="text-lg font-semibold text-brand-ink">Take the whole plan with you</h2>
-      <p className="mt-2 max-w-prose text-sm text-brand-ink/85">
-        The Project Pack collects your quantities, the {formatCurrency(costTotal)} budget, the
-        shopping list, your assumptions, and the project sequence into one printable document —
-        good enough to hand to a store associate or a contractor.
-      </p>
-      <button type="button" onClick={onClick} className="pk-btn pk-btn-primary mt-4">
-        <FileText className="h-4 w-4" aria-hidden />
-        Preview Project Pack
-      </button>
-    </section>
   );
 }
 
