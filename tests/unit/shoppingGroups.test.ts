@@ -3,9 +3,11 @@ import { projects } from "@/data/projects";
 import { defaultValues, evaluate } from "@/lib/calc/engine";
 import { buildShoppingList } from "@/components/results/ShoppingList";
 import {
+  analyticsIdOf,
   countLocalOnly,
   countReadyToBuy,
   groupShoppingEntries,
+  hasRetailerLink,
   isDeliverableOnline,
   isSupply,
   materialIdOf,
@@ -237,6 +239,69 @@ describe("the grouping does not vary with what the user types", () => {
         countReadyToBuy(buildShoppingList(metric.result, "metric")),
         project.slug,
       ).toBe(countReadyToBuy(buildShoppingList(us.result, "us")));
+    }
+  });
+});
+
+describe("tools that link to a retailer", () => {
+  /*
+   * A hand tool is never part of the estimate, so it never joins the "ready to
+   * buy" count. But a float or a mud pan is exactly what a general retailer
+   * sells, so a tool may carry a link of its own, as long as its calculation
+   * gave it a search term.
+   */
+  it("links a tool with a search term and never one without", () => {
+    expect(hasRetailerLink({ id: "extra:float", searchTerm: "concrete magnesium float" })).toBe(true);
+    expect(hasRetailerLink({ id: "extra:permit" })).toBe(false);
+    expect(
+      hasRetailerLink({ id: "material:decking", searchTerm: "decking", measure: "length" }),
+    ).toBe(false);
+  });
+
+  it("still keeps tools out of the count on the card", () => {
+    expect(
+      countReadyToBuy([{ id: "extra:float", searchTerm: "concrete magnesium float" }]),
+    ).toBe(0);
+  });
+
+  it("withholds links from rentals, permits, structure and bulk goods", () => {
+    /*
+     * Named by id rather than matched on wording: a manual post hole digger
+     * is a real parcel, while the auger in the same line is a rental. What
+     * matters is that these whole lines, which no parcel can satisfy, never
+     * send someone to a dead end.
+     */
+    const NO_LINK: Record<string, string[]> = {
+      "concrete-calculator": ["screed"],
+      "deck-calculator": ["beams", "posts", "footings", "concrete", "gravel", "hardware", "permit"],
+      "drywall-calculator": ["lift"],
+      "fence-calculator": ["gravel"],
+      "sod-calculator": ["topsoil", "starter", "roller", "tiller"],
+      "tile-calculator": ["backer"],
+    };
+    for (const [slug, ids] of Object.entries(NO_LINK)) {
+      const entries = listFor(slug);
+      for (const id of ids) {
+        const entry = entries.find((item) => item.id === `extra:${id}`);
+        if (entry) expect(hasRetailerLink(entry), `${slug}: ${id}`).toBe(false);
+      }
+    }
+  });
+
+  it("gives every planner at least one linked tool", () => {
+    for (const project of projects) {
+      const linked = listFor(project.slug).filter((entry) => isSupply(entry) && hasRetailerLink(entry));
+      expect(linked.length, project.slug).toBeGreaterThan(0);
+    }
+  });
+
+  it("keeps the analytics id a slug, and tells tools apart", () => {
+    expect(analyticsIdOf("extra:float")).toBe("tool-float");
+    expect(analyticsIdOf("material:ready-mix")).toBe("ready-mix");
+    for (const project of projects) {
+      for (const entry of listFor(project.slug)) {
+        expect(analyticsIdOf(entry.id), entry.id).toMatch(/^[a-z0-9][a-z0-9-]{0,63}$/);
+      }
     }
   });
 });

@@ -211,12 +211,12 @@ export function calculateFlooring({
       },
     ],
     shoppingExtras: [
-      shoppingItem("spacers", "Expansion spacers"),
-      shoppingItem("tapping", "Tapping block and pull bar"),
-      shoppingItem("saw", "Miter saw or flooring cutter"),
-      shoppingItem("knee-pads", "Knee pads"),
-      shoppingItem("moisture", "Moisture barrier for concrete subfloor", undefined, true),
-      shoppingItem("leveler", "Floor leveller for low spots", undefined, true),
+      shoppingItem("spacers", "Expansion spacers", undefined, false, "flooring expansion spacers"),
+      shoppingItem("tapping", "Tapping block and pull bar", undefined, false, "flooring tapping block pull bar"),
+      shoppingItem("saw", "Miter saw or flooring cutter", undefined, false, "laminate flooring cutter"),
+      shoppingItem("knee-pads", "Knee pads", undefined, false, "knee pads"),
+      shoppingItem("moisture", "Moisture barrier for concrete subfloor", undefined, true, "concrete subfloor moisture barrier"),
+      shoppingItem("leveler", "Floor leveller for low spots", undefined, true, "self leveling floor compound"),
     ],
     warnings: [
       "Let the flooring acclimate in the room for the time the manufacturer specifies before installing.",

@@ -58,8 +58,9 @@ export function shoppingItem(
   label: string,
   detail?: string,
   optional = false,
+  searchTerm?: string,
 ): ShoppingItem {
-  return { id, label, detail, optional };
+  return searchTerm ? { id, label, detail, optional, searchTerm } : { id, label, detail, optional };
 }
 
 /** Circle area from a diameter, in the same squared unit as the input. */

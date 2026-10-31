@@ -256,12 +256,12 @@ export function calculateFence({
       { label: "Post concrete", value: `${d.volumeYd(concreteYards)} total` },
     ],
     shoppingExtras: [
-      shoppingItem("string-line", "String line and marking paint"),
-      shoppingItem("post-level", "Post level"),
-      shoppingItem("digger", "Post hole digger or auger rental"),
+      shoppingItem("string-line", "String line and marking paint", undefined, false, "mason string line"),
+      shoppingItem("post-level", "Post level", undefined, false, "post level"),
+      shoppingItem("digger", "Post hole digger or auger rental", undefined, false, "post hole digger"),
       shoppingItem("gravel", "Gravel for the bottom of each post hole"),
-      shoppingItem("stain", "Stain or sealer", undefined, true),
-      shoppingItem("caps", "Post caps", undefined, true),
+      shoppingItem("stain", "Stain or sealer", undefined, true, "fence stain sealer"),
+      shoppingItem("caps", "Post caps", undefined, true, "fence post caps"),
     ],
     warnings: [
       "Call for utility locates before digging any post hole.",

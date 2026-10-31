@@ -185,10 +185,10 @@ export function calculateGravel({
     ],
     shoppingExtras: [
       shoppingItem("fabric", "Geotextile fabric under the gravel", undefined, true),
-      shoppingItem("edging", "Edging to keep the gravel where you put it"),
-      shoppingItem("rake", "Landscape rake"),
-      shoppingItem("tamper", "Plate compactor or hand tamper", undefined, true),
-      shoppingItem("wheelbarrow", "Wheelbarrow"),
+      shoppingItem("edging", "Edging to keep the gravel where you put it", undefined, false, "landscape edging"),
+      shoppingItem("rake", "Landscape rake", undefined, false, "landscape rake"),
+      shoppingItem("tamper", "Plate compactor or hand tamper", undefined, true, "hand tamper"),
+      shoppingItem("wheelbarrow", "Wheelbarrow", undefined, false, "wheelbarrow"),
     ],
     warnings: [
       "Aggregate weight varies significantly with moisture, gradation, and stone type. Treat the tonnage as an approximation and confirm with your supplier.",

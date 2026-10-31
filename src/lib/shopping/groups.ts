@@ -102,6 +102,32 @@ export function isDeliverableOnline(entry: ShoppingEntryLike): boolean {
 }
 
 /**
+ * Whether a line gets a "Shop on" link at all.
+ *
+ * Wider than `isDeliverableOnline`, and deliberately so. That predicate answers
+ * "is this part of what you can put in a basket for the estimate", and it is
+ * what the card counts. A hand tool is not part of the estimate, so it never
+ * joins that count, but a float, an edger or a mud pan is exactly what a
+ * general retailer sells, and someone reading the tools list is often about to
+ * buy one. A tool gets a link only when its calculation gave it a search term,
+ * which is withheld from rentals, permits, structural members and bulk goods.
+ */
+export function hasRetailerLink(entry: ShoppingEntryLike): boolean {
+  if (isSupply(entry)) return Boolean(entry.searchTerm);
+  return isDeliverableOnline(entry);
+}
+
+/**
+ * The analytics id for a line, held to the same slug shape for both kinds.
+ *
+ * A tool's id is prefixed so a report can tell "the edger" from a material
+ * that happens to share an authored id, such as gravel in two planners.
+ */
+export function analyticsIdOf(entryId: string): string {
+  return isSupply({ id: entryId }) ? `tool-${materialIdOf(entryId)}` : materialIdOf(entryId);
+}
+
+/**
  * Split a shopping list into the three groups the results page shows.
  *
  * Empty groups are dropped, so a planner whose materials all arrive by truck —
