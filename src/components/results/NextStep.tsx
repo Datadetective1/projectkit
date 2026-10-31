@@ -158,7 +158,7 @@ export function NextStep({
           ? `${readyToBuy} ${readyToBuy === 1 ? "item ships" : "items ship"} to your door. The other ${localOnly} ${localOnly === 1 ? "comes" : "come"} by the load from a local supplier — we list the quantities to ask for.`
           : canShopOnline
             ? "Everything on this list can be ordered online. Quantities already include waste and round up to whole packages."
-            : "This project is delivered by the load from a local supplier, so there is nothing to order online. The list has the exact quantities to ask for when you call around."}
+            : "This project is delivered by the load from a local supplier, so the materials are not ordered online. The list has the exact quantities to ask for when you call around."}
       </p>
     </section>
   );
