@@ -4,7 +4,7 @@ import { ExternalLink } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { retailerRel, retailerUrl, retailers, whereToBuyEnabled } from "@/config/retailers";
 import { sourceFromPath, track } from "@/lib/analytics";
-import { isDeliverableOnline } from "@/lib/shopping/groups";
+import { analyticsIdOf, hasRetailerLink } from "@/lib/shopping/groups";
 import type { Measure } from "@/lib/units";
 
 /**
@@ -29,7 +29,8 @@ import type { Measure } from "@/lib/units";
  * result that never changes because of it. The label is the material's own
  * action — "Shop on Amazon" — not a retailer's branding.
  *
- * The search term comes from the calculation (`MaterialLine.searchTerm`), never
+ * The search term comes from the calculation (`MaterialLine.searchTerm`, or
+ * `ShoppingItem.searchTerm` for a tool), never
  * from anything the user typed, and is never sent to analytics — the event
  * carries `materialId` instead, which identifies the same thing with bounded
  * cardinality.
@@ -42,22 +43,28 @@ export function WhereToBuy({
   query,
   projectType,
   measure,
-  materialId,
+  entryId,
+  compact = false,
   className = "",
 }: {
-  /** The material's search term. Not user input. */
+  /** The line's search term. Not user input. */
   query: string;
   projectType?: string;
   /** Suppresses the link for goods a parcel carrier cannot sensibly deliver. */
   measure?: Measure;
   /**
-   * The calculation's own id.
+   * The shopping-list id, `material:<id>` or `extra:<id>`.
    *
    * Two jobs: the exclusions `measure` misses, and the analytics `materialId`,
-   * which is what makes "which material earns the clicks?" answerable.
-   * Code-authored in `lib/calculations/*.ts`, never user input.
+   * which is what makes "which line earns the clicks?" answerable. The ids
+   * are code-authored in `lib/calculations/*.ts`, never user input.
    */
-  materialId?: string;
+  entryId: string;
+  /**
+   * A quieter text link for the tools list, where a row of full buttons
+   * under every hand tool would turn a checklist into a catalogue.
+   */
+  compact?: boolean;
   className?: string;
 }) {
   /*
@@ -68,13 +75,13 @@ export function WhereToBuy({
 
   if (!whereToBuyEnabled || !query) return null;
   /*
-   * The same predicate the grouping uses, called with the same fields. Asking
-   * the shared rule rather than re-implementing it is what stops this link
+   * The same predicate the list uses, called with the same fields. Asking the
+   * shared rule rather than re-implementing it is what stops this link
    * appearing on a line the list has filed under "order locally".
    */
-  if (!isDeliverableOnline({ id: `material:${materialId ?? ""}`, searchTerm: query, measure })) {
-    return null;
-  }
+  if (!hasRetailerLink({ id: entryId, searchTerm: query, measure })) return null;
+
+  const materialId = analyticsIdOf(entryId);
 
   return (
     <div className={`pk-no-print mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 ${className}`}>
@@ -101,7 +108,11 @@ export function WhereToBuy({
               source: sourceFromPath(pathname ?? "/"),
             })
           }
-          className="pk-btn pk-btn-secondary h-9 px-3 text-sm"
+          className={
+            compact
+              ? "inline-flex items-center gap-1 text-sm font-medium text-brand underline-offset-2 hover:underline"
+              : "pk-btn pk-btn-secondary h-9 px-3 text-sm"
+          }
         >
           Shop on {retailer.name}
           <ExternalLink className="h-3.5 w-3.5" aria-hidden />

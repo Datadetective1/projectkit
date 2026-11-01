@@ -262,12 +262,12 @@ export function calculateConcrete({
     ],
     shoppingExtras: [
       shoppingItem("screed", "Screed board (straight 2×4 longer than the slab width)"),
-      shoppingItem("expansion", "Expansion joint material where the slab meets existing concrete"),
-      shoppingItem("float", "Bull float or magnesium float"),
-      shoppingItem("edger", "Concrete edger and groover"),
-      shoppingItem("curing", "Curing compound or plastic sheeting"),
-      shoppingItem("ppe", "Waterproof gloves, eye protection, knee pads"),
-      shoppingItem("rebar-chairs", "Rebar chairs or mesh supports", undefined, reinforcement === "none"),
+      shoppingItem("expansion", "Expansion joint material where the slab meets existing concrete", undefined, false, "concrete expansion joint"),
+      shoppingItem("float", "Bull float or magnesium float", undefined, false, "concrete magnesium float"),
+      shoppingItem("edger", "Concrete edger and groover", undefined, false, "concrete edger groover"),
+      shoppingItem("curing", "Curing compound or plastic sheeting", undefined, false, "concrete curing compound"),
+      shoppingItem("ppe", "Waterproof gloves, eye protection, knee pads", undefined, false, "waterproof work gloves"),
+      shoppingItem("rebar-chairs", "Rebar chairs or mesh supports", undefined, reinforcement === "none", "rebar chairs"),
     ],
     warnings: [
       "Concrete sets on its own schedule. Have every tool, helper, and form check done before the truck arrives.",

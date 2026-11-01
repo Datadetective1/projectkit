@@ -6,7 +6,12 @@ import { Printer, Truck } from "lucide-react";
 import { WhereToBuy } from "@/components/monetization/WhereToBuy";
 import { RetailerDisclosure } from "@/components/monetization/RetailerDisclosure";
 import { formatMaterialQuantity, formatUnitPrice } from "@/lib/format";
-import { countReadyToBuy, groupShoppingEntries, materialIdOf } from "@/lib/shopping/groups";
+import {
+  countReadyToBuy,
+  groupShoppingEntries,
+  hasRetailerLink,
+  isSupply,
+} from "@/lib/shopping/groups";
 import { formatCurrency, type Measure, type UnitSystem } from "@/lib/units";
 import type { CalculationResult } from "@/types/project";
 import { sourceFromPath, track } from "@/lib/analytics";
@@ -68,6 +73,7 @@ export function buildShoppingList(
     label: item.label,
     detail: item.detail,
     optional: item.optional,
+    searchTerm: item.searchTerm,
   }));
   return [...fromMaterials, ...extras];
 }
@@ -114,6 +120,12 @@ export function ShoppingList({
   const groups = groupShoppingEntries(entries);
   const readyToBuy = countReadyToBuy(entries);
   const priced = entries.some((entry) => entry.cost !== undefined);
+  /*
+   * The disclosure goes above whichever group holds the first link. Usually
+   * that is "Ready to buy online"; for mulch, gravel and sod, whose materials
+   * all come by the truck, it is the tools list.
+   */
+  const disclosedGroup = groups.find((group) => group.entries.some(hasRetailerLink))?.id;
 
   useEffect(() => {
     const node = section.current;
@@ -184,7 +196,7 @@ export function ShoppingList({
 
       <div className="mt-5 flex flex-col gap-7">
         {groups.map((group) => (
-          <div key={group.id}>
+          <div key={group.id} data-group={group.id}>
             <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
               <h3 className="flex items-center gap-2 text-sm font-semibold text-ink">
                 {group.id === "local" ? (
@@ -202,12 +214,12 @@ export function ShoppingList({
             ) : null}
 
             {/*
-              The Amazon disclosure sits directly above the first paid link and
-              nowhere else. The Operating Agreement wants it near the links
+              The Amazon disclosure sits directly above the first group with a
+              paid link and nowhere else. The Operating Agreement wants it near the links
               rather than in a page footer, and repeating it on every row is
               what made a checklist read like an affiliate page.
             */}
-            {group.id === "online" ? <RetailerDisclosure className="mt-2" /> : null}
+            {group.id === disclosedGroup ? <RetailerDisclosure className="mt-2" /> : null}
 
             <ul className="mt-3 divide-y divide-line border-t border-line">
               {group.entries.map((entry) => {
@@ -285,7 +297,8 @@ export function ShoppingList({
                           query={entry.searchTerm}
                           projectType={projectType}
                           measure={entry.measure}
-                          materialId={materialIdOf(entry.id)}
+                          entryId={entry.id}
+                          compact={isSupply(entry)}
                           // Indented to the text column on mobile, where it
                           // sits under the label rather than beside it.
                           className="ml-8 mt-0 shrink-0 sm:ml-0"

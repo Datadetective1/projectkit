@@ -138,7 +138,13 @@ for (const planner of PLANNERS) {
     await expect(card).toBeVisible();
 
     const list = page.locator("#shopping-list");
-    const buyButtons = list.getByRole("link", { name: /shop on amazon/i });
+    /*
+     * Scoped to the materials. Tools carry links of their own now, but they
+     * are not part of the estimate and never part of the count.
+     */
+    const buyButtons = list
+      .locator('[data-group="online"]')
+      .getByRole("link", { name: /shop on amazon/i });
 
     if (planner.online > 0) {
       /*
@@ -201,6 +207,33 @@ test("the disclosure sits above the first paid link, once", async ({ page }) => 
     await expect(link).toHaveAttribute("target", "_blank");
   }
   await expect(list.getByText("Paid link")).toHaveCount(links.length);
+});
+
+test("tools link to Amazon, with the disclosure above them", async ({ page }) => {
+  /*
+   * Mulch has no parcel-sized materials, so the tools list is where its first
+   * paid link sits. The disclosure has to move with it rather than vanish
+   * along with the "ready to buy online" group.
+   */
+  await openPlanner(page, "mulch-calculator");
+
+  const list = page.locator("#shopping-list");
+  await list.scrollIntoViewIfNeeded();
+
+  const tools = list.locator('[data-group="supplies"]');
+  const links = tools.getByRole("link", { name: /shop on amazon/i });
+  expect(await links.count()).toBeGreaterThan(0);
+
+  const disclosure = list.getByText(/As an Amazon Associate, Cubitora earns/i);
+  await expect(disclosure).toHaveCount(1);
+  const disclosureBox = await disclosure.boundingBox();
+  const linkBox = await links.first().boundingBox();
+  expect(disclosureBox!.y).toBeLessThan(linkBox!.y);
+
+  for (const link of await links.all()) {
+    await expect(link).toHaveAttribute("rel", /sponsored/);
+    await expect(link).toHaveAttribute("href", /tag=cubitora86-20/);
+  }
 });
 
 test("no shopping link ever reaches a local-supplier line", async ({ page }) => {

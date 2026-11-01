@@ -149,6 +149,12 @@ export interface ShoppingItem {
   /** Rendered detail such as "4.5 yd³" — already formatted. */
   detail?: string;
   optional?: boolean;
+  /**
+   * What to search a retailer for, when this is a hand tool or a small supply
+   * a general retailer actually stocks. Absent for anything structural, bulk,
+   * rented, or a permit: those get no link at all.
+   */
+  searchTerm?: string;
 }
 
 export interface CalculationResult {

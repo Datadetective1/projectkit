@@ -186,11 +186,11 @@ export function calculateMulch({
       { label: "Bulk price", value: d.pricePerUnit(bulkPrice, "volumeYd") },
     ],
     shoppingExtras: [
-      shoppingItem("wheelbarrow", "Wheelbarrow"),
-      shoppingItem("rake", "Mulch rake or garden rake"),
-      shoppingItem("edging", "Bed edging", undefined, true),
-      shoppingItem("gloves", "Gloves"),
-      shoppingItem("tarp", "Tarp to protect the driveway", undefined, true),
+      shoppingItem("wheelbarrow", "Wheelbarrow", undefined, false, "wheelbarrow"),
+      shoppingItem("rake", "Mulch rake or garden rake", undefined, false, "garden rake"),
+      shoppingItem("edging", "Bed edging", undefined, true, "garden bed edging"),
+      shoppingItem("gloves", "Gloves", undefined, false, "gardening gloves"),
+      shoppingItem("tarp", "Tarp to protect the driveway", undefined, true, "heavy duty tarp"),
     ],
     warnings: [
       `Keep mulch ${metric ? "a few centimetres" : "a few inches"} clear of trunks and stems — piling it against them invites rot.`,

@@ -165,9 +165,9 @@ export function calculateSod({
       shoppingItem("topsoil", "Topsoil or compost for levelling"),
       shoppingItem("starter", "Starter fertilizer"),
       shoppingItem("roller", "Lawn roller (rental)"),
-      shoppingItem("knife", "Sod knife or old bread knife for trimming"),
-      shoppingItem("sprinkler", "Sprinkler and hose"),
-      shoppingItem("rake", "Landscape rake"),
+      shoppingItem("knife", "Sod knife or old bread knife for trimming", undefined, false, "sod knife"),
+      shoppingItem("sprinkler", "Sprinkler and hose", undefined, false, "lawn sprinkler"),
+      shoppingItem("rake", "Landscape rake", undefined, false, "landscape rake"),
       shoppingItem("tiller", "Tiller rental for compacted soil", undefined, true),
     ],
     warnings: [

@@ -300,10 +300,10 @@ export function calculateDeck({
       shoppingItem("footings", "Footings — size and depth per local code and frost line"),
       shoppingItem("concrete", "Concrete for footings"),
       shoppingItem("gravel", "Gravel for footing bases"),
-      shoppingItem("flashing", "Ledger flashing"),
+      shoppingItem("flashing", "Ledger flashing", undefined, false, "deck ledger flashing"),
       shoppingItem("hardware", "Structural connectors and approved fasteners"),
-      shoppingItem("string", "String line, level, and layout square"),
-      shoppingItem("sealer", "Stain or sealer for wood decking", undefined, true),
+      shoppingItem("string", "String line, level, and layout square", undefined, false, "mason string line"),
+      shoppingItem("sealer", "Stain or sealer for wood decking", undefined, true, "deck stain sealer"),
       shoppingItem("permit", "Building permit — check before you start"),
     ],
     warnings: [
