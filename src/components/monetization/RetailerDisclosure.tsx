@@ -13,7 +13,14 @@ import { retailers, whereToBuyEnabled } from "@/config/retailers";
  * own wording verbatim, because paraphrasing a required disclosure is a
  * compliance failure.
  */
-export function RetailerDisclosure({ className = "" }: { className?: string }) {
+export function RetailerDisclosure({
+  className = "",
+  cart = false,
+}: {
+  className?: string;
+  /** Whether this list offers the add-to-cart button, which links chosen products. */
+  cart?: boolean;
+}) {
   if (!whereToBuyEnabled) return null;
 
   const disclosures = Array.from(
@@ -27,8 +34,10 @@ export function RetailerDisclosure({ className = "" }: { className?: string }) {
 
   return (
     <p className={`pk-no-print text-xs leading-snug text-ink-subtle ${className}`}>
-      {disclosures.join(" ")} Links go to a search, not a chosen product, and they never change
-      the quantities above.
+      {disclosures.join(" ")}{" "}
+      {cart
+        ? "The cart button adds a common pick for each item, the single links open a search, and neither changes the quantities above."
+        : "Links go to a search, not a chosen product, and they never change the quantities above."}
     </p>
   );
 }

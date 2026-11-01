@@ -206,7 +206,37 @@ test("the disclosure sits above the first paid link, once", async ({ page }) => 
     await expect(link).toHaveAttribute("href", /tag=cubitora86-20/);
     await expect(link).toHaveAttribute("target", "_blank");
   }
-  await expect(list.getByText("Paid link")).toHaveCount(links.length);
+  // One marker per link, plus the one beside the add-to-cart button.
+  await expect(list.getByText("Paid link")).toHaveCount(links.length + 1);
+});
+
+test("one tap sends the list to an Amazon cart, with the tag", async ({ page }) => {
+  await openPlanner(page, "concrete-calculator");
+
+  const list = page.locator("#shopping-list");
+  await list.scrollIntoViewIfNeeded();
+
+  const cart = list.getByTestId("amazon-cart");
+  await expect(cart).toBeVisible();
+  await expect(cart).toHaveAttribute("rel", /sponsored/);
+  await expect(cart).toHaveAttribute("target", "_blank");
+
+  const before = new URL((await cart.getAttribute("href"))!);
+  expect(before.origin + before.pathname).toBe("https://www.amazon.com/gp/aws/cart/add.html");
+  expect(before.searchParams.get("AssociateTag")).toBe("cubitora86-20");
+  const count = Number((await cart.textContent())!.match(/Add (\d+) item/)![1]);
+  expect(before.searchParams.has(`ASIN.${count}`)).toBe(true);
+  expect(before.searchParams.has(`ASIN.${count + 1}`)).toBe(false);
+
+  // The disclosure comes first, so it is read before the button.
+  const disclosure = list.getByText(/As an Amazon Associate, Cubitora earns/i);
+  expect((await disclosure.boundingBox())!.y).toBeLessThan((await cart.boundingBox())!.y);
+
+  // Ticking something off takes it out of the cart.
+  await list.getByRole("checkbox", { name: /bull float or magnesium float/i }).check();
+  await expect(cart).toContainText(`Add ${count - 1} item`);
+  const after = new URL((await cart.getAttribute("href"))!);
+  expect(after.searchParams.has(`ASIN.${count}`)).toBe(false);
 });
 
 test("tools link to Amazon, with the disclosure above them", async ({ page }) => {

@@ -201,7 +201,7 @@ function Footer({ pack }: { pack: ProjectPack }) {
   return (
     <View style={styles.footer} fixed>
       <Text>
-        {pack.brand} — planning estimate only. Verify before you buy.
+        {pack.brand}: planning estimate only. Verify before you buy.
       </Text>
       <Text
         render={({ pageNumber, totalPages }) => `${pageNumber} / ${totalPages}`}

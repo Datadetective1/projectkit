@@ -191,14 +191,14 @@ export const mulchProject: ProjectDefinition = {
     {
       question: "Is bulk mulch cheaper than bags?",
       answer:
-        "Per cubic yard, almost always — often by half. The trade-off is a pile on your driveway and a delivery window. This planner compares both at the prices you enter.",
+        "Per cubic yard, almost always, often by half. The trade-off is a pile on your driveway and a delivery window. This planner compares both at the prices you enter.",
     },
   ],
 
   related: ["gravel-calculator", "sod-calculator", "fence-calculator"],
 
   seo: {
-    title: "Mulch Calculator — Cubic Yards, Bags & Cost",
+    title: "Mulch Calculator: Cubic Yards, Bags & Cost",
     description:
       "Calculate how much mulch you need in cubic yards or bags for any bed shape, compare bulk versus bagged cost, and get a project shopping list.",
     breadcrumb: "Mulch",

@@ -267,6 +267,6 @@ export const legal = {
   planningDisclaimer:
     "Cubitora provides planning estimates only. Actual requirements, costs, installation methods, structural requirements, permits, safety requirements, and building codes vary. Verify critical specifications before purchasing materials or beginning work.",
   shortDisclaimer:
-    "Planning estimate only — verify quantities and local requirements before you buy.",
+    "Planning estimate only. Verify quantities and local requirements before you buy.",
   lastUpdated: "2026-08-18",
 } as const;

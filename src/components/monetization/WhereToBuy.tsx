@@ -124,7 +124,7 @@ export function WhereToBuy({
           */}
           {" "}
           <span className="sr-only">
-            — search for {query} at {retailer.name}
+            , search for {query} at {retailer.name}
             {retailer.affiliate ? ", a paid affiliate link" : ""} (opens in a new tab)
           </span>
         </a>

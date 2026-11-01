@@ -9,7 +9,7 @@ export const deckProject: ProjectDefinition = {
   category: "Outdoor & Structural",
   tagline: "Decking, joists, railing, stairs, and budget.",
   intro:
-    "Estimate the material a deck of a given size consumes — decking, framing, railing, stairs, and fasteners — so you can budget the project. This is material planning, not structural design.",
+    "Estimate the material a deck of a given size consumes (decking, framing, railing, stairs, and fasteners) so you can budget the project. This is material planning, not structural design.",
   icon: "Layers",
   accent: "timber",
   keywords: ["deck", "decking", "porch", "joist", "railing", "composite"],
@@ -199,7 +199,7 @@ export const deckProject: ProjectDefinition = {
 
   steps: [
     "Check permit requirements and setbacks before anything else.",
-    "Have the structural design — spans, beams, footings, ledger — verified for your location.",
+    "Have the structural design (spans, beams, footings, ledger) verified for your location.",
     "Call for utility locates, then lay out and dig the footings.",
     "Pour footings and set post bases.",
     "Attach and flash the ledger board to the house.",
@@ -215,7 +215,7 @@ export const deckProject: ProjectDefinition = {
     {
       question: "How much decking do I need for a 16 × 12 deck?",
       answer:
-        "A 16 × 12 deck is 192 sq ft. With 5.5 in boards and a quarter-inch gap you need about 34 rows at 12 ft each — roughly 410 linear feet before waste. This planner works it out from your exact board width and gap.",
+        "A 16 × 12 deck is 192 sq ft. With 5.5 in boards and a quarter-inch gap you need about 34 rows at 12 ft each, roughly 410 linear feet before waste. This planner works it out from your exact board width and gap.",
     },
     {
       question: "How far apart should deck joists be?",
@@ -230,14 +230,14 @@ export const deckProject: ProjectDefinition = {
     {
       question: "Can Cubitora design my deck structure?",
       answer:
-        "No, and it should not try to. Joist spans, beam sizes, post spacing, and footing depth depend on load, lumber species, soil, and frost line. This planner estimates material quantities for budgeting — the structural design needs a span table, a designer, or your building department.",
+        "No, and it should not try to. Joist spans, beam sizes, post spacing, and footing depth depend on load, lumber species, soil, and frost line. This planner estimates material quantities for budgeting. The structural design needs a span table, a designer, or your building department.",
     },
   ],
 
   related: ["concrete-calculator", "fence-calculator", "gravel-calculator"],
 
   seo: {
-    title: "Deck Calculator — Decking, Joists & Railing",
+    title: "Deck Calculator: Decking, Joists & Railing",
     description:
       "Estimate decking boards, joists, railing, stairs, and fasteners for a deck, with a material cost estimate and full project shopping list.",
     breadcrumb: "Deck",

@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/seo";
 export const metadata = pageMetadata({
   title: "My Projects",
   description:
-    "Every project you have saved in Cubitora — quantities, budget, shopping list, and notes. Stored in this browser, no account needed.",
+    "Every project you have saved in Cubitora: quantities, budget, shopping list, and notes. Stored in this browser, no account needed.",
   path: "/my-projects",
   index: false,
 });
@@ -23,7 +23,7 @@ export default function MyProjectsPage() {
       <header className="mt-5 max-w-2xl">
         <h1 className="text-3xl font-semibold tracking-tight text-ink sm:text-4xl">My projects</h1>
         <p className="pk-prose mt-3">
-          Saved projects live in this browser — no account, no server. Clearing your browser data
+          Saved projects live in this browser: no account, no server. Clearing your browser data
           removes them, and they will not follow you to another device.
         </p>
       </header>

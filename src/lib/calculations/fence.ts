@@ -158,7 +158,7 @@ export function calculateFence({
       unitOverride: "boxes (5 lb)",
       isEstimate: true,
       searchTerm: "exterior deck screws",
-      note: `About ${screws.toLocaleString("en-US")} screws — two per picket per rail plus 10%.`,
+      note: `About ${screws.toLocaleString("en-US")} screws: two per picket per rail plus 10%.`,
     },
   ];
 
@@ -219,7 +219,7 @@ export function calculateFence({
     ],
     explanation: [
       `Your fence line runs ${fmt(totalLinearFt, "length", 1)}. Taking out ${roundTo(gateCount, 0)} gate ${gateCount === 1 ? "opening" : "openings"} leaves ${fmt(fencedLinearFt, "length", 1)} of actual fence, which divides into ${sections} ${sections === 1 ? "section" : "sections"} at ${d.length(postSpacing)} spacing.`,
-      `Posts are the part you cannot fudge — each one needs a hole roughly ${d.inch(holeDiameter, 0)} across and ${d.inch(postDepth, 0)} deep, which is where the ${concreteBags} bags of concrete go.`,
+      `Posts are the part you cannot fudge. Each one needs a hole roughly ${d.inch(holeDiameter, 0)} across and ${d.inch(postDepth, 0)} deep, which is where the ${concreteBags} bags of concrete go.`,
       `Picket count assumes ${d.inch(picketWidth)} boards with a ${d.inch(picketGap)} gap. Shrinkage after installation is normal with wet lumber.`,
     ],
     formulas: [
@@ -272,7 +272,7 @@ export function calculateFence({
       difficulty: "Moderate",
       timeCategory: totalPosts > 20 ? "Two to three weekends" : "A weekend",
       notes: [
-        "Digging holes is the slow part — an auger rental changes the day completely.",
+        "Digging holes is the slow part. An auger rental changes the day completely.",
         "Set and brace all posts first, let the concrete cure, then hang rails and pickets.",
       ],
     },

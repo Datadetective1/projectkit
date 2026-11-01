@@ -31,7 +31,7 @@ export function SavedProjectList() {
         <h2 className="text-lg font-semibold text-ink">Saved projects need local storage</h2>
         <p className="pk-prose mt-2 text-sm">
           Your browser is blocking local storage, which is where Cubitora keeps saved projects.
-          Private browsing windows usually do this. Everything else still works — you just cannot
+          Private browsing windows usually do this. Everything else still works; you just cannot
           save between visits.
         </p>
       </div>
@@ -46,7 +46,7 @@ export function SavedProjectList() {
         </span>
         <h2 className="mt-4 text-lg font-semibold text-ink">No saved projects yet</h2>
         <p className="pk-prose mx-auto mt-2 max-w-sm text-sm">
-          Work out a project, hit Save, and it will be waiting here — quantities, shopping list,
+          Work out a project, hit Save, and it will be waiting here: quantities, shopping list,
           notes, and all.
         </p>
         <Link href="/projects" className="pk-btn pk-btn-primary mt-5">
@@ -126,7 +126,7 @@ export function SavedProjectList() {
       {/*
         Beta testers end up with a drawer full of throwaway projects, and
         deleting them one at a time to reproduce a first-visit bug is tedious.
-        Confirmed, and honest that it cannot be undone — this is the only copy
+        Confirmed, and honest that it cannot be undone. This is the only copy
         of the data.
       */}
       <div className="mt-8 border-t border-line pt-5">

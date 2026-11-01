@@ -178,13 +178,13 @@ export const gravelProject: ProjectDefinition = {
   related: ["concrete-calculator", "mulch-calculator", "sod-calculator"],
 
   seo: {
-    title: "Gravel Calculator — Cubic Yards, Tons & Cost",
+    title: "Gravel Calculator: Cubic Yards, Tons & Cost",
     description:
       "Calculate gravel and aggregate volume in cubic yards, approximate tonnage by material density, recommended purchase quantity, and estimated delivery cost.",
     breadcrumb: "Gravel",
   },
 
   disclaimers: [
-    "Aggregate weight varies with moisture content, gradation, and material. Tonnage figures are approximations — confirm with your supplier before ordering by weight.",
+    "Aggregate weight varies with moisture content, gradation, and material. Tonnage figures are approximations. Confirm with your supplier before ordering by weight.",
   ],
 };

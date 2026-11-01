@@ -84,7 +84,7 @@ export function ComparisonAnswer({ project }: { project: ProjectDefinition; comp
             </p>
             <p className="mt-1.5 text-xl font-semibold text-ink">Bags</p>
             <p className="mt-1.5 pk-prose text-sm leading-snug">
-              Not because the material is cheaper — it is not — but because no supplier will send a
+              Not because the material is cheaper (it is not) but because no supplier will send a
               truck for that little without a fee that swallows the difference.
             </p>
           </div>
@@ -173,7 +173,7 @@ export function ComparisonAnswer({ project }: { project: ProjectDefinition; comp
         {lastBagged && firstReadyMix ? (
           <p className="pk-prose mt-4 text-sm">
             The recommendation changes between <strong className="text-ink">{lastBagged.label}</strong>{" "}
-            and <strong className="text-ink">{firstReadyMix.label}</strong> — the point where the
+            and <strong className="text-ink">{firstReadyMix.label}</strong>, the point where the
             order passes one cubic yard. Notice what the money does across that boundary: ready-mix
             is the cheaper material on <em>both</em> rows, and on every row above and below them.
             Bags win the smaller job on practicality, not price.
@@ -190,7 +190,7 @@ export function ComparisonAnswer({ project }: { project: ProjectDefinition; comp
           What these prices leave out
         </h2>
         <p className="pk-prose mt-2 text-sm">
-          Both columns are material only, and the omissions land on opposite sides — which is why
+          Both columns are material only, and the omissions land on opposite sides, which is why
           the table alone should not make the decision for a job near the threshold.
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -206,7 +206,7 @@ export function ComparisonAnswer({ project }: { project: ProjectDefinition; comp
             <h3 className="text-sm font-semibold text-ink">Bags leave out</h3>
             <ul className="pk-prose mt-2 list-disc space-y-1 pl-4 text-sm">
               <li>Mixer hire, unless you are mixing in a barrow</li>
-              <li>Your day — and a second pair of hands on anything but a small pad</li>
+              <li>Your day, and a second pair of hands on anything but a small pad</li>
               <li>
                 The risk of a cold joint if the mixing falls behind the pour
               </li>

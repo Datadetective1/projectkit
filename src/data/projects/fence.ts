@@ -295,7 +295,7 @@ export const fenceProject: ProjectDefinition = {
     {
       question: "How deep should a fence post go?",
       answer:
-        "A common rule of thumb is one third of the above-ground height, or below the local frost line, whichever is deeper. Two feet is typical for a six-foot fence in mild climates and nowhere near enough in cold ones — check your local frost depth.",
+        "A common rule of thumb is one third of the above-ground height, or below the local frost line, whichever is deeper. Two feet is typical for a six-foot fence in mild climates and nowhere near enough in cold ones. Check your local frost depth.",
     },
     {
       question: "How many bags of concrete per fence post?",
@@ -305,16 +305,16 @@ export const fenceProject: ProjectDefinition = {
     {
       question: "Do I need a permit to build a fence?",
       answer:
-        "Often yes, and height limits and setback rules are extremely common — front-yard fences in particular. Cubitora cannot tell you your local rules, so check with your municipality and HOA before you buy material.",
+        "Often yes, and height limits and setback rules are extremely common, front-yard fences in particular. Cubitora cannot tell you your local rules, so check with your municipality and HOA before you buy material.",
     },
   ],
 
   related: ["concrete-calculator", "sod-calculator", "deck-calculator", "mulch-calculator"],
 
   seo: {
-    title: "Fence Calculator — Posts, Rails, Pickets & Cost",
+    title: "Fence Calculator: Posts, Rails, Pickets & Cost",
     description:
-      "Calculate fence posts, rails, pickets, gate hardware, post-hole concrete, and estimated cost — plus a shopping list and step-by-step project plan.",
+      "Calculate fence posts, rails, pickets, gate hardware, post-hole concrete, and estimated cost, plus a shopping list and step-by-step project plan.",
     breadcrumb: "Fence",
   },
 

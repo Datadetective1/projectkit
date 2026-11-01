@@ -25,7 +25,7 @@ export function buildTextSummary(input: {
         });
 
   const lines: string[] = [
-    `${projectName} — ${site.name} estimate`,
+    `${projectName}: ${site.name} estimate`,
     "",
     `${result.headline.label}: ${headlineValue}`,
   ];
@@ -39,7 +39,7 @@ export function buildTextSummary(input: {
 
   lines.push("", "Materials");
   for (const line of result.materials) {
-    const cost = line.cost === undefined ? "" : ` — ${formatCurrency(line.cost)}`;
+    const cost = line.cost === undefined ? "" : `, ${formatCurrency(line.cost)}`;
     lines.push(`- ${line.name}: ${formatMaterialQuantity(line, system)}${cost}`);
   }
 
@@ -47,7 +47,7 @@ export function buildTextSummary(input: {
     lines.push("", `Estimated material total: ${formatCurrency(result.costTotal)}`);
   }
 
-  lines.push("", "Planning estimate only — verify before you buy.");
+  lines.push("", "Planning estimate only. Verify before you buy.");
   if (url) lines.push(url);
 
   return lines.join("\n");

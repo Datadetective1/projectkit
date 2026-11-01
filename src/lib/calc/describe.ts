@@ -69,13 +69,13 @@ export interface Describe {
    */
   pricePerUnit: (canonicalPrice: number, measure: Measure) => string;
   /**
-   * A range, with the unit named once: "2–2.5 in" / "5–6 cm".
+   * A range, with the unit named once: "2 to 2.5 in" / "5 to 6 cm".
    *
    * Formatting each end separately gives "5 cm–6 cm", which reads as two
    * measurements rather than one span.
    */
   inchRange: (from: number, to: number, precision?: number) => string;
-  /** The same, for lengths: "6–8 ft" / "1.8–2.4 m". */
+  /** The same, for lengths: "6 to 8 ft" / "1.8 to 2.4 m". */
   lengthRange: (from: number, to: number, precision?: number) => string;
   /**
    * A small dimension in millimetres, from a value held in inches.
@@ -146,13 +146,13 @@ export function describeFor(system: UnitSystem): Describe {
     inchRange: (from, to, precision) => {
       const decimals = precision ?? (system === "us" ? 1 : 0);
       const low = formatNumber(fromCanonical(from, "inch", system), decimals);
-      return `${low}–${formatQuantity(to, "inch", { system, precision: decimals })}`;
+      return `${low} to ${formatQuantity(to, "inch", { system, precision: decimals })}`;
     },
 
     lengthRange: (from, to, precision) => {
       const decimals = precision ?? (system === "us" ? 0 : 1);
       const low = formatNumber(fromCanonical(from, "length", system), decimals);
-      return `${low}–${formatQuantity(to, "length", { system, precision: decimals })}`;
+      return `${low} to ${formatQuantity(to, "length", { system, precision: decimals })}`;
     },
 
     millimetres: (inches, precision) =>

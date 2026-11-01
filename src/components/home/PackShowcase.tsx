@@ -71,7 +71,7 @@ export function PackShowcase() {
             the picture the reader is already looking at.
           */}
           <p className="mt-4 max-w-lg text-[0.9375rem] leading-relaxed text-brand-mist">
-            A calculator gives you a volume and stops. This is the document you actually use — on
+            A calculator gives you a volume and stops. This is the document you actually use: on
             your phone in the aisle, or printed and folded in a pocket.
           </p>
 
@@ -130,7 +130,7 @@ export function PackShowcase() {
             </div>
 
             <div className="px-5 pt-4">
-              <p className="text-lg font-semibold tracking-tight text-ink">Concrete — 20 × 16 ft</p>
+              <p className="text-lg font-semibold tracking-tight text-ink">Concrete: 20 × 16 ft</p>
               <p className="mt-0.5 text-xs text-ink-subtle">
                 Outdoor &amp; Structural · Challenging · A full weekend with help
               </p>

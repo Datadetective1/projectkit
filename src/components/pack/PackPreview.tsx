@@ -122,7 +122,7 @@ export function PackPreview({ id }: { id: string }) {
         <h1 className="text-xl font-semibold text-ink">We could not find that project</h1>
         <p className="pk-prose mt-2 text-sm">
           Project packs are built from projects saved in this browser. If you saved it somewhere
-          else — a different device, or a private window — it will not be here.
+          else (a different device, or a private window) it will not be here.
         </p>
         <div className="mt-5 flex flex-wrap gap-2">
           <Link href="/my-projects" className="pk-btn pk-btn-secondary">

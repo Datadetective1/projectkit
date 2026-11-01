@@ -252,7 +252,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
       setStatus({
         kind: "error",
         message:
-          "Could not save — your browser is blocking local storage. Private browsing often does this.",
+          "Could not save: your browser is blocking local storage. Private browsing often does this.",
       });
       return;
     }
@@ -296,7 +296,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
   const handleShare = async () => {
     const url = shareUrl();
     const summary = evaluation?.ok
-      ? `${project.name} plan — ${evaluation.result.headline.sublabel ?? ""}\n${url}`
+      ? `${project.name} plan: ${evaluation.result.headline.sublabel ?? ""}\n${url}`
       : url;
 
     try {
@@ -544,7 +544,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
                   The Project Pack collects your quantities, the{" "}
                   {formatCurrency(evaluation.result.costTotal)} budget, the shopping list, your
                   assumptions, and the project sequence into one printable document. No account
-                  needed — saved projects stay in this browser.
+                  needed. Saved projects stay in this browser.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   <button type="button" onClick={handlePackClick} className="pk-btn pk-btn-primary">
@@ -686,11 +686,11 @@ function buildTitle(
   const length = dimension("length") ?? dimension("length1") ?? dimension("runLength");
   const width = dimension("width") ?? dimension("width1");
 
-  if (length && width) return `${project.name} — ${length} × ${width} ${unit}`;
-  if (length) return `${project.name} — ${length} ${unit}`;
+  if (length && width) return `${project.name}: ${length} × ${width} ${unit}`;
+  if (length) return `${project.name}: ${length} ${unit}`;
 
   const area = dimension("area") ?? dimension("extraArea");
-  if (area) return `${project.name} — ${area} ${system === "us" ? "sq ft" : "m²"}`;
+  if (area) return `${project.name}: ${area} ${system === "us" ? "sq ft" : "m²"}`;
 
   return `${project.name} project`;
 }

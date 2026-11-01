@@ -9,7 +9,7 @@ export const drywallProject: ProjectDefinition = {
   category: "Interior",
   tagline: "Sheets, screws, compound, tape, and corner bead.",
   intro:
-    "Enter a room and get the number of drywall sheets plus the accessories that always get forgotten — screws, joint compound, tape, and corner bead — with an estimated cost.",
+    "Enter a room and get the number of drywall sheets plus the accessories that always get forgotten (screws, joint compound, tape, and corner bead) with an estimated cost.",
   icon: "LayoutPanelTop",
   accent: "chalk",
   keywords: ["drywall", "sheetrock", "gypsum", "wallboard", "plasterboard", "sheets"],
@@ -203,7 +203,7 @@ export const drywallProject: ProjectDefinition = {
     {
       question: "How many drywall sheets do I need?",
       answer:
-        "Take the wall area, subtract door and window openings, add the ceiling if you are covering it, add ten percent for waste, and divide by the sheet area — 32 sq ft for a 4 × 8 sheet. This planner does exactly that with your room's numbers.",
+        "Take the wall area, subtract door and window openings, add the ceiling if you are covering it, add ten percent for waste, and divide by the sheet area: 32 sq ft for a 4 × 8 sheet. This planner does exactly that with your room's numbers.",
     },
     {
       question: "Should I use 4 × 8 or 4 × 12 sheets?",
@@ -213,14 +213,14 @@ export const drywallProject: ProjectDefinition = {
     {
       question: "How much joint compound do I need?",
       answer:
-        "Around five pounds per sheet across three coats is a common planning allowance, which is roughly one 4.5-gallon bucket per twelve sheets. Actual usage varies a lot with technique — buy one bucket and judge from there.",
+        "Around five pounds per sheet across three coats is a common planning allowance, which is roughly one 4.5-gallon bucket per twelve sheets. Actual usage varies a lot with technique. Buy one bucket and judge from there.",
     },
   ],
 
   related: ["paint-calculator", "flooring-calculator", "tile-calculator"],
 
   seo: {
-    title: "Drywall Calculator — Sheets, Compound & Tape",
+    title: "Drywall Calculator: Sheets, Compound & Tape",
     description:
       "Calculate drywall sheets, screws, joint compound, tape, and corner bead for any room, with openings deducted and an estimated material cost.",
     breadcrumb: "Drywall",

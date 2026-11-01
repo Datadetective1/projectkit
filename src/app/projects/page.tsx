@@ -31,7 +31,7 @@ export default function ProjectsPage() {
           </h1>
           <p className="pk-prose mt-3">
             Ten planners, one engine. Each gives you material quantities with waste, an editable
-            budget, a shopping list, and a plan you can print or share — no account required.
+            budget, a shopping list, and a plan you can print or share, no account required.
           </p>
         </header>
 

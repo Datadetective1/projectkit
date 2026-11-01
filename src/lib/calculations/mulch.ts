@@ -154,7 +154,7 @@ export function calculateMulch({
       `A ${d.area(areaSqFt)} bed at ${d.inch(depthIn)} deep needs ${d.volumeYd(cubicYards)} of mulch.`,
       `With a ${roundTo(wastePct, 1)}% allowance for settling and uneven spreading, plan on ${fmt(adjustedYards, "volumeYd", 2)}.`,
       bulkIsCheaper
-        ? `Bulk works out to about ${formatCurrency(bulkCost)} versus ${formatCurrency(bagCost)} in bags — a saving of roughly ${formatCurrency(Math.abs(bagCost - bulkCost))} if you can handle a delivered pile.`
+        ? `Bulk works out to about ${formatCurrency(bulkCost)} versus ${formatCurrency(bagCost)} in bags, a saving of roughly ${formatCurrency(Math.abs(bagCost - bulkCost))} if you can handle a delivered pile.`
         : `At your prices, bags come out at about ${formatCurrency(bagCost)} versus ${formatCurrency(bulkCost)} bulk.`,
     ],
     formulas: [
@@ -193,7 +193,7 @@ export function calculateMulch({
       shoppingItem("tarp", "Tarp to protect the driveway", undefined, true, "heavy duty tarp"),
     ],
     warnings: [
-      `Keep mulch ${metric ? "a few centimetres" : "a few inches"} clear of trunks and stems — piling it against them invites rot.`,
+      `Keep mulch ${metric ? "a few centimetres" : "a few inches"} clear of trunks and stems. Piling it against them invites rot.`,
       `${metric ? "Five to eight centimetres" : "Two to three inches"} is enough for most beds. Deeper does not suppress weeds better, it just holds water against roots.`,
     ],
     effort: {

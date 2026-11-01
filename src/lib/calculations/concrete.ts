@@ -214,7 +214,7 @@ export function calculateConcrete({
       `A ${d.length(length)} × ${d.length(width)} slab at ${d.inch(thicknessIn)} works out to ${d.area(areaSqFt)} of surface and ${d.volumeYd(cubicYards)} of concrete before waste.`,
       `Concrete is unforgiving: running short mid-pour means a cold joint. The ${roundTo(wastePct, 1)}% allowance covers spillage, uneven subgrade, and form deflection, which is why the recommended order is ${fmt(purchaseYards, "volumeYd", 2)}.`,
       readyMixRecommended
-        ? `At this size, ready-mix delivery is normally the practical choice — ${bagsNeeded} bags would need mixing by hand.`
+        ? `At this size, ready-mix delivery is normally the practical choice: ${bagsNeeded} bags would need mixing by hand.`
         : `At this size, bagged mix is usually easier than meeting a delivery minimum. Plan on ${bagsNeeded} bags.`,
     ],
     formulas: [
@@ -254,7 +254,7 @@ export function calculateConcrete({
             // Left imperial on purpose: this is the figure printed on the bag, and
       // it is what the select above offers. See describe.ts on product specs.
       { label: "Bag yield", value: d.productSpec(`${roundTo(bagYieldCuFt, 2)} cu ft per bag`) },
-      { label: "Reinforcement", value: reinforcement === "none" ? "None selected" : reinforcementLine?.name ?? "—" },
+      { label: "Reinforcement", value: reinforcement === "none" ? "None selected" : reinforcementLine?.name ?? "None" },
       {
         label: "Base course",
         value: baseDepthIn > 0 ? `${d.inch(baseDepthIn)} compacted gravel` : "Not included",
@@ -272,14 +272,14 @@ export function calculateConcrete({
     warnings: [
       "Concrete sets on its own schedule. Have every tool, helper, and form check done before the truck arrives.",
       "Slab thickness, reinforcement, and base depth requirements vary by use and by local code. Verify before you pour.",
-      "Wet concrete is caustic and causes serious burns through skin it sits against — kneeling in it in wet jeans is the classic injury. Waterproof gloves, boots, and eye protection, and rinse any splash off straight away.",
+      "Wet concrete is caustic and causes serious burns through skin it sits against. Kneeling in it in wet jeans is the classic injury. Waterproof gloves, boots, and eye protection, and rinse any splash off straight away.",
     ],
     effort: {
       difficulty: adjustedYards > 3 ? "Challenging" : "Moderate",
       timeCategory: adjustedYards > 3 ? "A full weekend with help" : "One long day",
       notes: [
         "Excavation and base prep is the bulk of the labour.",
-        "Finishing concrete is a timed skill — a second experienced pair of hands pays for itself.",
+        "Finishing concrete is a timed skill, and a second experienced pair of hands pays for itself.",
       ],
     },
   };

@@ -164,7 +164,7 @@ export const flooringProject: ProjectDefinition = {
     {
       question: "How much extra flooring should I buy?",
       answer:
-        "Ten percent is standard for a straight layout in a simple rectangular room. Go to fifteen percent for diagonal installs, herringbone, or rooms with lots of jogs and closets. Keep the leftovers — matching a discontinued run later is nearly impossible.",
+        "Ten percent is standard for a straight layout in a simple rectangular room. Go to fifteen percent for diagonal installs, herringbone, or rooms with lots of jogs and closets. Keep the leftovers. Matching a discontinued run later is nearly impossible.",
     },
     {
       question: "How do I calculate flooring for an irregular room?",
@@ -174,7 +174,7 @@ export const flooringProject: ProjectDefinition = {
     {
       question: "Do I need underlayment?",
       answer:
-        "Many vinyl and laminate products come with underlayment already attached — adding more can actually void the warranty. Check the product first. Over concrete you will usually need a moisture barrier regardless.",
+        "Many vinyl and laminate products come with underlayment already attached, and adding more can actually void the warranty. Check the product first. Over concrete you will usually need a moisture barrier regardless.",
     },
     {
       question: "Why does the box coverage matter so much?",
@@ -186,7 +186,7 @@ export const flooringProject: ProjectDefinition = {
   related: ["paint-calculator", "tile-calculator", "drywall-calculator"],
 
   seo: {
-    title: "Flooring Calculator — Boxes, Waste & Cost",
+    title: "Flooring Calculator: Boxes, Waste & Cost",
     description:
       "Calculate flooring square footage across multiple rooms, waste allowance, number of boxes to buy, leftover material, and estimated cost.",
     breadcrumb: "Flooring",

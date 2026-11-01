@@ -121,7 +121,7 @@ test("copy summary puts a readable plan on the clipboard", async ({
   await page.getByRole("button", { name: "Copy summary" }).click();
 
   const text = await page.evaluate(() => navigator.clipboard.readText());
-  expect(text).toContain("Concrete — Cubitora estimate");
+  expect(text).toContain("Concrete: Cubitora estimate");
   expect(text).toContain("4.35 yd³");
   expect(text).toContain("Ready-mix concrete (delivered)");
   expect(text).toContain("Planning estimate only");
@@ -186,7 +186,7 @@ test("journey 4: a saved project reopens with its values", async ({ page }) => {
 
   await page.goto("/my-projects");
   await expect(
-    page.getByRole("heading", { name: "Concrete — 30 × 12 ft" }),
+    page.getByRole("heading", { name: "Concrete: 30 × 12 ft" }),
   ).toBeVisible();
 
   await page.getByRole("link", { name: "Open" }).first().click();
@@ -213,7 +213,7 @@ test("journey 5: the Project Pack previews and downloads", async ({ page }) => {
   await page.getByRole("button", { name: "Preview Project Pack" }).first().click();
 
   await expect(page).toHaveURL(/project-pack\//);
-  await expect(page.getByRole("heading", { name: /Concrete — 20 × 16 ft/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Concrete: 20 × 16 ft/ })).toBeVisible();
 
   // Every pack section is present.
   for (const section of [

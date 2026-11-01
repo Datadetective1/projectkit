@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Printer, Truck } from "lucide-react";
 import { WhereToBuy } from "@/components/monetization/WhereToBuy";
 import { RetailerDisclosure } from "@/components/monetization/RetailerDisclosure";
+import { AmazonCartButton, cartLinesFor } from "@/components/monetization/AmazonCartButton";
 import { formatMaterialQuantity, formatUnitPrice } from "@/lib/format";
 import {
   countReadyToBuy,
@@ -34,6 +35,11 @@ export interface ShoppingEntry {
    * retailer sells them.
    */
   measure?: Measure;
+  /**
+   * The computed amount in the line's own canonical unit, for a material.
+   * Only the Amazon cart reads it, to turn "28 stakes" into packs.
+   */
+  quantity?: number;
   /** Planning cost for this line, when the price book has one. */
   cost?: number;
   /** Pre-formatted unit price, e.g. "$42 per gal". Absent when unpriced. */
@@ -63,6 +69,7 @@ export function buildShoppingList(
     optional: line.optional,
     searchTerm: line.searchTerm,
     measure: line.measure,
+    quantity: line.quantity,
     cost: line.cost,
     unitPrice: line.unitPrice === undefined ? undefined : formatUnitPrice(line, system),
     isEstimate: line.isEstimate,
@@ -120,6 +127,9 @@ export function ShoppingList({
   const groups = groupShoppingEntries(entries);
   const readyToBuy = countReadyToBuy(entries);
   const priced = entries.some((entry) => entry.cost !== undefined);
+  /* Whether any line has a picked product, ticked or not, so the disclosure
+   * wording does not flicker as boxes are ticked. */
+  const offersCart = cartLinesFor(entries, new Set()).length > 0;
   /*
    * The disclosure goes above whichever group holds the first link. Usually
    * that is "Ready to buy online"; for mulch, gravel and sod, whose materials
@@ -219,7 +229,17 @@ export function ShoppingList({
               rather than in a page footer, and repeating it on every row is
               what made a checklist read like an affiliate page.
             */}
-            {group.id === disclosedGroup ? <RetailerDisclosure className="mt-2" /> : null}
+            {group.id === disclosedGroup ? (
+              <>
+                <RetailerDisclosure className="mt-2" cart={offersCart} />
+                <AmazonCartButton
+                  entries={entries}
+                  checked={checkedSet}
+                  projectType={projectType}
+                  className="mt-3"
+                />
+              </>
+            ) : null}
 
             <ul className="mt-3 divide-y divide-line border-t border-line">
               {group.entries.map((entry) => {
@@ -316,7 +336,7 @@ export function ShoppingList({
       {priced ? (
         <p className="mt-5 border-t border-line pt-4 text-xs text-ink-subtle">
           Costs use the prices in the estimate options above. Sales tax, delivery, and equipment
-          rental are not included — on bulk materials delivery alone can add a meaningful amount.
+          rental are not included. On bulk materials, delivery alone can add a meaningful amount.
         </p>
       ) : null}
     </section>

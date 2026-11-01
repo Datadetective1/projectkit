@@ -137,7 +137,7 @@ describe("text summary", () => {
 
   it("reads as something you could paste into a message", () => {
     const text = summaryFor("concrete-calculator");
-    expect(text).toContain("Concrete — Cubitora estimate");
+    expect(text).toContain("Concrete: Cubitora estimate");
     expect(text).toContain("4.35 yd³");
     expect(text).toContain("Ready-mix concrete (delivered)");
     expect(text).toContain("Estimated material total");

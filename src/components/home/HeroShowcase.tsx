@@ -247,7 +247,7 @@ export function HeroShowcase({ projects }: { projects: HeroProject[] }) {
       </div>
 
       <p className="text-xs text-ink-subtle">
-        Real output from the {active.name.toLowerCase()} planner at its default settings — not an
+        Real output from the {active.name.toLowerCase()} planner at its default settings, not an
         illustration.
       </p>
     </div>

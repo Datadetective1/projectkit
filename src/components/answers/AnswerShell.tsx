@@ -126,7 +126,7 @@ export function AnswerShell({
               Run it with your own numbers
             </h2>
             <p className="mt-2 max-w-prose text-sm leading-relaxed text-brand-ink/85">
-              This page answers one set of dimensions. The planner takes yours —
+              This page answers one set of dimensions. The planner takes yours
               and adds the budget at your prices, a shopping list, the order of
               work, and a Project Pack you can print or take to the store.
             </p>
