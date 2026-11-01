@@ -147,7 +147,7 @@ export function calculateSod({
     ],
     explanation: [
       `Your sections add up to ${fmt(rawArea, "area", 0)} of lawn.`,
-      `Sod gets trimmed at every curve and edge, so a ${roundTo(wastePct, 1)}% allowance brings the order to ${fmt(adjustedArea, "area", 0)} — ${rolls} rolls or ${pallets} ${pallets === 1 ? "pallet" : "pallets"}.`,
+      `Sod gets trimmed at every curve and edge, so a ${roundTo(wastePct, 1)}% allowance brings the order to ${fmt(adjustedArea, "area", 0)}: ${rolls} rolls or ${pallets} ${pallets === 1 ? "pallet" : "pallets"}.`,
       "Order sod for delivery the morning you plan to lay it. On a pallet in summer heat it starts breaking down within a day or two.",
     ],
     formulas: [
@@ -172,14 +172,14 @@ export function calculateSod({
     ],
     warnings: [
       "Fresh sod needs watering within half an hour of being laid, and daily for the first couple of weeks.",
-      "Prepare and grade the soil before delivery day — sod cannot wait while you rototill.",
+      "Prepare and grade the soil before delivery day. Sod cannot wait while you rototill.",
     ],
     effort: {
       difficulty: "Moderate",
       timeCategory: rawArea > 2000 ? "A full weekend with help" : "One day",
       notes: [
         "Soil prep is the whole job; laying sod is the easy part.",
-        `A pallet weighs roughly ${d.weight(1, 0)} — plan how it gets to the back garden.`,
+        `A pallet weighs roughly ${d.weight(1, 0)}, so plan how it gets to the back garden.`,
       ],
     },
   };

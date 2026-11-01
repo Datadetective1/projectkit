@@ -242,7 +242,7 @@ export function calculateTile({
       shoppingItem("membrane", "Waterproofing membrane for wet areas", undefined, true, "tile waterproofing membrane"),
     ],
     warnings: [
-      "Wet areas need proper waterproofing under the tile — that is a system, not an add-on.",
+      "Wet areas need proper waterproofing under the tile. That is a system, not an add-on.",
       "Grout and thinset coverage vary by product, trowel size, and substrate. Treat these as allowances.",
     ],
     effort: {
@@ -250,7 +250,7 @@ export function calculateTile({
       timeCategory: "Two to three days including cure and grout time",
       notes: [
         "Layout planning decides whether the room looks professional.",
-        "Thinset has a working time — mix small batches.",
+        "Thinset has a working time, so mix small batches.",
       ],
     },
   };

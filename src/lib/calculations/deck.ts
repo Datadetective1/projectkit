@@ -261,7 +261,7 @@ export function calculateDeck({
     explanation: [
       `A ${d.length(length)} × ${d.length(width)} deck is ${d.area(areaSqFt)}. With ${d.inch(boardWidth, 2)} boards and a ${d.inch(boardGap, 2)} gap you get ${rows} rows, each ${d.length(width)} long.`,
       `Including ${roundTo(wastePct, 1)}% waste that is about ${fmt(Math.ceil(deckingLinearFt), "length", 0)} of decking to buy.`,
-      "Joist and rim quantities follow from the spacing you chose above — they are lumber counts, not a structural design. Beams, posts, and footings are not quantified at all: those sizes come from a span table, a designer, or your building department, so the budget below excludes them.",
+      "Joist and rim quantities follow from the spacing you chose above. They are lumber counts, not a structural design. Beams, posts, and footings are not quantified at all: those sizes come from a span table, a designer, or your building department, so the budget below excludes them.",
     ],
     formulas: [
       { kind: "math", label: "Deck area", expression: "Length × Width" },
@@ -281,7 +281,7 @@ export function calculateDeck({
       {
         kind: "assumption",
         label: "Beams, posts, footings",
-        expression: "Not calculated — structural design required",
+        expression: "Not calculated: structural design required",
       },
     ],
     assumptions: [
@@ -295,20 +295,20 @@ export function calculateDeck({
     shoppingExtras: [
       // Deliberately unquantified: sizing these is structural design, not
       // arithmetic, so the list names them without inventing a number.
-      shoppingItem("beams", "Beams — size and span from your structural design"),
-      shoppingItem("posts", "Support posts — size and spacing from your structural design"),
-      shoppingItem("footings", "Footings — size and depth per local code and frost line"),
+      shoppingItem("beams", "Beams (size and span from your structural design)"),
+      shoppingItem("posts", "Support posts (size and spacing from your structural design)"),
+      shoppingItem("footings", "Footings (size and depth per local code and frost line)"),
       shoppingItem("concrete", "Concrete for footings"),
       shoppingItem("gravel", "Gravel for footing bases"),
       shoppingItem("flashing", "Ledger flashing", undefined, false, "deck ledger flashing"),
       shoppingItem("hardware", "Structural connectors and approved fasteners"),
       shoppingItem("string", "String line, level, and layout square", undefined, false, "mason string line"),
       shoppingItem("sealer", "Stain or sealer for wood decking", undefined, true, "deck stain sealer"),
-      shoppingItem("permit", "Building permit — check before you start"),
+      shoppingItem("permit", "Building permit (check before you start)"),
     ],
     warnings: [
       "Material-planning estimate only. Structural requirements, footing sizes, spans, loads, permits, and code requirements vary by location and project. Verify structural design and local building requirements before construction.",
-      "Beams, posts, and footings are deliberately not quantified here. Their sizes and spacing depend on span, lumber species and grade, load, soil, and frost depth — get them from a span table, a designer, or your building department, and budget for them separately.",
+      "Beams, posts, and footings are deliberately not quantified here. Their sizes and spacing depend on span, lumber species and grade, load, soil, and frost depth. Get them from a span table, a designer, or your building department, and budget for them separately.",
       "Ledger attachment to a house is the single most common cause of deck failure. Have it detailed and inspected.",
       "Decks almost always require a permit and inspection.",
     ],

@@ -188,7 +188,7 @@ export function calculateDrywall({
     explanation: [
       `Walls come to ${fmt(wallArea, "area", 0)} before openings. Taking out ${roundTo(doors, 0)} ${doors === 1 ? "door" : "doors"} and ${roundTo(windows, 0)} ${windows === 1 ? "window" : "windows"} leaves ${fmt(netWallArea, "area", 0)}${includeCeiling ? `, plus ${fmt(ceilingArea, "area", 0)} of ceiling` : ""}.`,
       `At ${roundTo(wastePct, 1)}% waste that is ${fmt(adjustedArea, "area", 0)} to cover, which is ${sheets} ${sheets === 1 ? "sheet" : "sheets"} of ${sheetLabel}.`,
-      "Screw, compound, and tape quantities are trade rules of thumb rather than exact figures — finishing style changes compound usage more than anything else.",
+      "Screw, compound, and tape quantities are trade rules of thumb rather than exact figures. Finishing style changes compound usage more than anything else.",
     ],
     formulas: [
       { kind: "math", label: "Wall area", expression: "2 × (Length + Width) × Ceiling height" },
@@ -217,7 +217,7 @@ export function calculateDrywall({
     ],
     warnings: [
       "Ceilings go up before walls, and a lift rental is worth it even for one room.",
-      "Compound quantity depends heavily on finishing level and technique — buy the first bucket and judge from there.",
+      "Compound quantity depends heavily on finishing level and technique. Buy the first bucket and judge from there.",
       "Sanding joint compound throws a lot of fine dust. Wear a fitted respirator rather than a paper mask, seal the doorway, and consider a wet sponge sander instead.",
     ],
     effort: {

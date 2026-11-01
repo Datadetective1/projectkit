@@ -205,12 +205,12 @@ export const tileProject: ProjectDefinition = {
     {
       question: "How much extra tile should I buy?",
       answer:
-        "Ten percent for a straight layout, fifteen or more for diagonal, herringbone, or a room with lots of cuts. Buy it all at once and from one lot — colour varies between production runs enough to be visible.",
+        "Ten percent for a straight layout, fifteen or more for diagonal, herringbone, or a room with lots of cuts. Buy it all at once and from one lot. Colour varies between production runs enough to be visible.",
     },
     {
       question: "How much thinset do I need?",
       answer:
-        "Trowel size drives this more than anything else, and trowel size follows tile size. Manufacturer charts put a 50 lb bag at roughly 80–100 sq ft with a 1/4 in notch for small tile, 60–80 sq ft with a 1/4 × 3/8 in notch for typical 12 in floor tile, and 40–50 sq ft with a 1/2 in notch for large format. This planner picks the band your tile size calls for rather than using one flat number.",
+        "Trowel size drives this more than anything else, and trowel size follows tile size. Manufacturer charts put a 50 lb bag at roughly 80 to 100 sq ft with a 1/4 in notch for small tile, 60 to 80 sq ft with a 1/4 × 3/8 in notch for typical 12 in floor tile, and 40 to 50 sq ft with a 1/2 in notch for large format. This planner picks the band your tile size calls for rather than using one flat number.",
     },
     {
       question: "How much grout will I use?",
@@ -222,7 +222,7 @@ export const tileProject: ProjectDefinition = {
   related: ["flooring-calculator", "drywall-calculator", "paint-calculator"],
 
   seo: {
-    title: "Tile Calculator — Tiles, Boxes, Thinset & Grout",
+    title: "Tile Calculator: Tiles, Boxes, Thinset & Grout",
     description:
       "Calculate how many tiles and boxes you need, plus thinset and grout quantities and estimated cost, for any floor or wall tile layout.",
     breadcrumb: "Tile",

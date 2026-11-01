@@ -108,7 +108,7 @@ export function calculateGravel({
       value: adjustedYards,
       measure: "volumeYd",
       precision: 2,
-      sublabel: `About ${fmt(tons, "weight", 2)} — order ${fmt(purchaseYards, "volumeYd", 2)}`,
+      sublabel: `About ${fmt(tons, "weight", 2)}, order ${fmt(purchaseYards, "volumeYd", 2)}`,
     },
     summary: [
       { label: "Area", value: areaSqFt, measure: "area", precision: 0 },

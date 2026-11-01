@@ -48,7 +48,7 @@ export function PlannerMethod({ project }: { project: ProjectDefinition }) {
           <li key={input.id}>
             <strong className="font-medium text-ink">{input.label}</strong>
             {input.type === "number" && input.measure !== "count"
-              ? ` — in ${input.measure === "inch" ? "inches or centimetres" : "feet or metres"}`
+              ? `, in ${input.measure === "inch" ? "inches or centimetres" : "feet or metres"}`
               : null}
           </li>
         ))}

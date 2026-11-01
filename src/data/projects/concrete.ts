@@ -7,7 +7,7 @@ export const concreteProject: ProjectDefinition = {
   name: "Concrete",
   h1: "Concrete Calculator & Project Planner",
   category: "Outdoor & Structural",
-  tagline: "Patios, slabs, and pads — volume, bags, base, and cost.",
+  tagline: "Patios, slabs, and pads: volume, bags, base, and cost.",
   intro:
     "Work out how much concrete a patio or slab actually needs, including waste, base gravel, and whether ready-mix or bags makes more sense. You get quantities, an estimated budget, and a shopping list you can take to the store.",
   icon: "Square",
@@ -166,7 +166,7 @@ export const concreteProject: ProjectDefinition = {
     "Re-check dimensions, depth, and slope before the concrete arrives.",
     "Place the concrete and screed it level with the forms.",
     "Float, edge, and finish once the bleed water is gone.",
-    "Cure it — keep it damp or covered for several days.",
+    "Cure it. Keep it damp or covered for several days.",
     "Strip the forms and backfill the edges.",
   ],
 
@@ -179,12 +179,12 @@ export const concreteProject: ProjectDefinition = {
     {
       question: "How much concrete waste should I plan for?",
       answer:
-        "Ten percent is a reasonable default for a small slab. Uneven subgrade is the biggest driver — if your excavation is rough or the ground is soft, plan closer to fifteen percent. Running short mid-pour is far more expensive than a little extra.",
+        "Ten percent is a reasonable default for a small slab. Uneven subgrade is the biggest driver. If your excavation is rough or the ground is soft, plan closer to fifteen percent. Running short mid-pour is far more expensive than a little extra.",
     },
     {
       question: "Is it cheaper to use bags or ready-mix?",
       answer:
-        "Bags usually win below about one cubic yard, where delivery minimums and short-load fees dominate. Past that, ready-mix is normally both cheaper and dramatically less work — one cubic yard is roughly sixty 60 lb bags mixed by hand.",
+        "Bags usually win below about one cubic yard, where delivery minimums and short-load fees dominate. Past that, ready-mix is normally both cheaper and dramatically less work. One cubic yard is roughly sixty 60 lb bags mixed by hand.",
     },
     {
       question: "Do I need gravel under a concrete slab?",
@@ -196,9 +196,9 @@ export const concreteProject: ProjectDefinition = {
   related: ["gravel-calculator", "fence-calculator", "deck-calculator", "sod-calculator"],
 
   seo: {
-    title: "Concrete Calculator — Yards, Bags & Cost",
+    title: "Concrete Calculator: Yards, Bags & Cost",
     description:
-      "Calculate concrete volume, waste, bags, base material, and estimated cost for a patio or slab — plus a complete shopping list and project plan.",
+      "Calculate concrete volume, waste, bags, base material, and estimated cost for a patio or slab, plus a complete shopping list and project plan.",
     breadcrumb: "Concrete",
   },
 

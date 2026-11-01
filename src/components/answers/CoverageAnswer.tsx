@@ -97,7 +97,7 @@ export function CoverageAnswer({
             tone="plain"
             label="Pallets"
             value={computed.fmt(pallets)}
-            note={`At ${palletCoverage} sq ft each — confirm with your farm.`}
+            note={`At ${palletCoverage} sq ft each. Confirm with your farm.`}
           />
         </div>
         <p className="pk-prose mt-4 text-sm">
@@ -118,7 +118,7 @@ export function CoverageAnswer({
           <div className="mt-4 rounded-[var(--radius-card)] border border-accent/25 bg-accent-soft p-5">
             <p className="text-[0.9375rem] leading-relaxed text-ink">
               You need <strong>{needed}</strong>. Whole pallets at {palletCoverage} sq ft each means
-              buying <strong>{palletTotal.toLocaleString("en-US")} sq ft</strong> — about{" "}
+              buying <strong>{palletTotal.toLocaleString("en-US")} sq ft</strong>, about{" "}
               <strong>{overshoot.toLocaleString("en-US")} sq ft of grass you will not lay</strong>.
               Sod does not keep, so that is not spare stock; it is a cost.
             </p>
@@ -142,7 +142,7 @@ export function CoverageAnswer({
         </h2>
         <p className="pk-prose mt-2 text-sm">
           Watch the spare column rather than the prices. Pallet buying is efficient when a lawn
-          lands just under a whole pallet and wasteful when it lands just over — which is the whole
+          lands just under a whole pallet and wasteful when it lands just over, which is the whole
           reason to check before ordering.
         </p>
 

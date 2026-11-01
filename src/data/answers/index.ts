@@ -19,13 +19,13 @@ const ANSWERS: AnswerPage[] = [
     kind: "size",
     h1: "How much concrete do I need for a 10 × 10 slab?",
     seo: {
-      title: "How Much Concrete for a 10x10 Slab? — Yards & Bags",
+      title: "How Much Concrete for a 10x10 Slab? Yards & Bags",
       description:
         "A 10 × 10 ft slab at 4 inches thick, worked out three ways: the raw volume, the volume with waste, and the quantity to actually order. Plus 5 in and 6 in.",
       breadcrumb: "10 × 10 slab",
     },
     intro:
-      "A 10 × 10 slab is the most common small pour there is — a shed base, a hot-tub pad, a small patio. The arithmetic is simple; the part people get wrong is ordering, because the volume you calculate is never the volume you buy.",
+      "A 10 × 10 slab is the most common small pour there is: a shed base, a hot-tub pad, a small patio. The arithmetic is simple; the part people get wrong is ordering, because the volume you calculate is never the volume you buy.",
     values: { length: 10, width: 10, thickness: 4 },
     prefill: { length: 10, width: 10, thickness: 4 },
     faq: [
@@ -71,14 +71,14 @@ const ANSWERS: AnswerPage[] = [
       breadcrumb: "20 × 20 slab",
     },
     intro:
-      "Four hundred square feet is a proper pour — a two-car parking pad, a large patio, a workshop floor. At this size the concrete stops being the only cost that matters: base gravel, mesh and forms are all real money, and all of them scale with the slab.",
+      "Four hundred square feet is a proper pour: a two-car parking pad, a large patio, a workshop floor. At this size the concrete stops being the only cost that matters: base gravel, mesh and forms are all real money, and all of them scale with the slab.",
     values: { length: 20, width: 20, thickness: 4 },
     prefill: { length: 20, width: 20, thickness: 4 },
     faq: [
       {
         question: "Can I pour a 20 × 20 slab myself?",
         answer:
-          "The planner rates this size as challenging and budgets a full weekend with help. A pour this large has to be placed, screeded and finished before it sets, which is a crew job rather than a solo one — the concrete does not wait.",
+          "The planner rates this size as challenging and budgets a full weekend with help. A pour this large has to be placed, screeded and finished before it sets, which is a crew job rather than a solo one: the concrete does not wait.",
       },
       {
         question: "How many bags of concrete would a 20 × 20 slab take?",
@@ -88,7 +88,7 @@ const ANSWERS: AnswerPage[] = [
       {
         question: "Should a 20 × 20 slab have control joints?",
         answer:
-          "Yes. A slab this size needs joints cut so it cracks where you decide rather than where it wants to. Cubitora sizes materials and does not design jointing — spacing depends on thickness and mix, so check it against local practice or an engineer.",
+          "Yes. A slab this size needs joints cut so it cracks where you decide rather than where it wants to. Cubitora sizes materials and does not design jointing. Spacing depends on thickness and mix, so check it against local practice or an engineer.",
       },
     ],
     related: [
@@ -111,9 +111,9 @@ const ANSWERS: AnswerPage[] = [
     kind: "comparison",
     h1: "Ready-mix or bagged concrete: which should you use?",
     seo: {
-      title: "Ready-Mix vs Bagged Concrete — Which Is Cheaper?",
+      title: "Ready-Mix vs Bagged Concrete: Which Is Cheaper?",
       description:
-        "Both options priced across eight slab sizes, showing where the recommendation changes — and why it is about delivery minimums rather than material cost.",
+        "Both options priced across eight slab sizes, showing where the recommendation changes, and why it is about delivery minimums rather than material cost.",
       breadcrumb: "Ready-mix vs bagged",
     },
     intro:
@@ -129,7 +129,7 @@ const ANSWERS: AnswerPage[] = [
       {
         question: "How many bags of concrete make a cubic yard?",
         answer:
-          "At the 0.45 cubic feet an 80 lb bag yields, a cubic yard takes sixty of them. That is the number worth remembering before deciding to mix by hand — it is sixty bags to lift, open, mix and place before the first one starts setting.",
+          "At the 0.45 cubic feet an 80 lb bag yields, a cubic yard takes sixty of them. That is the number worth remembering before deciding to mix by hand: it is sixty bags to lift, open, mix and place before the first one starts setting.",
       },
       {
         question: "Does Cubitora include delivery in the ready-mix price?",
@@ -206,14 +206,14 @@ const ANSWERS: AnswerPage[] = [
       breadcrumb: "1,000 square feet",
     },
     intro:
-      "Sod is bought two ways and the cheaper one depends on how close your area lands to a whole pallet. That is the part worth getting right before ordering — the offcuts are where the money goes.",
+      "Sod is bought two ways and the cheaper one depends on how close your area lands to a whole pallet. That is the part worth getting right before ordering: the offcuts are where the money goes.",
     values: { length: 50, width: 20 },
     prefill: { length: 50, width: 20 },
     faq: [
       {
         question: "How many square feet is a pallet of sod?",
         answer:
-          "Cubitora assumes 450 square feet, and shows it as an adjustable assumption rather than a fact, because pallet coverage genuinely varies — commonly 400 to 500 square feet depending on the farm, the region and the grass. Confirm it with your supplier before ordering, then change it here if it differs.",
+          "Cubitora assumes 450 square feet, and shows it as an adjustable assumption rather than a fact, because pallet coverage genuinely varies, commonly 400 to 500 square feet depending on the farm, the region and the grass. Confirm it with your supplier before ordering, then change it here if it differs.",
       },
       {
         question: "How much extra sod should I order?",
@@ -223,7 +223,7 @@ const ANSWERS: AnswerPage[] = [
       {
         question: "Should I buy sod by the pallet or by the square foot?",
         answer:
-          "Whichever wastes less. Pallet pricing is usually lower per square foot, but you buy whole pallets — so an area that overshoots a pallet by a little pays for a lot of grass it will not lay. Both are priced above for exactly this reason.",
+          "Whichever wastes less. Pallet pricing is usually lower per square foot, but you buy whole pallets, so an area that overshoots a pallet by a little pays for a lot of grass it will not lay. Both are priced above for exactly this reason.",
       },
     ],
     related: [

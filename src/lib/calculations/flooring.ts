@@ -187,7 +187,7 @@ export function calculateFlooring({
     ],
     explanation: [
       `Your ${roomCount === 1 ? "room covers" : `${roundTo(roomCount, 0)} areas cover`} ${fmt(rawArea, "area", 0)}. Adding ${roundTo(wastePct, 1)}% for cuts and mistakes brings the buying target to ${fmt(adjustedArea, "area", 0)}.`,
-      `Flooring is sold by the box, so ${boxes} ${boxes === 1 ? "box" : "boxes"} at ${d.area(sqFtPerBox, 2)} each is what you actually take home — ${d.area(coverage)} of material.`,
+      `Flooring is sold by the box, so ${boxes} ${boxes === 1 ? "box" : "boxes"} at ${d.area(sqFtPerBox, 2)} each is what you actually take home: ${d.area(coverage)} of material.`,
       leftover > 0
         ? `That leaves roughly ${fmt(leftover, "area", 0)} spare. Keep it: matching a discontinued run later is close to impossible.`
         : "There is very little spare in this order. Consider one extra box for future repairs.",
@@ -220,7 +220,7 @@ export function calculateFlooring({
     ],
     warnings: [
       "Let the flooring acclimate in the room for the time the manufacturer specifies before installing.",
-      "Diagonal or herringbone layouts need noticeably more waste — 15% or more.",
+      "Diagonal or herringbone layouts need noticeably more waste, 15% or more.",
     ],
     effort: {
       difficulty: "Moderate",

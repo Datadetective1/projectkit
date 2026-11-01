@@ -69,7 +69,7 @@ export interface Retailer {
  * is handled by keeping this out of the Project Pack; see the test that asserts
  * it.
  */
-const AMAZON_STORE_ID = "cubitora86-20";
+export const AMAZON_STORE_ID = "cubitora86-20";
 
 const AMAZON: Retailer = {
   id: "amazon",

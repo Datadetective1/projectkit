@@ -86,7 +86,7 @@ export default async function AnswerRoute({
         data={[
           breadcrumbJsonLd(crumbs),
           webApplicationJsonLd({
-            name: `${project.name} calculator — ${answer.seo.breadcrumb}`,
+            name: `${project.name} calculator: ${answer.seo.breadcrumb}`,
             description: answer.seo.description,
             path: `/${project.slug}/${answer.slug}`,
           }),
@@ -122,7 +122,7 @@ function answerLineFor(
     case "size":
       return (
         <>
-          Order <strong className="font-semibold">{order}</strong> — that is {values.withWaste} once
+          Order <strong className="font-semibold">{order}</strong>. That is {values.withWaste} once
           waste is added, rounded up to what a supplier will sell.
         </>
       );
@@ -137,13 +137,13 @@ function answerLineFor(
       return (
         <>
           Ready-mix is the cheaper <em>material</em> at every slab size below. Bags win under about
-          a cubic yard — on practicality, not price.
+          a cubic yard, on practicality, not price.
         </>
       );
     case "conversion":
       return (
         <>
-          <strong className="font-semibold">13.5 bags</strong> at the common 2 cu ft size — but the
+          <strong className="font-semibold">13.5 bags</strong> at the common 2 cu ft size, but the
           number moves with the bag, so check which one you are buying.
         </>
       );

@@ -161,7 +161,7 @@ export function groupShoppingEntries<T extends ShoppingEntryLike>(
        * cubic yard of gravel with no buy button needs to know that is the
        * correct answer and not a gap in the product.
        */
-      note: "These come by the load from a local landscape or building supplier. Take the quantities below and call around for a price — delivery is usually charged separately.",
+      note: "These come by the load from a local landscape or building supplier. Take the quantities below and call around for a price. Delivery is usually charged separately.",
       entries: local,
     },
     {

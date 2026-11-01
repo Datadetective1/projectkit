@@ -190,7 +190,7 @@ export const paintProject: ProjectDefinition = {
 
   steps: [
     "Clear the room and take down switch plates, vent covers, and hardware.",
-    "Wash the walls — paint does not stick to kitchen grease or dust.",
+    "Wash the walls. Paint does not stick to kitchen grease or dust.",
     "Patch nail holes and dents, then sand the patches flush.",
     "Caulk gaps where trim meets wall if you want crisp lines.",
     "Mask trim, outlets, and floors.",
@@ -215,19 +215,19 @@ export const paintProject: ProjectDefinition = {
     {
       question: "Should I use primer?",
       answer:
-        "Prime bare drywall, patched areas, stains, glossy surfaces, and dramatic colour changes. Repainting a similar colour over sound paint generally does not need it — a paint-and-primer product is fine there.",
+        "Prime bare drywall, patched areas, stains, glossy surfaces, and dramatic colour changes. Repainting a similar colour over sound paint generally does not need it; a paint-and-primer product is fine there.",
     },
     {
       question: "Why does my paint cover less than the can says?",
       answer:
-        "Coverage figures assume a smooth, primed, similar-coloured surface. Texture, porosity, and colour change all cut real coverage — sometimes by a third. If your walls are textured, increase coverage expectations accordingly.",
+        "Coverage figures assume a smooth, primed, similar-coloured surface. Texture, porosity, and colour change all cut real coverage, sometimes by a third. If your walls are textured, increase coverage expectations accordingly.",
     },
   ],
 
   related: ["drywall-calculator", "flooring-calculator", "tile-calculator"],
 
   seo: {
-    title: "Paint Calculator — How Much Paint Do I Need?",
+    title: "Paint Calculator: How Much Paint Do I Need?",
     description:
       "Calculate wall area, coats, primer, and gallons of paint for any room, with openings deducted, cost estimates, and a complete painting shopping list.",
     breadcrumb: "Paint",
