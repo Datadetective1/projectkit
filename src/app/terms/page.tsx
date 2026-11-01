@@ -49,8 +49,8 @@ export default function TermsPage() {
           <li>approved or verified by any contractor, engineer, supplier, or authority.</li>
         </ul>
         <p>
-          Structural design — including spans, beam and joist sizing, footing depth, post spacing,
-          and ledger attachment — is outside the scope of this tool. Have structural work designed
+          Structural design (including spans, beam and joist sizing, footing depth, post spacing,
+          and ledger attachment) is outside the scope of this tool. Have structural work designed
           or verified by a qualified professional and reviewed by your local building department.
         </p>
       </section>
@@ -111,7 +111,7 @@ export default function TermsPage() {
               The Project Pack is a one-time purchase, currently {formatPackPrice()}, that unlocks
               the downloadable PDF of a project plan in the browser where you bought it. Because it
               is a digital product delivered immediately, and because the pack contents are visible
-              on screen before purchase, it is generally non-refundable — but if it does not work,
+              on screen before purchase, it is generally non-refundable, but if it does not work,
               contact us and we will make it right.
             </p>
             <p>
@@ -146,7 +146,7 @@ export default function TermsPage() {
         <p>
           Cubitora is provided &ldquo;as is&rdquo;, without warranties of any kind to the fullest
           extent permitted by law. To that same extent, Cubitora is not liable for any loss or
-          damage arising from use of the service — including over-ordering, under-ordering, cost
+          damage arising from use of the service, including over-ordering, under-ordering, cost
           overruns, project delays, rework, property damage, or injury. You are responsible for the
           decisions you make and the work you carry out.
         </p>

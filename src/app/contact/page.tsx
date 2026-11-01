@@ -40,7 +40,7 @@ export default function ContactPage() {
           <li>Which planner you were using.</li>
           <li>The exact inputs, including the unit system and any assumptions you changed.</li>
           <li>The number Cubitora gave you, and the number you expected.</li>
-          <li>Where your expected figure comes from — a supplier, a span table, a product spec sheet.</li>
+          <li>Where your expected figure comes from: a supplier, a span table, a product spec sheet.</li>
         </ul>
         <p>
           The share button on any result page copies a link that reproduces your exact inputs.
@@ -59,7 +59,7 @@ export default function ContactPage() {
       <section>
         <h2>What we cannot help with</h2>
         <ul>
-          <li>Structural design questions — spans, footings, load paths. Those need a designer or engineer for your specific project and location.</li>
+          <li>Structural design questions: spans, footings, load paths. Those need a designer or engineer for your specific project and location.</li>
           <li>Local code and permit questions. Your building department is the authority.</li>
           <li>Product-specific installation support. The manufacturer&apos;s instructions govern.</li>
         </ul>

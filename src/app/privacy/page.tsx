@@ -22,8 +22,8 @@ export default function PrivacyPage() {
     >
       <LegalReviewNote>
         This is a plain-language starting point written for a planning utility. Have it reviewed by
-        a qualified lawyer for your jurisdiction — GDPR, UK GDPR, CCPA/CPRA, and state privacy laws
-        each impose specific disclosure and rights language — before publishing it as your policy.
+        a qualified lawyer for your jurisdiction (GDPR, UK GDPR, CCPA/CPRA, and state privacy laws
+        each impose specific disclosure and rights language) before publishing it as your policy.
       </LegalReviewNote>
 
       <section>
@@ -39,8 +39,8 @@ export default function PrivacyPage() {
       <section>
         <h2>What stays on your device</h2>
         <p>
-          Saved projects — the planner you used, the values you entered, your notes, which shopping
-          list items you have ticked off, and any contractor quote you typed in — are stored in
+          Saved projects (the planner you used, the values you entered, your notes, which shopping
+          list items you have ticked off, and any contractor quote you typed in) are stored in
           local storage in your browser. They are not transmitted to us. Clearing your browser data
           deletes them permanently, and they are not recoverable.
         </p>
@@ -58,22 +58,22 @@ export default function PrivacyPage() {
           text is sent to our server so it can be matched to a planner. When our own pattern
           matching cannot interpret it and an AI provider is configured for this deployment, the
           text may also be sent to that provider to extract measurements. Please do not include
-          personal information in that box — it is a description of a building project, and nothing
+          personal information in that box. It is a description of a building project, and nothing
           more is needed.
         </p>
 
         <h3>Payments</h3>
         <p>
           If you purchase a Project Pack, payment is handled entirely by Stripe. Card details are
-          entered on Stripe&apos;s systems and never reach Cubitora — we never see, receive, or
+          entered on Stripe&apos;s systems and never reach Cubitora. We never see, receive, or
           store a card number. We receive only a session reference confirming whether a payment
           succeeded. Stripe&apos;s own privacy policy governs the data they collect.
         </p>
 
         <h3>Standard request logs</h3>
         <p>
-          Our hosting provider records the usual web-server information — IP address, user agent,
-          requested URL, timestamp — for security and reliability. This is ordinary infrastructure
+          Our hosting provider records the usual web-server information (IP address, user agent,
+          requested URL, timestamp) for security and reliability. This is ordinary infrastructure
           logging, not profiling.
         </p>
       </section>
@@ -94,8 +94,8 @@ export default function PrivacyPage() {
           measurements, prices, natural-language description, saved-project identifier, and Stripe
           session identifier in the URL, and none of those leave your browser: only the route and a
           short list of campaign parameters survive. A saved project is reported as
-          &ldquo;/project-pack/[id]&rdquo; rather than by its identifier. Product events — a project
-          calculated, a pack previewed, a link followed — carry only the planner name, the unit
+          &ldquo;/project-pack/[id]&rdquo; rather than by its identifier. Product events (a project
+          calculated, a pack previewed, a link followed) carry only the planner name, the unit
           system, and similar fixed labels.
         </p>
       </section>
@@ -142,7 +142,7 @@ export default function PrivacyPage() {
         <h2>Your choices</h2>
         <ul>
           <li>Delete saved projects individually from My projects, or clear your browser&apos;s site data to remove all of them.</li>
-          <li>Use Cubitora without ever typing a description into the natural-language box — every planner works directly.</li>
+          <li>Use Cubitora without ever typing a description into the natural-language box. Every planner works directly.</li>
           <li>Use browser or extension-level controls to block analytics and advertising.</li>
         </ul>
       </section>

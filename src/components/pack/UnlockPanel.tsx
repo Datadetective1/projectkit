@@ -86,7 +86,7 @@ export function UnlockPanel({
           </h2>
           <p className="mt-2 text-sm text-brand-ink/85">
             You can read the whole pack below for free. The {formatPackPrice()} unlock gives you the
-            polished, ad-free PDF — the one you take to the store, send to a contractor, or keep
+            polished, ad-free PDF: the one you take to the store, send to a contractor, or keep
             with your records.
           </p>
           <ul className="mt-3 grid gap-1.5 text-sm text-brand-ink/85 sm:grid-cols-2">

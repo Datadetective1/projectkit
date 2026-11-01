@@ -39,13 +39,13 @@ export default function AboutPage() {
       <section>
         <h2>How the numbers are produced</h2>
         <p>
-          Every number comes from plain, tested arithmetic in the application — not from a language
+          Every number comes from plain, tested arithmetic in the application, not from a language
           model. The calculations are unit-tested, including the packaging and rounding rules, and
           each result page shows the exact formulas used alongside the planning assumptions applied.
         </p>
         <p>
-          Where the answer depends on a convention rather than a measurement — a waste percentage, a
-          bag yield, a coverage rate — that assumption is shown to you and can be changed. Prices
+          Where the answer depends on a convention rather than a measurement (a waste percentage, a
+          bag yield, a coverage rate), that assumption is shown to you and can be changed. Prices
           are national ballpark planning figures you can overwrite with your own; they are not live
           retail prices and Cubitora does not claim they are.
         </p>
@@ -70,8 +70,8 @@ export default function AboutPage() {
         <section>
           <h2>Cubitora is in beta</h2>
           <p>
-            The site works and the estimates are tested, but the planning assumptions behind them —
-            coverage rates, waste allowances, package sizes — are still being checked against real
+            The site works and the estimates are tested, but the planning assumptions behind them
+            (coverage rates, waste allowances, package sizes) are still being checked against real
             projects and real receipts. Where we found one wrong, we fixed it and wrote down where
             the corrected figure came from.
           </p>
@@ -96,7 +96,7 @@ export default function AboutPage() {
         <h2>Get in touch</h2>
         <p>
           Found a calculation that looks wrong, or a project we should add?{" "}
-          <Link href="/contact">Tell us</Link> — calculation correctness is the thing we care about
+          <Link href="/contact">Tell us</Link>. Calculation correctness is the thing we care about
           most.
         </p>
       </section>
