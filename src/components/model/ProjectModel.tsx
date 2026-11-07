@@ -34,7 +34,7 @@ export function ProjectModel({
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<Engine | null>(null);
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState<string | null>(null);
   const specKey = JSON.stringify(spec);
 
   // Start the renderer once.
@@ -43,17 +43,25 @@ export function ProjectModel({
     if (!host) return;
     let cancelled = false;
 
+    // No WebGL at all (some locked-down or headless browsers): use the fallback
+    // without loading three.js.
+    const probe = document.createElement("canvas");
+    if (!probe.getContext("webgl2") && !probe.getContext("webgl")) {
+      void Promise.resolve().then(() => setFailed("no-webgl"));
+      return;
+    }
+
     import("three")
       .then((THREE) => {
         if (cancelled || !host.isConnected) return;
         try {
           engineRef.current = createEngine(THREE, host);
           engineRef.current.show(JSON.parse(specKey) as SceneSpec);
-        } catch {
-          setFailed(true);
+        } catch (error) {
+          setFailed(`render: ${String(error)}`);
         }
       })
-      .catch(() => setFailed(true));
+      .catch((error) => setFailed(`load: ${String(error)}`));
 
     return () => {
       cancelled = true;
@@ -69,7 +77,17 @@ export function ProjectModel({
     engineRef.current?.show(JSON.parse(specKey) as SceneSpec);
   }, [specKey]);
 
-  if (failed) return <>{fallback}</>;
+  if (failed) {
+    return (
+      <div className="contents" data-model-fallback={failed}>
+        {fallback}
+        {/* For checking a deployment: add ?model-debug to see why 3D is off. */}
+        {typeof window !== "undefined" && window.location.search.includes("model-debug") ? (
+          <p className="text-xs text-ink-subtle">3D off: {failed}</p>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div
