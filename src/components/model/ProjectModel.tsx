@@ -79,7 +79,7 @@ export function ProjectModel({
 
   if (failed) {
     return (
-      <div className="contents" data-model-fallback={failed}>
+      <div className={fallback ? "contents" : "hidden"} data-model-fallback={failed}>
         {fallback}
         {/* For checking a deployment: add ?model-debug to see why 3D is off. */}
         {typeof window !== "undefined" && window.location.search.includes("model-debug") ? (

@@ -25,6 +25,7 @@ import { readyOnlineCount } from "@/lib/shopping/cart";
 import { ReportProblem } from "@/components/ReportProblem";
 import { StickyAction } from "./StickyAction";
 import { ProjectModel } from "@/components/model/ProjectModel";
+import { PlanDiagram } from "@/components/brand/DimensionLine";
 import { sceneFor } from "@/lib/model/sceneSpec";
 import {
   anchorsFor,
@@ -490,6 +491,15 @@ export function ProjectPlanner({ slug }: { slug: string }) {
                   <ProjectModel
                     spec={scene}
                     className="h-56 w-full sm:h-64"
+                    fallback={
+                      <div className="flex h-44 items-center justify-center sm:h-64">
+                        <PlanDiagram
+                          width={scene.labels[0]}
+                          depth={scene.round ? scene.labels[0] : scene.labels[1]}
+                          className="h-[6.25rem] w-[9.5rem] text-brand"
+                        />
+                      </div>
+                    }
                   />
                 ) : undefined
               }
