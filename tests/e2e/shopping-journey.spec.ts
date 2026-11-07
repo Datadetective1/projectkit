@@ -19,17 +19,21 @@ import { expect, test, type Page } from "@playwright/test";
  */
 
 /** Every planner, with what its default project can actually be bought from. */
+/*
+ * `online` is the materials that ship, `cart` is what one tap adds to an Amazon
+ * cart (materials and tools with a product picked), `local` arrives by the load.
+ */
 const PLANNERS = [
-  { slug: "concrete-calculator", online: 2, local: 3 },
-  { slug: "fence-calculator", online: 6, local: 0 },
-  { slug: "paint-calculator", online: 3, local: 0 },
-  { slug: "flooring-calculator", online: 2, local: 1 },
-  { slug: "mulch-calculator", online: 0, local: 1 },
-  { slug: "gravel-calculator", online: 0, local: 1 },
-  { slug: "drywall-calculator", online: 4, local: 0 },
-  { slug: "tile-calculator", online: 4, local: 0 },
-  { slug: "deck-calculator", online: 2, local: 5 },
-  { slug: "sod-calculator", online: 0, local: 1 },
+  { slug: "concrete-calculator", online: 2, cart: 7, local: 3 },
+  { slug: "fence-calculator", online: 6, cart: 5, local: 0 },
+  { slug: "paint-calculator", online: 3, cart: 7, local: 0 },
+  { slug: "flooring-calculator", online: 2, cart: 2, local: 1 },
+  { slug: "mulch-calculator", online: 0, cart: 1, local: 1 },
+  { slug: "gravel-calculator", online: 0, cart: 2, local: 1 },
+  { slug: "drywall-calculator", online: 4, cart: 7, local: 0 },
+  { slug: "tile-calculator", online: 4, cart: 5, local: 0 },
+  { slug: "deck-calculator", online: 2, cart: 4, local: 5 },
+  { slug: "sod-calculator", online: 0, cart: 3, local: 1 },
 ] as const;
 
 async function openPlanner(page: Page, slug: string) {
@@ -94,10 +98,10 @@ test("materials are stated once, not twice", async ({ page }) => {
   await expect(list.getByText("$743", { exact: false }).first()).toBeVisible();
 });
 
-test("the primary action reaches the list", async ({ page }) => {
+test("the card's list button reaches the list", async ({ page }) => {
   await openPlanner(page, "concrete-calculator");
 
-  await page.getByRole("button", { name: /shop these materials/i }).click();
+  await page.getByRole("button", { name: /view shopping list/i }).click();
 
   const list = page.locator("#shopping-list");
   await expect(list).toBeInViewport({ timeout: 5_000 });
@@ -146,31 +150,19 @@ for (const planner of PLANNERS) {
       .locator('[data-group="online"]')
       .getByRole("link", { name: /shop on amazon/i });
 
+    /*
+     * The number on the card, the button under it and the button on the list
+     * are three surfaces reading one rule. The card used to count two
+     * materials above a button adding seven items, which is the kind of small
+     * contradiction that costs more trust than the feature earns.
+     */
+    await expect(card).toContainText(new RegExp(`${planner.cart}\\s+items?`));
+    await expect(card.getByTestId("amazon-cart")).toContainText(`Add ${planner.cart} item`);
+    await expect(list.getByTestId("amazon-cart")).toContainText(`Add ${planner.cart} item`);
+    await expect(card.getByRole("button", { name: /view shopping list/i })).toBeVisible();
+    await expect(buyButtons).toHaveCount(planner.online);
     if (planner.online > 0) {
-      /*
-       * The claim on the card and the number of buttons in the list are two
-       * different code paths reading one rule. A card promising five items over
-       * a list showing four is the kind of small lie that costs more trust than
-       * the feature earns.
-       */
-      await expect(card).toContainText(new RegExp(`${planner.online}\\s+items?`));
-      await expect(buyButtons).toHaveCount(planner.online);
-      await expect(card.getByRole("button", { name: /shop these materials/i })).toBeVisible();
-      await expect(list.getByText(/ready to buy online/i)).toBeVisible();
-    } else {
-      /*
-       * Mulch, gravel and sod arrive by the load from a local yard. There is no
-       * version of any of them that turns up in a parcel, so the button must
-       * not promise shopping — it promises the list, which is what a person
-       * takes to a supplier.
-       */
-      await expect(buyButtons).toHaveCount(0);
-      await expect(card.getByRole("button", { name: /view shopping list/i })).toBeVisible();
-      await expect(
-        card.getByRole("button", { name: /shop these materials/i }),
-        `${planner.slug} offered shopping with nothing to buy`,
-      ).toHaveCount(0);
-      await expect(card).toContainText(/delivered locally/i);
+      await expect(list.getByText(/materials that ship to you/i)).toBeVisible();
     }
 
     if (planner.local > 0) {
@@ -243,7 +235,7 @@ test("tools link to Amazon, with the disclosure above them", async ({ page }) =>
   /*
    * Mulch has no parcel-sized materials, so the tools list is where its first
    * paid link sits. The disclosure has to move with it rather than vanish
-   * along with the "ready to buy online" group.
+   * along with the materials group.
    */
   await openPlanner(page, "mulch-calculator");
 

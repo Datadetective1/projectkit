@@ -151,21 +151,51 @@ export default async function ProjectPage({
               Worked examples at the sizes people ask about most, using this same calculator.
             </p>
             <ul className="mt-5 flex flex-col gap-2">
-              {answers.map((answer) => (
-                <li key={answer.slug}>
-                  <Link
-                    href={`/${project.slug}/${answer.slug}`}
-                    className="group flex items-center gap-3 rounded-[var(--radius-card)] border border-line bg-surface px-4 py-3 transition-colors hover:border-brand/35 hover:bg-brand-soft/40"
-                  >
-                    <span className="min-w-0 flex-1 text-sm font-medium text-ink">{answer.h1}</span>
-                    <ArrowRight
-                      className="h-4 w-4 shrink-0 text-brand transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
-                      aria-hidden
-                    />
-                  </Link>
-                </li>
-              ))}
+              {answers
+                .filter((answer) => !answer.group)
+                .map((answer) => (
+                  <li key={answer.slug}>
+                    <Link
+                      href={`/${project.slug}/${answer.slug}`}
+                      className="group flex items-center gap-3 rounded-[var(--radius-card)] border border-line bg-surface px-4 py-3 transition-colors hover:border-brand/35 hover:bg-brand-soft/40"
+                    >
+                      <span className="min-w-0 flex-1 text-sm font-medium text-ink">{answer.h1}</span>
+                      <ArrowRight
+                        className="h-4 w-4 shrink-0 text-brand transition-transform group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
+                        aria-hidden
+                      />
+                    </Link>
+                  </li>
+                ))}
             </ul>
+
+            {/*
+              Size families as rows of chips. Twenty near-identical questions as
+              full-width rows would bury the hand-written ones above; a row of
+              sizes is how people actually scan for theirs.
+            */}
+            {[...new Set(answers.map((answer) => answer.group).filter(Boolean))].map((group) => (
+              <div key={group} className="mt-5">
+                <h3 className="font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink-subtle">
+                  {group}
+                </h3>
+                <ul className="mt-2 flex flex-wrap gap-2">
+                  {answers
+                    .filter((answer) => answer.group === group)
+                    .map((answer) => (
+                      <li key={answer.slug}>
+                        <Link
+                          href={`/${project.slug}/${answer.slug}`}
+                          title={answer.h1}
+                          className="inline-flex rounded-full border border-line bg-surface px-3.5 py-1.5 text-sm font-medium tabular-nums text-ink transition-colors hover:border-brand/35 hover:bg-brand-soft/40"
+                        >
+                          {answer.seo.breadcrumb}
+                        </Link>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            ))}
           </section>
         ) : null}
 

@@ -89,7 +89,7 @@ export function DiyOrHire({
               {difference > 0 ? (
                 <>
                   Doing it yourself saves roughly{" "}
-                  <strong className="tabular-nums">{formatCurrency(difference)}</strong> in labour,
+                  <strong className="tabular-nums">{formatCurrency(difference)}</strong> in labor,
                   before your own time.
                 </>
               ) : (
@@ -117,7 +117,7 @@ export function DiyOrHire({
       </ul>
 
       <p className="mt-4 text-xs text-ink-subtle">
-        Cubitora does not estimate labour rates. The comparison uses only the quote you enter and
+        Cubitora does not estimate labor rates. The comparison uses only the quote you enter and
         the material cost.
         {features.contractorLeads ? "" : " Contractor matching is not part of Cubitora today."}
       </p>

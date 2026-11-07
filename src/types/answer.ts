@@ -1,6 +1,13 @@
 import type { FaqItem, InputValues } from "@/types/project";
 
 /**
+ * The shapes of answer. A "volume" page starts from an amount someone already
+ * has or has been quoted ("3 yards of mulch", "10 tons of gravel") and works
+ * out what it means: bags, weight, coverage and cost.
+ */
+export type AnswerKind = "size" | "comparison" | "conversion" | "coverage" | "volume";
+
+/**
  * An answer page: one specific question, answered by the engine.
  *
  * These exist because the ten planners answer "work out my project" but nobody
@@ -28,7 +35,21 @@ export interface AnswerPage {
    * borrowing the slab layout, because its decision is pallet overshoot and a
    * slab has no equivalent.
    */
-  kind: "size" | "comparison" | "conversion" | "coverage";
+  kind: AnswerKind;
+
+  /**
+   * For a "volume" page: the amount the question is about, as asked ("3 yards
+   * of mulch", "10 tons of gravel"). This is the question, not the answer; the
+   * engine still produces every figure the page shows.
+   */
+  amount?: { value: number; unit: "yd" | "ton" };
+
+  /**
+   * Generated size families share a group, so the planner hub can show them as
+   * a compact row of sizes instead of a long list of near-identical questions.
+   * Hand-written pages leave it unset and keep their own row.
+   */
+  group?: string;
 
   /** The page heading, written the way the question is asked. */
   h1: string;

@@ -238,7 +238,7 @@ test("shopping_cta_viewed fires when the offer reaches the screen", async ({ pag
   expect(viewed).toHaveLength(1);
   expect(viewed[0].params.projectType).toBe("concrete-calculator");
   expect(viewed[0].params.placement).toBe("result_summary");
-  expect(viewed[0].params.itemsReady).toBe(2);
+  expect(viewed[0].params.itemsReady).toBe(7);
 });
 
 test("shopping_cta_clicked names which control was used", async ({ page }) => {
@@ -247,28 +247,28 @@ test("shopping_cta_clicked names which control was used", async ({ page }) => {
   await revealShoppingCta(page);
   await waitForEvents(page, "shopping_cta_viewed");
 
-  await page.getByRole("button", { name: /shop these materials/i }).click();
+  await page.getByRole("button", { name: /view shopping list/i }).click();
 
   const clicked = await waitForEvents(page, "shopping_cta_clicked");
   expect(clicked).toHaveLength(1);
   expect(clicked[0].params.placement).toBe("result_summary");
   expect(clicked[0].params.projectType).toBe("concrete-calculator");
-  expect(clicked[0].params.itemsReady).toBe(2);
+  expect(clicked[0].params.itemsReady).toBe(7);
   expect(clicked[0].params.source).toBe("planner");
 });
 
-test("itemsReady segments the planners that have nothing to ship", async ({ page }) => {
+test("itemsReady counts what one tap buys, even where the materials come by truck", async ({ page }) => {
   /*
-   * Mulch arrives by the load from a local yard. Its traffic would otherwise
-   * sit in the same bucket as everyone else and drag the conversion rate down
-   * for a reason that is not a product failure.
+   * itemsReady is the same number the card and the cart button show. Mulch
+   * itself arrives by the load, but a tool on its list goes in the cart.
    */
   await page.goto("/mulch-calculator");
   await page.waitForSelector("#result-headline");
   await revealShoppingCta(page);
 
   const viewed = await waitForEvents(page, "shopping_cta_viewed");
-  expect(viewed[0].params.itemsReady).toBe(0);
+  // Mulch itself arrives by the load; the one item is a tool in the cart.
+  expect(viewed[0].params.itemsReady).toBe(1);
   expect(viewed[0].params.projectType).toBe("mulch-calculator");
 });
 
@@ -278,7 +278,7 @@ test("shopping_list_viewed carries how much of the list is buyable", async ({ pa
   await page.locator("#shopping-list").scrollIntoViewIfNeeded();
 
   const seen = await waitForEvents(page, "shopping_list_viewed");
-  expect(seen[0].params.itemsReady).toBe(2);
+  expect(seen[0].params.itemsReady).toBe(7);
 });
 
 test("shopping_list_viewed fires only when the list is actually seen", async ({ page }) => {

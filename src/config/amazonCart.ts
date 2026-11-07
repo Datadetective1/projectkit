@@ -128,6 +128,17 @@ export function mergeCartLines(lines: CartLine[]): CartLine[] {
   return Array.from(merged, ([asin, quantity]) => ({ asin, quantity }));
 }
 
+/**
+ * The product page for a pick, with the associate tag.
+ *
+ * A single "Shop on Amazon" link used to open a search even when a product was
+ * already picked for the cart. A search page earns only if the person finds
+ * and clicks a product; the product page is one step from the basket.
+ */
+export function amazonProductUrl(asin: string): string {
+  return `https://www.amazon.com/dp/${encodeURIComponent(asin)}?tag=${AMAZON_CART_TAG}`;
+}
+
 /** The add-to-cart URL for a set of lines, with the associate tag. */
 export function amazonCartUrl(lines: CartLine[]): string {
   const params = new URLSearchParams();

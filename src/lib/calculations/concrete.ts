@@ -278,7 +278,7 @@ export function calculateConcrete({
       difficulty: adjustedYards > 3 ? "Challenging" : "Moderate",
       timeCategory: adjustedYards > 3 ? "A full weekend with help" : "One long day",
       notes: [
-        "Excavation and base prep is the bulk of the labour.",
+        "Excavation and base prep is the bulk of the labor.",
         "Finishing concrete is a timed skill, and a second experienced pair of hands pays for itself.",
       ],
     },

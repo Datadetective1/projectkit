@@ -5,8 +5,10 @@ import { SizeAnswer } from "@/components/answers/SizeAnswer";
 import { ComparisonAnswer } from "@/components/answers/ComparisonAnswer";
 import { ConversionAnswer } from "@/components/answers/ConversionAnswer";
 import { CoverageAnswer } from "@/components/answers/CoverageAnswer";
+import { VolumeAnswer, volumeAnswerLine } from "@/components/answers/VolumeAnswer";
 import { JsonLd } from "@/components/ui/JsonLd";
 import { answerPages, getAnswer } from "@/data/answers";
+import type { AnswerKind } from "@/types/answer";
 import { getProject } from "@/data/projects";
 import { compute, threeNumbers } from "@/lib/answers/compute";
 import { breadcrumbJsonLd, faqJsonLd, pageMetadata, webApplicationJsonLd } from "@/lib/seo";
@@ -27,7 +29,7 @@ export function generateStaticParams() {
   return answerPages.map((page) => ({ slug: page.planner, topic: page.slug }));
 }
 
-/** No answer page is generated on demand; the five above are the whole set. */
+/** No answer page is generated on demand; the declared set is the whole set. */
 export const dynamicParams = false;
 
 export async function generateMetadata({
@@ -74,11 +76,14 @@ export default async function AnswerRoute({
    * It is the sentence a search result or an answer engine is most likely to
    * lift, so it has to be true without the rest of the page around it.
    */
-  const answerLine = answerLineFor(answer.kind, {
-    purchase: numbers.purchase,
-    withWaste: numbers.withWaste,
-    projectName: project.name.toLowerCase(),
-  });
+  const answerLine =
+    answer.kind === "volume"
+      ? volumeAnswerLine(answer, computed)
+      : answerLineFor(answer.kind, {
+          purchase: numbers.purchase,
+          withWaste: numbers.withWaste,
+          projectName: project.name.toLowerCase(),
+        });
 
   return (
     <>
@@ -107,13 +112,14 @@ export default async function AnswerRoute({
         {answer.kind === "coverage" ? (
           <CoverageAnswer project={project} computed={computed} />
         ) : null}
+        {answer.kind === "volume" ? <VolumeAnswer answer={answer} computed={computed} /> : null}
       </AnswerShell>
     </>
   );
 }
 
 function answerLineFor(
-  kind: "size" | "comparison" | "conversion" | "coverage",
+  kind: Exclude<AnswerKind, "volume">,
   values: { purchase: string | null; withWaste: string; projectName: string },
 ) {
   const order = values.purchase ?? values.withWaste;
