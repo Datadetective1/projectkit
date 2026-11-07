@@ -21,7 +21,7 @@ import { ProjectSequence } from "@/components/results/ProjectSequence";
 import { DiyOrHire } from "@/components/results/DiyOrHire";
 import { WhatIf } from "@/components/results/WhatIf";
 import { AdSlot } from "@/components/monetization/AdSlot";
-import { countReadyToBuy } from "@/lib/shopping/groups";
+import { readyOnlineCount } from "@/lib/shopping/cart";
 import { ReportProblem } from "@/components/ReportProblem";
 import { StickyAction } from "./StickyAction";
 import {
@@ -185,7 +185,11 @@ export function ProjectPlanner({ slug }: { slug: string }) {
    * card, the sticky bar, and the list's own heading. They must never be able
    * to disagree about how many things a person can buy.
    */
-  const readyToBuy = useMemo(() => countReadyToBuy(shoppingEntries), [shoppingEntries]);
+  const checkedSet = useMemo(() => new Set(checked), [checked]);
+  const readyToBuy = useMemo(
+    () => readyOnlineCount(shoppingEntries, checkedSet),
+    [shoppingEntries, checkedSet],
+  );
 
   if (!project) {
     return (
@@ -481,6 +485,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
                   timeCategory={evaluation.result.effort.timeCategory}
                   onShop={() => revealSection(shoppingRef)}
                   onPlan={() => revealSection(packRef)}
+                  checked={checkedSet}
                 />
               }
               shoppingList={

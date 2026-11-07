@@ -38,6 +38,10 @@ export interface Retailer {
    * quantities, not SKUs, and cannot know which of a retailer's forty concrete
    * mixes someone wants. Sending them to a search they can judge is honest;
    * picking a product for them is a recommendation the engine has not earned.
+   *
+   * The exception is a line with a product already picked in
+   * `config/amazonCart.ts` for the one-tap cart: its single link opens that
+   * same product, so the link and the cart never point at different things.
    */
   searchUrlTemplate: string;
   /**

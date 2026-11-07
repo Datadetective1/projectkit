@@ -156,3 +156,32 @@ describe("what the pages promise", () => {
     }
   });
 });
+
+describe("volume pages hold exactly the amount they ask about", () => {
+  it("runs the planner at inputs that produce that volume or weight", () => {
+    /*
+     * A volume page picks an area so the planner holds "3 yards" or "10 tons".
+     * If that inversion drifts, every figure on the page describes a different
+     * amount from the one in its heading.
+     */
+    const volumePages = answerPages.filter((page) => page.kind === "volume");
+    expect(volumePages.length).toBeGreaterThan(10);
+
+    for (const page of volumePages) {
+      const run = compute(page.planner, page.values)!;
+      expect(page.amount, page.slug).toBeDefined();
+      const label = page.amount!.unit === "ton" ? /approximate weight/i : /^volume/i;
+      expect(run.row(label)?.value, page.slug).toBeCloseTo(page.amount!.value, 2);
+    }
+  });
+
+  it("keeps every generated family linked to its neighbors", () => {
+    for (const page of answerPages.filter((entry) => entry.group)) {
+      for (const link of page.related) {
+        const [, planner, slug] = link.href.split("/");
+        if (!slug) continue;
+        expect(getAnswer(planner, slug), `${page.slug} → ${link.href}`).toBeDefined();
+      }
+    }
+  });
+});

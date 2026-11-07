@@ -3,32 +3,11 @@
 import { ShoppingCart } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { retailers, whereToBuyEnabled } from "@/config/retailers";
-import { amazonCartUrl, amazonPickFor, cartQuantity, type CartLine } from "@/config/amazonCart";
+import { amazonCartUrl } from "@/config/amazonCart";
 import { sourceFromPath, track } from "@/lib/analytics";
-import { hasRetailerLink, type ShoppingEntryLike } from "@/lib/shopping/groups";
+import { cartBreakdown, cartLinesFor, type CartEntryLike } from "@/lib/shopping/cart";
 
-export interface CartEntryLike extends ShoppingEntryLike {
-  optional?: boolean;
-  /** The line's computed amount in its own unit. Absent for a tool. */
-  quantity?: number;
-}
-
-/**
- * The lines the cart button would add: linked, not ticked off, not optional,
- * and with a product picked. Exported so the label, the URL and the tests all
- * count the same thing.
- */
-export function cartLinesFor(entries: CartEntryLike[], checked: ReadonlySet<string>): CartLine[] {
-  const lines: CartLine[] = [];
-  for (const entry of entries) {
-    if (entry.optional || checked.has(entry.id)) continue;
-    if (!hasRetailerLink(entry)) continue;
-    const pick = amazonPickFor(entry.searchTerm);
-    if (!pick) continue;
-    lines.push({ asin: pick.asin, quantity: cartQuantity(pick, entry.quantity) });
-  }
-  return lines;
-}
+export { cartLinesFor, type CartEntryLike } from "@/lib/shopping/cart";
 
 /**
  * Everything on the list that Amazon sells, into one Amazon cart, in one tap.
@@ -41,11 +20,14 @@ export function AmazonCartButton({
   entries,
   checked,
   projectType,
+  placement = "shopping_list",
   className = "",
 }: {
   entries: CartEntryLike[];
   checked: ReadonlySet<string>;
   projectType?: string;
+  /** Which surface the button sits on, for the click event. */
+  placement?: "shopping_list" | "result_summary";
   className?: string;
 }) {
   const pathname = usePathname();
@@ -56,6 +38,11 @@ export function AmazonCartButton({
   if (lines.length === 0) return null;
 
   const count = lines.length;
+  const { materials, tools } = cartBreakdown(entries, checked);
+  const parts = [
+    materials > 0 ? `${materials} ${materials === 1 ? "material" : "materials"}` : null,
+    tools > 0 ? `${tools} ${tools === 1 ? "tool or supply" : "tools and supplies"}` : null,
+  ].filter(Boolean);
   return (
     <div className={`pk-no-print flex flex-wrap items-center gap-x-3 gap-y-1.5 ${className}`}>
       <a
@@ -69,7 +56,7 @@ export function AmazonCartButton({
             projectType,
             materialId: "cart-all",
             itemsReady: count,
-            placement: "shopping_list",
+            placement,
             source: sourceFromPath(pathname ?? "/"),
           })
         }
@@ -80,7 +67,9 @@ export function AmazonCartButton({
         {" "}
         <span className="sr-only">, a paid affiliate link (opens in a new tab)</span>
       </a>
-      <span className="text-xs text-ink-subtle">Paid link. Skips anything you tick off.</span>
+      <span className="text-xs text-ink-subtle">
+        {parts.length > 0 ? `${parts.join(", ")}. ` : ""}Paid link. Skips anything you tick off.
+      </span>
     </div>
   );
 }

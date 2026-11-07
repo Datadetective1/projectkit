@@ -1,4 +1,5 @@
 import type { AnswerPage } from "@/types/answer";
+import { generatedAnswers } from "./sizes";
 
 /**
  * The answer pages, in full.
@@ -241,17 +242,23 @@ const ANSWERS: AnswerPage[] = [
   },
 ];
 
-export const answerPages = ANSWERS;
+/*
+ * The five pages above proved the shape; the size families in `./sizes` extend
+ * it to the exact numbers Search Console shows people asking for.
+ */
+const ALL: AnswerPage[] = [...ANSWERS, ...generatedAnswers];
+
+export const answerPages = ALL;
 
 export function getAnswer(planner: string, slug: string): AnswerPage | undefined {
-  return ANSWERS.find((page) => page.planner === planner && page.slug === slug);
+  return ALL.find((page) => page.planner === planner && page.slug === slug);
 }
 
 export function answersFor(planner: string): AnswerPage[] {
-  return ANSWERS.filter((page) => page.planner === planner);
+  return ALL.filter((page) => page.planner === planner);
 }
 
 /** Every answer-page path, for the sitemap and llms.txt. */
 export function answerPaths(): string[] {
-  return ANSWERS.map((page) => `/${page.planner}/${page.slug}`);
+  return ALL.map((page) => `/${page.planner}/${page.slug}`);
 }

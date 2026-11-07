@@ -48,7 +48,7 @@ test.describe("the mobile action bar", () => {
     await expect(bar.getByRole("button", { name: /shop materials/i })).toBeVisible({
       timeout: 5_000,
     });
-    await expect(bar).toContainText(/2 items ready/i);
+    await expect(bar).toContainText(/7 items ready/i);
 
     // 3. Standing at the list, the bar has nothing left to say.
     await bar.getByRole("button", { name: /shop materials/i }).click();

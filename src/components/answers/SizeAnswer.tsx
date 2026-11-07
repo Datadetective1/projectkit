@@ -192,7 +192,7 @@ export function SizeAnswer({
           </li>
         </ul>
         <p className="pk-prose mt-2 text-xs">
-          Planning prices, editable in the planner. Excludes tax, delivery, tool hire and labour.
+          Planning prices, editable in the planner. Excludes tax, delivery, tool rental and labor.
         </p>
       </section>
 

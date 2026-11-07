@@ -2,7 +2,8 @@
 
 import { ExternalLink } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { retailerRel, retailerUrl, retailers, whereToBuyEnabled } from "@/config/retailers";
+import { retailerRel, retailerUrl, retailers, whereToBuyEnabled, type Retailer } from "@/config/retailers";
+import { amazonPickFor, amazonProductUrl } from "@/config/amazonCart";
 import { sourceFromPath, track } from "@/lib/analytics";
 import { analyticsIdOf, hasRetailerLink } from "@/lib/shopping/groups";
 import type { Measure } from "@/lib/units";
@@ -83,12 +84,20 @@ export function WhereToBuy({
 
   const materialId = analyticsIdOf(entryId);
 
+  /*
+   * Where a product is picked for the cart, the single link opens that product
+   * rather than a search, so the link and the cart point at the same thing.
+   */
+  const pick = amazonPickFor(query);
+  const hrefFor = (retailer: Retailer) =>
+    retailer.id === "amazon" && pick ? amazonProductUrl(pick.asin) : retailerUrl(retailer, query);
+
   return (
     <div className={`pk-no-print mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 ${className}`}>
       {retailers.map((retailer) => (
         <a
           key={retailer.id}
-          href={retailerUrl(retailer, query)}
+          href={hrefFor(retailer)}
           target="_blank"
           rel={retailerRel(retailer)}
           onClick={() =>
@@ -124,7 +133,8 @@ export function WhereToBuy({
           */}
           {" "}
           <span className="sr-only">
-            , search for {query} at {retailer.name}
+            , {retailer.id === "amazon" && pick ? "view a suggested" : "search for"} {query} at{" "}
+            {retailer.name}
             {retailer.affiliate ? ", a paid affiliate link" : ""} (opens in a new tab)
           </span>
         </a>

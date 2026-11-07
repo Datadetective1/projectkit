@@ -36,8 +36,8 @@ export function RetailerDisclosure({
     <p className={`pk-no-print text-xs leading-snug text-ink-subtle ${className}`}>
       {disclosures.join(" ")}{" "}
       {cart
-        ? "The cart button adds a common pick for each item, the single links open a search, and neither changes the quantities above."
-        : "Links go to a search, not a chosen product, and they never change the quantities above."}
+        ? "Links open a common pick for each item where we have one, otherwise a search, and they never change the quantities."
+        : "Links go to a search, not a chosen product, and they never change the quantities."}
     </p>
   );
 }

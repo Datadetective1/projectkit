@@ -150,7 +150,7 @@ export function groupShoppingEntries<T extends ShoppingEntryLike>(
   const groups: ShoppingGroup<T>[] = [
     {
       id: "online",
-      title: "Ready to buy online",
+      title: "Materials that ship to you",
       entries: online,
     },
     {

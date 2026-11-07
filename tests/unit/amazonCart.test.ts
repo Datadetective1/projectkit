@@ -144,3 +144,38 @@ describe("what the concrete planner's button adds", () => {
     }
   });
 });
+
+describe("one number for what can be bought online", () => {
+  it("is what the cart adds, on every planner", async () => {
+    const { readyOnlineCount, cartBreakdown } = await import("@/lib/shopping/cart");
+    for (const project of projects) {
+      const result = evaluate(project, defaultValues(project, "us"), "us");
+      if (!result.ok) continue;
+      const entries = buildShoppingList(result.result, "us");
+      const cart = cartLinesFor(entries, new Set()).length;
+      if (cart === 0) continue;
+      expect(readyOnlineCount(entries, new Set()), project.slug).toBe(cart);
+      const parts = cartBreakdown(entries, new Set());
+      expect(parts.materials + parts.tools, project.slug).toBe(cart);
+    }
+  });
+
+  it("drops a ticked item from the count as well as the cart", async () => {
+    const { readyOnlineCount } = await import("@/lib/shopping/cart");
+    const concrete = projects.find((project) => project.slug === "concrete-calculator")!;
+    const result = evaluate(concrete, defaultValues(concrete, "us"), "us");
+    if (!result.ok) throw new Error("concrete failed");
+    const entries = buildShoppingList(result.result, "us");
+    const inCart = entries.find((entry) => amazonPickFor(entry.searchTerm) && !entry.optional)!;
+    expect(readyOnlineCount(entries, new Set([inCart.id]))).toBe(
+      readyOnlineCount(entries, new Set()) - 1,
+    );
+  });
+
+  it("links a picked line to its product page, tagged", async () => {
+    const { amazonProductUrl } = await import("@/config/amazonCart");
+    const url = new URL(amazonProductUrl("B0009XEN60"));
+    expect(url.origin + url.pathname).toBe("https://www.amazon.com/dp/B0009XEN60");
+    expect(url.searchParams.get("tag")).toBe(AMAZON_CART_TAG);
+  });
+});

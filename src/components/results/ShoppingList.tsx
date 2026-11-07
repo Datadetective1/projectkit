@@ -5,14 +5,10 @@ import { usePathname } from "next/navigation";
 import { Printer, Truck } from "lucide-react";
 import { WhereToBuy } from "@/components/monetization/WhereToBuy";
 import { RetailerDisclosure } from "@/components/monetization/RetailerDisclosure";
-import { AmazonCartButton, cartLinesFor } from "@/components/monetization/AmazonCartButton";
+import { AmazonCartButton } from "@/components/monetization/AmazonCartButton";
+import { cartLinesFor, readyOnlineCount } from "@/lib/shopping/cart";
 import { formatMaterialQuantity, formatUnitPrice } from "@/lib/format";
-import {
-  countReadyToBuy,
-  groupShoppingEntries,
-  hasRetailerLink,
-  isSupply,
-} from "@/lib/shopping/groups";
+import { groupShoppingEntries, hasRetailerLink, isSupply } from "@/lib/shopping/groups";
 import { formatCurrency, type Measure, type UnitSystem } from "@/lib/units";
 import type { CalculationResult } from "@/types/project";
 import { sourceFromPath, track } from "@/lib/analytics";
@@ -125,17 +121,17 @@ export function ShoppingList({
   const seen = useRef(false);
 
   const groups = groupShoppingEntries(entries);
-  const readyToBuy = countReadyToBuy(entries);
+  const readyToBuy = readyOnlineCount(entries, checkedSet);
   const priced = entries.some((entry) => entry.cost !== undefined);
   /* Whether any line has a picked product, ticked or not, so the disclosure
    * wording does not flicker as boxes are ticked. */
   const offersCart = cartLinesFor(entries, new Set()).length > 0;
   /*
-   * The disclosure goes above whichever group holds the first link. Usually
-   * that is "Ready to buy online"; for mulch, gravel and sod, whose materials
-   * all come by the truck, it is the tools list.
+   * The disclosure and the cart go at the head of the list, above every link,
+   * whenever the list has a link at all. The cart used to sit inside the first
+   * linked group, which put "Add 7 items" under a heading counting two.
    */
-  const disclosedGroup = groups.find((group) => group.entries.some(hasRetailerLink))?.id;
+  const hasLinks = entries.some(hasRetailerLink);
 
   useEffect(() => {
     const node = section.current;
@@ -204,6 +200,18 @@ export function ShoppingList({
         </button>
       </div>
 
+      {hasLinks ? (
+        <div className="mt-4">
+          <RetailerDisclosure cart={offersCart} />
+          <AmazonCartButton
+            entries={entries}
+            checked={checkedSet}
+            projectType={projectType}
+            className="mt-3"
+          />
+        </div>
+      ) : null}
+
       <div className="mt-5 flex flex-col gap-7">
         {groups.map((group) => (
           <div key={group.id} data-group={group.id}>
@@ -223,23 +231,6 @@ export function ShoppingList({
               <p className="mt-1.5 max-w-prose text-sm text-ink-muted">{group.note}</p>
             ) : null}
 
-            {/*
-              The Amazon disclosure sits directly above the first group with a
-              paid link and nowhere else. The Operating Agreement wants it near the links
-              rather than in a page footer, and repeating it on every row is
-              what made a checklist read like an affiliate page.
-            */}
-            {group.id === disclosedGroup ? (
-              <>
-                <RetailerDisclosure className="mt-2" cart={offersCart} />
-                <AmazonCartButton
-                  entries={entries}
-                  checked={checkedSet}
-                  projectType={projectType}
-                  className="mt-3"
-                />
-              </>
-            ) : null}
 
             <ul className="mt-3 divide-y divide-line border-t border-line">
               {group.entries.map((entry) => {
