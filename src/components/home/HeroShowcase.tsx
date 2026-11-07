@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 import { CountUp } from "@/components/motion/CountUp";
 import { PlanDiagram } from "@/components/brand/DimensionLine";
+import { ProjectModel } from "@/components/model/ProjectModel";
 import type { HeroProject } from "@/lib/home/heroData";
 
 /**
@@ -118,24 +119,37 @@ export function HeroShowcase({ projects }: { projects: HeroProject[] }) {
           </p>
         </div>
 
-        {/* --------------------------------------------- measure + result */}
-        <div className="grid grid-cols-[auto_1fr] items-center gap-4 px-5 pb-4 pt-4 sm:gap-5">
-          {active.plan ? (
-            /*
-             * Keyed on the slug so the element is replaced rather than
-             * updated, which is what replays the stroke-dashoffset animation:
-             * the footprint is re-drawn line by line, and the two dimension
-             * annotations follow it in. It is the same drawing you would make
-             * on the back of an envelope, made again for the new project.
-             */
-            <PlanDiagram
-              key={`plan-${active.slug}`}
-              width={active.plan.width}
-              depth={active.plan.depth}
-              className="h-[6.25rem] w-[9.5rem] shrink-0 text-brand"
+        {/* -------------------------------------------------------- model */}
+        {/*
+          The project itself, in 3D, at the size the sentence describes. It is
+          not keyed on the slug: one renderer stays alive and switching project
+          rebuilds the model, which grows back into place as the figures below
+          count in. Without WebGL it falls back to the flat footprint drawing.
+        */}
+        {active.scene ? (
+          <div className="pk-model-stage border-b border-line">
+            <ProjectModel
+              spec={active.scene}
+              className="h-52 w-full sm:h-60"
+              label={`3D model of a ${active.name.toLowerCase()} project: ${active.scene.labels.join(", ")}`}
+              fallback={
+                active.plan ? (
+                  <div className="flex h-52 items-center justify-center sm:h-60">
+                    <PlanDiagram
+                      key={`plan-${active.slug}`}
+                      width={active.plan.width}
+                      depth={active.plan.depth}
+                      className="h-[6.25rem] w-[9.5rem] text-brand"
+                    />
+                  </div>
+                ) : null
+              }
             />
-          ) : null}
+          </div>
+        ) : null}
 
+        {/* --------------------------------------------- measure + result */}
+        <div className="px-5 pb-3 pt-3">
           <dl className="min-w-0">
             {active.stages.map((stage, index) => (
               <div

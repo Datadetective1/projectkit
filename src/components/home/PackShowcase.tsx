@@ -99,7 +99,7 @@ export function PackShowcase() {
             Create my Project Pack
             <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
-          <p className="mt-3 text-xs text-brand-mist/70">Free while we are in beta. No account.</p>
+          <p className="mt-3 text-xs text-brand-mist/70">Free. No account.</p>
         </Reveal>
 
         {/* ----------------------------------------------------- document */}
@@ -125,7 +125,7 @@ export function PackShowcase() {
                 <span className="text-sm font-semibold text-ink">Cubitora Project Pack</span>
               </span>
               <span className="rounded-full bg-brand-soft px-2 py-0.5 font-mono text-[0.625rem] font-semibold uppercase tracking-wide text-brand-ink">
-                Free in beta
+                Free
               </span>
             </div>
 

@@ -122,7 +122,7 @@ export const paintProject: ProjectDefinition = {
       id: "includePrimer",
       type: "toggle",
       label: "Include primer",
-      help: "Worth it over bare drywall, patches, stains, or a big colour change.",
+      help: "Worth it over bare drywall, patches, stains, or a big color change.",
       defaultValue: false,
       tier: "advanced",
       group: "Scope",
@@ -210,17 +210,17 @@ export const paintProject: ProjectDefinition = {
     {
       question: "Do I really need two coats?",
       answer:
-        "Almost always. One coat only looks right when you are repainting the same colour on a wall in good condition. Colour changes, fresh drywall, and any patching all show through a single coat.",
+        "Almost always. One coat only looks right when you are repainting the same color on a wall in good condition. Color changes, fresh drywall, and any patching all show through a single coat.",
     },
     {
       question: "Should I use primer?",
       answer:
-        "Prime bare drywall, patched areas, stains, glossy surfaces, and dramatic colour changes. Repainting a similar colour over sound paint generally does not need it; a paint-and-primer product is fine there.",
+        "Prime bare drywall, patched areas, stains, glossy surfaces, and dramatic color changes. Repainting a similar color over sound paint generally does not need it; a paint-and-primer product is fine there.",
     },
     {
       question: "Why does my paint cover less than the can says?",
       answer:
-        "Coverage figures assume a smooth, primed, similar-coloured surface. Texture, porosity, and colour change all cut real coverage, sometimes by a third. If your walls are textured, increase coverage expectations accordingly.",
+        "Coverage figures assume a smooth, primed, similar-colored surface. Texture, porosity, and color change all cut real coverage, sometimes by a third. If your walls are textured, increase coverage expectations accordingly.",
     },
   ],
 

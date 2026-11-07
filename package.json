@@ -27,6 +27,7 @@
     "react-dom": "19.2.8",
     "server-only": "^0.0.1",
     "stripe": "^22.5.0",
+    "three": "^0.170.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -36,6 +37,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/three": "^0.170.0",
     "@vitest/coverage-v8": "^4.1.11",
     "axe-core": "^4.13.0",
     "eslint": "^9",

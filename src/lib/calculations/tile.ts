@@ -199,7 +199,7 @@ export function calculateTile({
     explanation: [
       `${d.area(areaSqFt)} of floor at ${tileSize} per tile works out to about ${Math.ceil(tilesExact)} tiles before waste.`,
       `Adding ${roundTo(wastePct, 1)}% for cuts and breakage brings it to ${tilesAdjusted} tiles, which is ${boxes} ${boxes === 1 ? "box" : "boxes"}.`,
-      "Buy every box from the same production lot. Colour and size vary between lots enough to see across a floor.",
+      "Buy every box from the same production lot. Color and size vary between lots enough to see across a floor.",
     ],
     formulas: [
       { kind: "math", label: "Area", expression: "Length × Width" },

@@ -1,3 +1,4 @@
+import { ChevronDown } from "lucide-react";
 import { defaultValues, evaluate } from "@/lib/calc/engine";
 import type { ProjectDefinition } from "@/types/project";
 
@@ -27,16 +28,32 @@ export function PlannerMethod({ project }: { project: ProjectDefinition }) {
   const result = evaluation.result;
   const quickInputs = project.inputs.filter((input) => input.tier === "quick");
 
+  /*
+   * Folded by default. The page used to print this whole method, open, under
+   * the planner, and with it the safety notes for the third time (once in the
+   * result, once in a "Before you build" box, once here). The result keeps the
+   * warnings visible where the number is; this keeps the full method, still in
+   * the HTML for crawlers and answer engines, one click away for people.
+   */
   return (
-    <section aria-labelledby="method-heading" className="mt-14 max-w-3xl">
-      <h2
-        id="method-heading"
-        className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl"
-      >
-        How the {project.name.toLowerCase()} calculator works
-      </h2>
+    <details className="group pk-card mt-12 max-w-3xl open:pb-2">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 sm:p-6 [&::-webkit-details-marker]:hidden">
+        <div>
+          <h2 id="method-heading" className="text-lg font-semibold tracking-tight text-ink">
+            How the {project.name.toLowerCase()} calculator works
+          </h2>
+          <span className="mt-1 block text-sm text-ink-muted">
+            Formulas, planning assumptions, safety notes and limits
+          </span>
+        </div>
+        <ChevronDown
+          className="h-5 w-5 shrink-0 text-brand transition-transform group-open:rotate-180 motion-reduce:transition-none"
+          aria-hidden
+        />
+      </summary>
 
-      <p className="pk-prose mt-3">
+      <div className="border-t border-line px-5 pb-4 pt-5 sm:px-6">
+      <p className="pk-prose">
         Every quantity below comes from plain arithmetic run in your browser, not
         from a language model. The formulas and the planning assumptions are
         listed here so you can check them against your own numbers.
@@ -48,7 +65,7 @@ export function PlannerMethod({ project }: { project: ProjectDefinition }) {
           <li key={input.id}>
             <strong className="font-medium text-ink">{input.label}</strong>
             {input.type === "number" && input.measure !== "count"
-              ? `, in ${input.measure === "inch" ? "inches or centimetres" : "feet or metres"}`
+              ? `, in ${input.measure === "inch" ? "inches or centimeters" : "feet or meters"}`
               : null}
           </li>
         ))}
@@ -91,16 +108,17 @@ export function PlannerMethod({ project }: { project: ProjectDefinition }) {
         you change it.
       </p>
 
-      <h3 className="mt-8 text-lg font-semibold text-ink">What it does not tell you</h3>
+      <h3 className="mt-8 text-lg font-semibold text-ink">Before you build</h3>
       <ul className="pk-prose mt-3 list-disc space-y-1.5 pl-5">
-        {result.warnings.map((warning) => (
-          <li key={warning}>{warning}</li>
+        {[...new Set([...(project.disclaimers ?? []), ...result.warnings])].map((note) => (
+          <li key={note}>{note}</li>
         ))}
         <li>
           Costs cover materials at the prices shown. Sales tax, delivery, and
           equipment rental are excluded.
         </li>
       </ul>
-    </section>
+      </div>
+    </details>
   );
 }

@@ -26,6 +26,8 @@ interface ResultsPanelProps {
    * new question.
    */
   shoppingList?: React.ReactNode;
+  /** A picture of the project (the 3D model), shown beside the answer. */
+  visual?: React.ReactNode;
 }
 
 /**
@@ -43,11 +45,12 @@ export function ResultsPanel({
   revealKey = 0,
   nextStep,
   shoppingList,
+  visual,
 }: ResultsPanelProps) {
   return (
     <div className="flex flex-col gap-6">
       {/* ANSWER */}
-      <Headline result={result} system={system} revealKey={revealKey} />
+      <Headline result={result} system={system} revealKey={revealKey} visual={visual} />
 
       {/* ACTION */}
       {nextStep}
@@ -66,10 +69,12 @@ function Headline({
   result,
   system,
   revealKey,
+  visual,
 }: {
   result: CalculationResult;
   system: UnitSystem;
   revealKey: number;
+  visual?: React.ReactNode;
 }) {
   const { headline } = result;
   const formatted =
@@ -84,8 +89,11 @@ function Headline({
   return (
     <section
       aria-labelledby="result-headline"
-      className="rounded-[var(--radius-card)] border border-brand/20 bg-brand-soft p-5 sm:p-7"
+      className={`pk-result-hero relative overflow-hidden rounded-[var(--radius-card)] border border-brand/20 bg-brand-soft ${
+        visual ? "grid items-center sm:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]" : "p-5 sm:p-7"
+      }`}
     >
+      <div className={visual ? "p-5 pb-0 sm:p-7 sm:pr-2" : undefined}>
       <h2
         id="result-headline"
         className="text-sm font-semibold uppercase tracking-wide text-brand-ink/70"
@@ -107,6 +115,8 @@ function Headline({
           {headline.sublabel}
         </p>
       ) : null}
+      </div>
+      {visual}
     </section>
   );
 }

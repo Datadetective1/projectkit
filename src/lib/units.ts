@@ -28,7 +28,7 @@ const TO_METRIC: Record<Measure, number> = {
   area: 0.09290304, // sq ft → m²
   volumeFt: 0.028316846592, // cu ft → m³
   volumeYd: 0.764554857984, // cu yd → m³
-  volumeLiquid: 3.785411784, // US gallon → litre
+  volumeLiquid: 3.785411784, // US gallon → liter
   weight: 0.90718474, // short ton → tonne
   percent: 1,
   currency: 1,
@@ -50,12 +50,12 @@ const UNIT_LABELS: Record<Measure, { us: string; metric: string }> = {
 
 /** Spoken-word unit names, used in explanations and the Project Pack. */
 const UNIT_NAMES: Record<Measure, { us: string; metric: string }> = {
-  length: { us: "feet", metric: "metres" },
-  inch: { us: "inches", metric: "centimetres" },
-  area: { us: "square feet", metric: "square metres" },
-  volumeFt: { us: "cubic feet", metric: "cubic metres" },
-  volumeYd: { us: "cubic yards", metric: "cubic metres" },
-  volumeLiquid: { us: "gallons", metric: "litres" },
+  length: { us: "feet", metric: "meters" },
+  inch: { us: "inches", metric: "centimeters" },
+  area: { us: "square feet", metric: "square meters" },
+  volumeFt: { us: "cubic feet", metric: "cubic meters" },
+  volumeYd: { us: "cubic yards", metric: "cubic meters" },
+  volumeLiquid: { us: "gallons", metric: "liters" },
   weight: { us: "tons", metric: "tonnes" },
   percent: { us: "percent", metric: "percent" },
   currency: { us: "dollars", metric: "dollars" },
@@ -70,8 +70,8 @@ export function unitLabel(measure: Measure, system: UnitSystem): string {
  * Rates — a quantity *per* another quantity: "$ / yd³", "sq ft / gal".
  *
  * Both halves have to move together, and the denominator moves the value the
- * other way. A price per cubic yard becomes a *larger* number per cubic metre;
- * paint coverage of 350 sq ft per gallon is 8.59 m² per litre, not the 32.5 you
+ * other way. A price per cubic yard becomes a *larger* number per cubic meter;
+ * paint coverage of 350 sq ft per gallon is 8.59 m² per liter, not the 32.5 you
  * get by converting the area and leaving the gallon alone. Getting this wrong
  * is a 31% error on concrete pricing and a 4× error on paint coverage, in both
  * cases displayed as a confident number.
@@ -214,7 +214,7 @@ export interface FormatQuantityOptions {
  * "linear ft", "linear ft of decking", "sq ft / box". The value beside it is
  * always converted, so a hardcoded imperial label silently mislabels it: form
  * boards showed "24 linear ft" in metric mode when the real figure was 79 ft
- * and 24 was the metre count. A reader would have bought a third of the timber
+ * and 24 was the meter count. A reader would have bought a third of the timber
  * they needed.
  *
  * Only the measure's own unit token is swapped, so surrounding words survive

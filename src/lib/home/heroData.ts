@@ -1,5 +1,6 @@
 import { getProject } from "@/data/projects";
-import { defaultValues, evaluate } from "@/lib/calc/engine";
+import { defaultValues, evaluate, toCanonicalValues } from "@/lib/calc/engine";
+import { sceneFor, type SceneSpec } from "@/lib/model/sceneSpec";
 import { formatCurrency, formatQuantity } from "@/lib/units";
 
 /**
@@ -33,8 +34,10 @@ export interface HeroProject {
   name: string;
   /** How someone would actually say it, typed into the box. */
   idea: string;
-  /** The footprint, for the plan diagram. */
+  /** The footprint, for the plan diagram (the fallback when 3D cannot run). */
   plan?: { width: string; depth: string };
+  /** What the 3D model draws, from the same default inputs as the figures. */
+  scene?: SceneSpec;
   stages: HeroStage[];
   /** The headline figure, split so it can be animated and unit-labelled. */
   headline: { value: number; decimals: number; unit: string; label: string };
@@ -75,7 +78,8 @@ export function heroProjects(): HeroProject[] {
     const project = getProject(slug);
     if (!project) continue;
 
-    const evaluation = evaluate(project, defaultValues(project, "us"), "us");
+    const defaults = defaultValues(project, "us");
+    const evaluation = evaluate(project, defaults, "us");
     if (!evaluation.ok) continue;
 
     const result = evaluation.result;
@@ -106,6 +110,7 @@ export function heroProjects(): HeroProject[] {
       name: project.name,
       idea: IDEAS[slug] ?? project.tagline,
       plan: PLANS[slug],
+      scene: sceneFor(slug, toCanonicalValues(project, defaults, "us")) ?? undefined,
       stages,
       headline: {
         ...splitQuantity(headlineText),

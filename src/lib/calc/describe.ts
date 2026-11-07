@@ -55,7 +55,7 @@ export interface Describe {
    * kilograms in metric, not tonnes.
    */
   mass: (pounds: number, precision?: number) => string;
-  /** Coverage, as "350 sq ft per gallon" / "8.59 m² per litre". */
+  /** Coverage, as "350 sq ft per gallon" / "8.59 m² per liter". */
   coveragePerLiquid: (areaPerGallon: number, precision?: number) => string;
   /**
    * A price per unit of measure: "$165.00 per yd³" / "$215.81 per m³".
@@ -120,7 +120,7 @@ export function describeFor(system: UnitSystem): Describe {
 
     /*
      * Coverage inverts under conversion. 350 sq ft per US gallon is 8.59 m² per
-     * litre — you cannot convert the area and leave the gallon alone, which is
+     * liter — you cannot convert the area and leave the gallon alone, which is
      * exactly the mistake this exists to prevent.
      */
     coveragePerLiquid: (areaPerGallon, precision) => {
@@ -132,7 +132,7 @@ export function describeFor(system: UnitSystem): Describe {
         system,
         precision: precision ?? (system === "us" ? 0 : 2),
       });
-      return `${area} per ${system === "us" ? "gallon" : "litre"}`;
+      return `${area} per ${system === "us" ? "gallon" : "liter"}`;
     },
 
     pricePerUnit: (canonicalPrice, measure) => {

@@ -195,12 +195,10 @@ export const features = {
    */
   projectPackFree: process.env.NEXT_PUBLIC_PROJECT_PACK_FREE === "true",
   /*
-   * Beta labelling. Fails *open* — unlike every other flag here — because the
-   * risk runs the other way: telling people the estimates are still being
-   * validated when they are settled costs nothing, while staying silent about
-   * it during a beta is the thing that misleads.
+   * Beta labelling. Off unless switched on: the estimates are settled, and a
+   * "Beta" badge beside the logo made a working tool read as unfinished.
    */
-  beta: process.env.NEXT_PUBLIC_BETA !== "false",
+  beta: process.env.NEXT_PUBLIC_BETA === "true",
   contractorLeads: process.env.NEXT_PUBLIC_CONTRACTOR_LEADS_ENABLED === "true",
 } as const;
 
