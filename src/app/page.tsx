@@ -147,7 +147,7 @@ export default function HomePage() {
             </div>
 
             <p className="mt-6 text-sm text-ink-subtle">
-              No account. No sign-up. Free while we are in beta.
+              Free. No account. No sign-up.
             </p>
           </div>
 

@@ -193,8 +193,8 @@ export function calculateMulch({
       shoppingItem("tarp", "Tarp to protect the driveway", undefined, true, "heavy duty tarp"),
     ],
     warnings: [
-      `Keep mulch ${metric ? "a few centimetres" : "a few inches"} clear of trunks and stems. Piling it against them invites rot.`,
-      `${metric ? "Five to eight centimetres" : "Two to three inches"} is enough for most beds. Deeper does not suppress weeds better, it just holds water against roots.`,
+      `Keep mulch ${metric ? "a few centimeters" : "a few inches"} clear of trunks and stems. Piling it against them invites rot.`,
+      `${metric ? "Five to eight centimeters" : "Two to three inches"} is enough for most beds. Deeper does not suppress weeds better, it just holds water against roots.`,
     ],
     effort: {
       difficulty: "Easy",

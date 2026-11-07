@@ -65,7 +65,7 @@ export function calculateGravel({
    * exactly the kind of thing a hardcoded label gets wrong.
    */
   const densityLabel = metric
-    ? `${roundTo((density * 0.45359237) / 0.028316846592, 0).toLocaleString("en-US")} kg per cubic metre`
+    ? `${roundTo((density * 0.45359237) / 0.028316846592, 0).toLocaleString("en-US")} kg per cubic meter`
     : `${roundTo(density, 0)} lb per cubic foot`;
 
   const materials: MaterialLine[] = [

@@ -178,7 +178,7 @@ export function calculatePaint({
       {
         id: "one-coat",
         name: "One coat",
-        summary: "Only realistic over a similar existing colour in good condition.",
+        summary: "Only realistic over a similar existing color in good condition.",
         recommended: coats === 1,
         rows: [
           {
@@ -207,7 +207,7 @@ export function calculatePaint({
     explanation: [
       `${rooms > 1 ? `${roundTo(rooms, 0)} rooms of ` : ""}${d.length(length)} × ${d.length(width)} at ${d.length(height)} ceilings gives ${d.area(wallArea)} of wall after taking out ${roundTo(doors, 0)} ${doors === 1 ? "door" : "doors"} and ${roundTo(windows, 0)} ${windows === 1 ? "window" : "windows"}.`,
       `At ${d.coveragePerLiquid(coverage)} and ${coats} ${coats === 1 ? "coat" : "coats"}, that is ${d.liquid(gallonsExact)} of actual paint. Rounded up to what you can buy: ${d.liquid(gallonsPurchase)}.`,
-      "Coverage on the can is measured on smooth, primed, similar-coloured wall. Textured walls, deep colour changes, and fresh drywall all drink noticeably more.",
+      "Coverage on the can is measured on smooth, primed, similar-colored wall. Textured walls, deep color changes, and fresh drywall all drink noticeably more.",
     ],
     formulas: [
       { kind: "math", label: "Wall area", expression: "2 × (Length + Width) × Ceiling height" },
@@ -219,12 +219,12 @@ export function calculatePaint({
       {
         kind: "math",
         label: "Paint",
-        expression: `(Paintable area × Coats) ÷ Coverage per ${metric ? "litre" : "gallon"}`,
+        expression: `(Paintable area × Coats) ÷ Coverage per ${metric ? "liter" : "gallon"}`,
       },
       {
         kind: "assumption",
         label: "Purchase rounding",
-        // The increment is canonical, so metric names the litre figure it lands on.
+        // The increment is canonical, so metric names the liter figure it lands on.
         expression: metric ? "Rounded up to the next 0.95 L" : "Rounded up to the next quart",
       },
     ],
@@ -246,7 +246,7 @@ export function calculatePaint({
     ],
     warnings: [
       "Homes built before 1978 may contain lead paint. Do not sand or scrape without checking first.",
-      "Buy all of one colour in a single trip so the batch matches.",
+      "Buy all of one color in a single trip so the batch matches.",
     ],
     effort: {
       difficulty: "Easy",

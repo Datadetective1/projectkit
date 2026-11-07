@@ -144,7 +144,7 @@ export const tileProject: ProjectDefinition = {
       type: "number",
       label: "Tile price per box",
       help: (d) =>
-        `Optional. If set, this overrides the ${d.system === "us" ? "per-square-foot" : "per-square-metre"} price.`,
+        `Optional. If set, this overrides the ${d.system === "us" ? "per-square-foot" : "per-square-meter"} price.`,
       measure: "currency",
       unitOverride: "$ / box",
       defaultValue: 0,
@@ -205,7 +205,7 @@ export const tileProject: ProjectDefinition = {
     {
       question: "How much extra tile should I buy?",
       answer:
-        "Ten percent for a straight layout, fifteen or more for diagonal, herringbone, or a room with lots of cuts. Buy it all at once and from one lot. Colour varies between production runs enough to be visible.",
+        "Ten percent for a straight layout, fifteen or more for diagonal, herringbone, or a room with lots of cuts. Buy it all at once and from one lot. Color varies between production runs enough to be visible.",
     },
     {
       question: "How much thinset do I need?",

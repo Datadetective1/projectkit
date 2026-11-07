@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { AlertTriangle, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { ProjectPlanner } from "@/components/planner/ProjectPlanner";
 import { ProjectCard } from "@/components/ProjectCard";
 import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
@@ -107,19 +107,6 @@ export default async function ProjectPage({
           <ProjectPlanner slug={project.slug} />
         </Suspense>
 
-        {project.disclaimers?.length ? (
-          <div className="mt-10 flex gap-3 rounded-[var(--radius-card)] border border-accent/25 bg-accent-soft p-5">
-            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-accent" aria-hidden />
-            <div>
-              <h2 className="text-sm font-semibold text-ink">Before you build</h2>
-              {project.disclaimers.map((disclaimer) => (
-                <p key={disclaimer} className="mt-1 text-sm text-ink-muted">
-                  {disclaimer}
-                </p>
-              ))}
-            </div>
-          </div>
-        ) : null}
 
         <div className="mt-12">
           <AdSlot placement="content-mid" />

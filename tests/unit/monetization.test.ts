@@ -166,13 +166,13 @@ describe("configuration defaults", () => {
     expect((await import("@/config/site")).build.id).toBe("dev");
   });
 
-  it("shows the beta label unless explicitly switched off", async () => {
-    // The only flag here that fails open, because the risk runs the other way:
-    // saying "beta" when you are not costs nothing.
-    for (const value of [undefined, "", "true"]) {
+  it("shows the beta label only when switched on", async () => {
+    // The estimates are settled and the label was making a working tool read
+    // as unfinished, so it is opt-in now, like every other flag here.
+    for (const value of [undefined, "", "false"]) {
       const features = await featuresWith({ NEXT_PUBLIC_BETA: value });
-      expect(features.beta, String(value)).toBe(true);
+      expect(features.beta, String(value)).toBe(false);
     }
-    expect((await featuresWith({ NEXT_PUBLIC_BETA: "false" })).beta).toBe(false);
+    expect((await featuresWith({ NEXT_PUBLIC_BETA: "true" })).beta).toBe(true);
   });
 });

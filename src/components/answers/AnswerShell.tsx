@@ -136,8 +136,7 @@ export function AnswerShell({
               <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
             <p className="mt-2.5 text-xs text-brand-ink/70">
-              Opens prefilled with the figures on this page. No account, free in
-              beta.
+              Opens prefilled with the figures on this page. Free, no account.
             </p>
           </section>
 

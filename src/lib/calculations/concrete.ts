@@ -185,7 +185,7 @@ export function calculateConcrete({
       {
         id: "ready-mix",
         name: "Ready-mix delivery",
-        summary: `One truck, one pour. Best once you pass about ${metric ? "a cubic metre" : "a cubic yard"}.`,
+        summary: `One truck, one pour. Best once you pass about ${metric ? "a cubic meter" : "a cubic yard"}.`,
         recommended: readyMixRecommended,
         rows: [
           { label: "Order quantity", value: purchaseYards, measure: "volumeYd", precision: 2 },

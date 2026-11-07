@@ -24,12 +24,15 @@ import { AdSlot } from "@/components/monetization/AdSlot";
 import { readyOnlineCount } from "@/lib/shopping/cart";
 import { ReportProblem } from "@/components/ReportProblem";
 import { StickyAction } from "./StickyAction";
+import { ProjectModel } from "@/components/model/ProjectModel";
+import { sceneFor } from "@/lib/model/sceneSpec";
 import {
   anchorsFor,
   applyPrefill,
   convertValues,
   defaultValues,
   evaluate,
+  toCanonicalValues,
   toQueryParams,
   validate,
   visibleInputs,
@@ -169,6 +172,12 @@ export function ProjectPlanner({ slug }: { slug: string }) {
     if (!project) return undefined;
     return evaluate(project, values, system);
   }, [project, values, system]);
+
+  // What the 3D model draws: the same inputs, in the units the planners store.
+  const scene = useMemo(
+    () => (project ? sceneFor(project.slug, toCanonicalValues(project, values, system)) : null),
+    [project, values, system],
+  );
 
   const errors = useMemo(() => {
     if (!project) return {};
@@ -476,6 +485,14 @@ export function ProjectPlanner({ slug }: { slug: string }) {
               result={evaluation.result}
               system={system}
               revealKey={revealKey}
+              visual={
+                scene ? (
+                  <ProjectModel
+                    spec={scene}
+                    className="h-56 w-full sm:h-64"
+                  />
+                ) : undefined
+              }
               nextStep={
                 <NextStep
                   projectType={project.slug}
@@ -513,9 +530,10 @@ export function ProjectPlanner({ slug }: { slug: string }) {
             {/* ------------------------------------------------ DEEPER -- */}
             {/*
               Everything below answers a question somebody might have rather
-              than one everybody has. The order runs: change something (What
-              if), decide whether to do it yourself, take it with you, then how
-              the work goes.
+              than one everybody has. The order runs: take it with you (the
+              Project Pack, which most people who finish a plan want next),
+              change something (What if), decide whether to do it yourself,
+              then how the work goes.
 
               The Project Pack used to be introduced twice down here — once by a
               teaser card carrying a "Preview Project Pack" button, and again by
@@ -523,22 +541,6 @@ export function ProjectPlanner({ slug }: { slug: string }) {
               stronger than two, so they are one card now.
             */}
             <div className="flex flex-col gap-6">
-              <WhatIf
-                def={project}
-                values={values}
-                system={system}
-                costTotal={evaluation.result.costTotal}
-                onChange={handleChange}
-              />
-
-              <DiyOrHire
-                result={evaluation.result}
-                quote={contractorQuote}
-                onQuoteChange={setContractorQuote}
-              />
-
-              <AdSlot placement="result-below-summary" />
-
               <section
                 ref={packRef}
                 tabIndex={-1}
@@ -586,7 +588,7 @@ export function ProjectPlanner({ slug }: { slug: string }) {
                     id="project-notes"
                     rows={3}
                     className="pk-field mt-1.5 resize-y"
-                    placeholder="Colour, supplier, delivery date, anything you want on the printout."
+                    placeholder="Color, supplier, delivery date, anything you want on the printout."
                     value={notes}
                     onChange={(event) => setNotes(event.target.value)}
                   />
@@ -613,6 +615,23 @@ export function ProjectPlanner({ slug }: { slug: string }) {
                   ) : null}
                 </div>
               </section>
+
+              <WhatIf
+                def={project}
+                values={values}
+                system={system}
+                costTotal={evaluation.result.costTotal}
+                onChange={handleChange}
+              />
+
+              <DiyOrHire
+                result={evaluation.result}
+                quote={contractorQuote}
+                onQuoteChange={setContractorQuote}
+              />
+
+              <AdSlot placement="result-below-summary" />
+
 
               <ProjectSequence steps={project.steps} />
 
